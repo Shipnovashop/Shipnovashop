@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: shipnovashop-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@shipnova.local
+      - key: ADMIN_PASSWORD
+        sync: false
