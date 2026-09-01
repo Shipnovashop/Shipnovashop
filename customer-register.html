@@ -1,0 +1,115 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Registration - ShipNova</title>
+<link rel="stylesheet" href="style.css">
+</head><body><nav>
+  <b>ShipNova</b>
+  <span>
+    <a href="index.html">Home</a>
+    <a href="customer-login.html">Login</a>
+  </span>
+</nav><main class="container">  <div class="card" style="max-width:500px;margin:40px auto"><h1>Create Customer Account</h1>
+
+<form id="registerForm">
+
+  <input
+    id="name"
+    type="text"
+    placeholder="Full Name"
+    autocomplete="name"
+    required
+  >
+
+  <input
+    id="email"
+    type="email"
+    placeholder="Email"
+    autocomplete="email"
+    required
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+    autocomplete="new-password"
+    minlength="6"
+    required
+  >
+
+  <input
+    id="confirmPassword"
+    type="password"
+    placeholder="Confirm Password"
+    autocomplete="new-password"
+    minlength="6"
+    required
+  >
+
+  <button type="submit">Register</button>
+
+</form>
+
+<p id="message"></p>
+
+<p>
+  Already have an account?
+  <a href="customer-login.html">Customer Login</a>
+</p>
+
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+const form = document.getElementById('registerForm');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+
+  message.className = '';
+
+  if (password !== confirmPassword) {
+    message.className = 'error';
+    message.textContent = 'Passwords do not match.';
+    return;
+  }
+
+  message.textContent = 'Creating account...';
+
+  try {
+
+    const result = await api('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        password: password,
+        role: 'customer'
+      })
+    });
+
+    saveAuth(result);
+
+    message.className = 'success';
+    message.textContent = 'Registration successful.';
+
+    setTimeout(function() {
+      location.href = 'customer.html';
+    }, 300);
+
+  } catch (error) {
+
+    message.className = 'error';
+    message.textContent = error.message;
+
+  }
+});
+</script></body>
+</html>
