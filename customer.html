@@ -2,141 +2,767 @@
 
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Customer Dashboard - ShipNova</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Customer - ShipNova</title>
+  <link rel="stylesheet" href="style.css">
 </head><body><nav>
   <b>ShipNova Customer</b>  <span>
     <a href="index.html">Home</a>
-    <a href="product.html">Store</a>
-    <button type="button" onclick="logout()">Logout</button>
+    <a href="product.html">Products</a>
+    <button onclick="logout()">Logout</button>
   </span>
-</nav><main class="container">  <div class="card">
-    <h1>Customer Dashboard</h1><p id="welcome"></p>
+</nav><main class="container">  <!-- LOGIN / REGISTER -->  <div id="authBox" class="grid"><div class="card">
+  <h2>Customer Login</h2>
 
-<div style="margin-top:20px">
-  <input
-    id="search"
-    type="search"
-    placeholder="Search products..."
-  >
+  <form id="loginForm">
 
-  <button type="button" id="searchBtn">
-    Search
-  </button>
+    <input
+      id="loginEmail"
+      type="email"
+      placeholder="Email"
+      required
+    >
 
-  <button type="button" id="allBtn">
-    All Products
-  </button>
+    <input
+      id="loginPassword"
+      type="password"
+      placeholder="Password"
+      required
+    >
+
+    <button type="submit">
+      Login
+    </button>
+
+  </form>
+
+  <p id="loginMsg"></p>
 </div>
 
-<p id="message"></p>
 
-  </div>  <h2>Available Products</h2>  <div id="products">
+<div class="card">
+  <h2>Customer Registration</h2>
+
+  <form id="registerForm">
+
+    <input
+      id="regName"
+      placeholder="Full Name"
+      required
+    >
+
+    <input
+      id="regEmail"
+      type="email"
+      placeholder="Email"
+      required
+    >
+
+    <input
+      id="regPassword"
+      type="password"
+      placeholder="Password"
+      required
+      minlength="6"
+    >
+
+    <button type="submit">
+      Register
+    </button>
+
+  </form>
+
+  <p id="registerMsg"></p>
+</div>
+
+  </div>  <!-- CUSTOMER AREA -->  <div id="customerArea" style="display:none"><div class="card">
+  <h2>Welcome, <span id="customerName"></span> 👋</h2>
+  <p>Choose products and place your order.</p>
+</div>
+
+
+<!-- PRODUCTS -->
+
+<div class="card">
+
+  <div class="row">
+    <h2 style="flex:1">Products</h2>
+
+    <button onclick="loadProducts()">
+      Refresh
+    </button>
+  </div>
+
+  <div id="products">
     Loading products...
+  </div>
+
+</div>
+
+
+<!-- CART -->
+
+<div class="card">
+
+  <h2>🛒 My Cart</h2>
+
+  <div id="cart">
+    Cart is empty.
+  </div>
+
+  <hr>
+
+  <h3>
+    Total:
+    ₹<span id="cartTotal">0.00</span>
+  </h3>
+
+  <button
+    id="orderButton"
+    onclick="placeOrder()"
+    disabled
+  >
+    Place Order
+  </button>
+
+  <p id="orderMsg"></p>
+
+</div>
+
+
+<!-- MY ORDERS -->
+
+<div class="card">
+
+  <div class="row">
+    <h2 style="flex:1">📦 My Orders</h2>
+
+    <button onclick="loadOrders()">
+      Refresh
+    </button>
+  </div>
+
+  <div id="orders">
+    No orders yet.
+  </div>
+
+</div>
+
   </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
 
-(function () {
+let cart = [];
 
-  const currentUser = user();
 
-  /*
-   * Customer login required.
-   */
-  if (!currentUser) {
-    location.href = 'customer-login.html';
-    return;
+/* =========================
+   START
+========================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  const u = user();
+
+  if (u && u.role === 'customer') {
+
+    showCustomer();
+
   }
 
-  /*
-   * Only customers can use this dashboard.
-   */
-  if (currentUser.role !== 'customer') {
+});
 
-    if (currentUser.role === 'seller') {
-      location.href = 'seller.html';
-    } else if (currentUser.role === 'admin') {
-      location.href = 'admin.html';
-    } else {
-      location.href = 'customer-login.html';
+
+/* =========================
+   AUTH UI
+========================= */
+
+function showCustomer() {
+
+  const u = user();
+
+  if (!u || u.role !== 'customer') {
+
+    document.getElementById('authBox').style.display = 'grid';
+    document.getElementById('customerArea').style.display = 'none';
+
+    return;
+
+  }
+
+  document.getElementById('authBox').style.display = 'none';
+  document.getElementById('customerArea').style.display = 'block';
+
+  document.getElementById('customerName').textContent =
+    u.name || 'Customer';
+
+  loadProducts();
+  loadOrders();
+
+}
+
+
+/* =========================
+   CUSTOMER REGISTER
+========================= */
+
+document.getElementById('registerForm').onsubmit =
+async function(e) {
+
+  e.preventDefault();
+
+  const msg =
+    document.getElementById('registerMsg');
+
+  msg.className = '';
+  msg.textContent = 'Registering...';
+
+  try {
+
+    const data = await api(
+      '/api/auth/register',
+      {
+        method: 'POST',
+
+        body: JSON.stringify({
+          name:
+            document.getElementById('regName').value.trim(),
+
+          email:
+            document.getElementById('regEmail').value.trim(),
+
+          password:
+            document.getElementById('regPassword').value,
+
+          role: 'customer'
+        })
+      }
+    );
+
+    saveAuth(data);
+
+    msg.className = 'success';
+    msg.textContent = 'Registration successful!';
+
+    showCustomer();
+
+  } catch (e) {
+
+    msg.className = 'error';
+    msg.textContent = e.message;
+
+  }
+
+};
+
+
+/* =========================
+   CUSTOMER LOGIN
+========================= */
+
+document.getElementById('loginForm').onsubmit =
+async function(e) {
+
+  e.preventDefault();
+
+  const msg =
+    document.getElementById('loginMsg');
+
+  msg.className = '';
+  msg.textContent = 'Logging in...';
+
+  try {
+
+    const data = await api(
+      '/api/auth/login',
+      {
+        method: 'POST',
+
+        body: JSON.stringify({
+          email:
+            document.getElementById('loginEmail').value.trim(),
+
+          password:
+            document.getElementById('loginPassword').value
+        })
+      }
+    );
+
+    if (data.user.role !== 'customer') {
+
+      throw new Error(
+        'This page is only for Customer login.'
+      );
+
     }
 
-    return;
+    saveAuth(data);
+
+    msg.className = 'success';
+    msg.textContent = 'Login successful!';
+
+    showCustomer();
+
+  } catch (e) {
+
+    msg.className = 'error';
+    msg.textContent = e.message;
+
   }
 
-  const welcome = document.getElementById('welcome');
-  const productsBox = document.getElementById('products');
-  const message = document.getElementById('message');
-  const searchInput = document.getElementById('search');
+};
 
-  welcome.textContent =
-    'Welcome, ' + (currentUser.name || 'Customer') + '!';
 
-  /*
-   * Load products from Render API.
-   */
-  async function loadProducts(search = '') {
+/* =========================
+   LOAD PRODUCTS
+========================= */
 
-    productsBox.innerHTML = '<p>Loading products...</p>';
-    message.textContent = '';
+async function loadProducts() {
 
-    try {
+  const box =
+    document.getElementById('products');
 
-      let url = '/api/products';
+  box.innerHTML =
+    '<p>Loading products...</p>';
 
-      if (search.trim()) {
-        url += '?q=' + encodeURIComponent(search.trim());
-      }
+  try {
 
-      const data = await api(url);
+    const data =
+      await api('/api/products');
 
-      if (!data.products || data.products.length === 0) {
+    if (!data.products || !data.products.length) {
 
-        productsBox.innerHTML =
-          '<div class="card">' +
-          '<p>No products found.</p>' +
-          '</div>';
+      box.innerHTML =
+        '<p>No products available.</p>';
 
-        return;
-      }
+      return;
 
-      productsBox.innerHTML = data.products.map(function (product) {
+    }
 
-        const image = product.image
-          ? '<img src="' + escapeHtml(product.image) +
-            '" alt="' + escapeHtml(product.name) +
-            '" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:12px">'
-          : '';
+    box.innerHTML =
+      data.products.map(p => {
+
+        const image =
+          p.image
+            ? `<img
+                 src="${escapeHtml(p.image)}"
+                 alt="${escapeHtml(p.name)}"
+                 style="max-width:160px;max-height:160px;object-fit:contain">
+               <br>`
+            : '';
+
+        const disabled =
+          Number(p.stock) <= 0
+            ? 'disabled'
+            : '';
 
         return `
-          <div class="card" style="margin-bottom:15px">
+          <div class="card">
 
             ${image}
 
-            <h3>${escapeHtml(product.name)}</h3>
+            <h3>${escapeHtml(p.name)}</h3>
 
             <p>
-              ${escapeHtml(product.description || 'No description available.')}
+              ${escapeHtml(p.description || '')}
             </p>
 
             <p>
-              <b>Price: ₹${escapeHtml(String(product.price))}</b>
-            </p>
-
-            <p>
-              Stock: ${escapeHtml(String(product.stock))}
+              <b>₹${Number(p.price).toFixed(2)}</b>
             </p>
 
             <p>
               Seller:
-              ${escapeHtml(product.seller_name || 'Seller')}
+              ${escapeHtml(p.seller_name || 'Seller')}
             </p>
 
+            <p>
+              Stock:
+              ${Number(p.stock)}
+            </p>
+
+            <button
+              ${disabled}
+              onclick="addToCart(
+                ${Number(p.id)},
+                '${escapeJs(p.name)}',
+                ${Number(p.price)},
+                ${Number(p.stock)}
+              )"
+            >
+              ${
+                Number(p.stock) > 0
+                  ? 'Add to Cart'
+                  : 'Out of Stock'
+              }
+            </button>
+
+          </div>
+        `;
+
+      }).join('');
+
+  } catch (e) {
+
+    box.innerHTML =
+      `<p class="error">${escapeHtml(e.message)}</p>`;
+
+  }
+
+}
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
+function addToCart(
+  id,
+  name,
+  price,
+  stock
+) {
+
+  const existing =
+    cart.find(x => x.product_id === id);
+
+  if (existing) {
+
+    if (existing.quantity >= stock) {
+
+      alert('Maximum available stock reached.');
+
+      return;
+
+    }
+
+    existing.quantity++;
+
+  } else {
+
+    cart.push({
+      product_id: id,
+      name: name,
+      price: Number(price),
+      stock: Number(stock),
+      quantity: 1
+    });
+
+  }
+
+  renderCart();
+
+}
+
+
+/* =========================
+   CHANGE QUANTITY
+========================= */
+
+function changeQty(id, amount) {
+
+  const item =
+    cart.find(x => x.product_id === id);
+
+  if (!item) return;
+
+  item.quantity += amount;
+
+  if (item.quantity <= 0) {
+
+    cart =
+      cart.filter(x => x.product_id !== id);
+
+  }
+
+  if (item.quantity > item.stock) {
+
+    item.quantity = item.stock;
+
+    alert('Maximum available stock reached.');
+
+  }
+
+  renderCart();
+
+}
+
+
+/* =========================
+   REMOVE ITEM
+========================= */
+
+function removeFromCart(id) {
+
+  cart =
+    cart.filter(x => x.product_id !== id);
+
+  renderCart();
+
+}
+
+
+/* =========================
+   RENDER CART
+========================= */
+
+function renderCart() {
+
+  const box =
+    document.getElementById('cart');
+
+  const totalBox =
+    document.getElementById('cartTotal');
+
+  const orderButton =
+    document.getElementById('orderButton');
+
+  if (!cart.length) {
+
+    box.innerHTML =
+      '<p>Cart is empty.</p>';
+
+    totalBox.textContent =
+      '0.00';
+
+    orderButton.disabled =
+      true;
+
+    return;
+
+  }
+
+  let total = 0;
+
+  box.innerHTML =
+    cart.map(item => {
+
+      const subtotal =
+        item.price * item.quantity;
+
+      total += subtotal;
+
+      return `
+        <div class="card">
+
+          <div class="row">
+
+            <div style="flex:1">
+
+              <b>
+                ${escapeHtml(item.name)}
+              </b>
+
+              <p>
+                ₹${item.price.toFixed(2)}
+                ×
+                ${item.quantity}
+                =
+                ₹${subtotal.toFixed(2)}
+              </p>
+
+            </div>
+
+            <div>
+
+              <button
+                onclick="changeQty(
+                  ${item.product_id},
+                  -1
+                )"
+              >
+                −
+              </button>
+
+              <b style="margin:0 10px">
+                ${item.quantity}
+              </b>
+
+              <button
+                onclick="changeQty(
+                  ${item.product_id},
+                  1
+                )"
+              >
+                +
+              </button>
+
+              <button
+                class="danger"
+                onclick="removeFromCart(
+                  ${item.product_id}
+                )"
+              >
+                Remove
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+    }).join('');
+
+  totalBox.textContent =
+    total.toFixed(2);
+
+  orderButton.disabled =
+    false;
+
+}
+
+
+/* =========================
+   PLACE ORDER
+========================= */
+
+async function placeOrder() {
+
+  if (!cart.length) {
+
+    alert('Cart is empty.');
+
+    return;
+
+  }
+
+  if (
+    !confirm(
+      'Place this order now?'
+    )
+  ) {
+
+    return;
+
+  }
+
+  const msg =
+    document.getElementById('orderMsg');
+
+  msg.className = '';
+  msg.textContent =
+    'Placing order...';
+
+  try {
+
+    const data =
+      await api(
+        '/api/orders',
+        {
+          method: 'POST',
+
+          body: JSON.stringify({
+            items:
+              cart.map(x => ({
+                product_id:
+                  x.product_id,
+
+                quantity:
+                  x.quantity
+              }))
+          })
+        }
+      );
+
+    msg.className =
+      'success';
+
+    msg.textContent =
+      'Order #' +
+      data.order.id +
+      ' placed successfully!';
+
+    cart = [];
+
+    renderCart();
+
+    loadProducts();
+
+    loadOrders();
+
+  } catch (e) {
+
+    msg.className =
+      'error';
+
+    msg.textContent =
+      e.message;
+
+  }
+
+}
+
+
+/* =========================
+   LOAD MY ORDERS
+========================= */
+
+async function loadOrders() {
+
+  const box =
+    document.getElementById('orders');
+
+  box.innerHTML =
+    '<p>Loading orders...</p>';
+
+  try {
+
+    const data =
+      await api('/api/orders');
+
+    if (!data.orders || !data.orders.length) {
+
+      box.innerHTML =
+        '<p>No orders yet.</p>';
+
+      return;
+
+    }
+
+    box.innerHTML =
+      data.orders.map(order => {
+
+        const items =
+          Array.isArray(order.items)
+            ? order.items
+            : [];
+
+        return `
+          <div class="card">
+
+            <h3>
+              Order #${order.id}
+            </h3>
+
+            <p>
+              Date:
+              ${formatDate(order.created_at)}
+            </p>
+
+            <p>
+              Status:
+              <b>${escapeHtml(order.status)}</b>
+            </p>
+
+            <p>
+              Total:
+              <b>
+                ₹${Number(order.total).toFixed(2)}
+              </b>
+            </p>
+
+            <h4>Items</h4>
+
             ${
-              Number(product.stock) > 0
-                ? '<button type="button" onclick="showMessage()">Buy Now</button>'
-                : '<button type="button" disabled>Out of Stock</button>'
+              items.length
+                ? items.map(item => `
+                    <div>
+                      ${escapeHtml(item.product_name)}
+                      × ${item.quantity}
+                      — ₹${Number(item.subtotal).toFixed(2)}
+                    </div>
+                  `).join('')
+                : '<p>No items</p>'
             }
 
           </div>
@@ -144,84 +770,57 @@
 
       }).join('');
 
-    } catch (error) {
+  } catch (e) {
 
-      productsBox.innerHTML =
-        '<div class="card">' +
-        '<p class="error">' +
-        escapeHtml(error.message) +
-        '</p>' +
-        '</div>';
-
-    }
-  }
-
-  /*
-   * Basic HTML escaping for product data.
-   */
-  function escapeHtml(value) {
-
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    box.innerHTML =
+      `<p class="error">${escapeHtml(e.message)}</p>`;
 
   }
 
-  /*
-   * Buy button is prepared for the next shopping/order system.
-   */
-  window.showMessage = function () {
+}
 
-    message.className = 'success';
 
-    message.textContent =
-      'Product selected. Shopping cart and order system can be added next.';
+/* =========================
+   HELPERS
+========================= */
 
-  };
+function escapeHtml(value) {
 
-  /*
-   * Search.
-   */
-  document
-    .getElementById('searchBtn')
-    .addEventListener('click', function () {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 
-      loadProducts(searchInput.value);
+}
 
-    });
 
-  /*
-   * Search by pressing Enter.
-   */
-  searchInput.addEventListener('keydown', function (event) {
+function escapeJs(value) {
 
-    if (event.key === 'Enter') {
-      loadProducts(searchInput.value);
-    }
+  return String(value ?? '')
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '\\r');
 
-  });
+}
 
-  /*
-   * Show all products.
-   */
-  document
-    .getElementById('allBtn')
-    .addEventListener('click', function () {
 
-      searchInput.value = '';
-      loadProducts();
+function formatDate(value) {
 
-    });
+  try {
 
-  /*
-   * Initial product load.
-   */
-  loadProducts();
+    return new Date(value)
+      .toLocaleString('en-IN');
 
-})();
+  } catch {
+
+    return value;
+
+  }
+
+}
 
 </script></body>
 </html>
