@@ -6,16 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ShipNova Marketplace</title>
   <link rel="stylesheet" href="style.css">  <style>
+    .brand-title {
+      text-align: center;
+      font-size: 48px;
+      font-weight: 800;
+      margin: 25px 0 20px;
+      letter-spacing: 1px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+    }
+
     .menu {
       position: relative;
       display: inline-block;
-      margin-left: 8px;
     }
 
     .menu-btn {
       cursor: pointer;
       border: 0;
-      padding: 8px 14px;
+      padding: 9px 15px;
       border-radius: 6px;
       font-weight: 600;
     }
@@ -23,9 +39,10 @@
     .menu-content {
       display: none;
       position: absolute;
-      right: 0;
+      left: 50%;
+      transform: translateX(-50%);
       top: 42px;
-      min-width: 150px;
+      min-width: 160px;
       background: white;
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -56,173 +73,142 @@
       object-fit: cover;
       border-radius: 8px;
     }
+  </style></head><body>  <!-- BIG CENTER BRAND -->  <header>
+    <div class="brand-title">ShipNova</div><!-- NAVIGATION -->
+<nav class="top-nav">
 
-    .product-card {
-      overflow: hidden;
-    }
-  </style></head><body><nav>
-  <b>ShipNova</b>  <span><a href="index.html">Home</a>
+  <a href="index.html">Home</a>
 
-<a href="product.html">Products</a>
+  <a href="product.html">Products</a>
 
-<!-- CUSTOMER -->
-<div class="menu">
-  <button class="menu-btn">Customer ▾</button>
+  <!-- CUSTOMER -->
+  <div class="menu">
+    <button class="menu-btn">Customer ▾</button>
 
-  <div class="menu-content">
-    <a href="customer.html">Login</a>
-    <a href="customer.html">Register</a>
+    <div class="menu-content">
+      <a href="customer.html">Login</a>
+      <a href="customer.html">Register</a>
+    </div>
   </div>
+
+  <!-- SELLER -->
+  <div class="menu">
+    <button class="menu-btn">Seller ▾</button>
+
+    <div class="menu-content">
+      <a href="seller-login.html">Login</a>
+      <a href="seller-register.html">Register</a>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <a href="admin-login.html">Admin</a>
+
+</nav>
+
+  </header>  <main class="container"><div class="card">
+  <h1>ShipNova Marketplace</h1>
+  <p>Discover products from our sellers and shop easily.</p>
+
+  <a href="product.html">
+    <button>View All Products</button>
+  </a>
 </div>
 
-<!-- SELLER -->
-<div class="menu">
-  <button class="menu-btn">Seller ▾</button>
 
-  <div class="menu-content">
-    <a href="seller-login.html">Login</a>
-    <a href="seller-register.html">Register</a>
-  </div>
+<h2>Latest Products</h2>
+
+<div id="products" class="grid">
+  <p>Loading products...</p>
 </div>
 
-<!-- ADMIN -->
-<a href="admin-login.html">Admin</a>
+  </main>  <script src="api-config.js"></script>  <script src="app.js"></script>  <script>
+    async function loadProducts() {
 
-  </span>
-</nav><main class="container">  <!-- HERO -->  <div class="card">
-    <h1>ShipNova Marketplace</h1><p>
-  Discover products from our sellers and shop easily.
-</p>
+      const box = document.getElementById('products');
 
-<a href="product.html">
-  <button>View All Products</button>
-</a>
+      try {
 
-  </div>  <!-- PRODUCTS -->  <h2>Latest Products</h2>  <div id="products" class="grid">
-    <p>Loading products...</p>
-  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+        const data = await api('/api/products');
+        const products = data.products || [];
 
-async function loadProducts() {
+        if (!products.length) {
 
-  const box =
-    document.getElementById('products');
+          box.innerHTML = `
+            <div class="card">
+              <p>No products available yet.</p>
+            </div>
+          `;
 
-  try {
+          return;
+        }
 
-    const data =
-      await api('/api/products');
+        box.innerHTML = products.map(p => `
 
-    const products =
-      data.products || [];
+          <div class="card product-card">
 
-    if (!products.length) {
+            ${
+              p.image
+              ? `<img src="${escapeHtml(p.image)}"
+                      alt="${escapeHtml(p.name)}">`
+              : `<div style="
+                    height:200px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:#f3f3f3;
+                    border-radius:8px;
+                  ">No Image</div>`
+            }
 
-      box.innerHTML = `
-        <div class="card">
-          <p>No products available yet.</p>
-          <a href="seller.html">
-            <button>Become a Seller</button>
-          </a>
-        </div>
-      `;
+            <h3>${escapeHtml(p.name)}</h3>
 
-      return;
+            <p>${escapeHtml(p.description || '')}</p>
+
+            <p>
+              <b>₹${Number(p.price).toFixed(2)}</b>
+            </p>
+
+            <p>Stock: ${Number(p.stock)}</p>
+
+            <p>
+              Seller: ${escapeHtml(p.seller_name || 'Seller')}
+            </p>
+
+            <a href="product.html?id=${p.id}">
+              <button>View Product</button>
+            </a>
+
+          </div>
+
+        `).join('');
+
+      } catch (error) {
+
+        console.error(error);
+
+        box.innerHTML = `
+          <div class="card">
+            <p class="error">
+              Products could not be loaded.
+            </p>
+            <button onclick="loadProducts()">
+              Try Again
+            </button>
+          </div>
+        `;
+      }
     }
 
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
-    box.innerHTML =
-      products.map(p => `
-
-        <div class="card product-card">
-
-          ${
-            p.image
-            ? `
-              <img
-                src="${escapeHtml(p.image)}"
-                alt="${escapeHtml(p.name)}"
-              >
-            `
-            : `
-              <div style="
-                height:200px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                background:#f3f3f3;
-                border-radius:8px;
-              ">
-                No Image
-              </div>
-            `
-          }
-
-          <h3>
-            ${escapeHtml(p.name)}
-          </h3>
-
-          <p>
-            ${escapeHtml(p.description || '')}
-          </p>
-
-          <p>
-            <b>
-              ₹${Number(p.price).toFixed(2)}
-            </b>
-          </p>
-
-          <p>
-            Stock:
-            ${Number(p.stock)}
-          </p>
-
-          <p>
-            Seller:
-            ${escapeHtml(p.seller_name || 'Seller')}
-          </p>
-
-          <a href="product.html?id=${p.id}">
-            <button>View Product</button>
-          </a>
-
-        </div>
-
-      `).join('');
-
-  } catch (error) {
-
-    console.error(error);
-
-    box.innerHTML = `
-      <div class="card">
-        <p class="error">
-          Products could not be loaded.
-        </p>
-
-        <button onclick="loadProducts()">
-          Try Again
-        </button>
-      </div>
-    `;
-
-  }
-
-}
-
-
-function escapeHtml(value) {
-
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-
-}
-
-
-loadProducts();
-
-</script></body>
+    loadProducts();
+  </script></body>
 </html>
