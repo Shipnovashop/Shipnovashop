@@ -4,86 +4,224 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Customer Login - ShipNova</title>
+<title>Customer Dashboard - ShipNova</title>
 <link rel="stylesheet" href="style.css">
 </head><body><nav>
-  <b>ShipNova</b>
-  <span>
+  <b>ShipNova Customer</b>  <span>
     <a href="index.html">Home</a>
-    <a href="customer-register.html">Register</a>
+    <a href="product.html">Store</a>
+    <button type="button" onclick="logout()">Logout</button>
   </span>
-</nav><main class="container">  <div class="card" style="max-width:500px;margin:40px auto"><h1>Customer Login</h1>
+</nav><main class="container">  <div class="card">
+    <h1>Customer Dashboard</h1><p id="welcome"></p>
 
-<form id="loginForm">
-
+<div style="margin-top:20px">
   <input
-    id="email"
-    type="email"
-    placeholder="Email"
-    autocomplete="email"
-    required
+    id="search"
+    type="search"
+    placeholder="Search products..."
   >
 
-  <input
-    id="password"
-    type="password"
-    placeholder="Password"
-    autocomplete="current-password"
-    required
-  >
+  <button type="button" id="searchBtn">
+    Search
+  </button>
 
-  <button type="submit">Login</button>
-
-</form>
+  <button type="button" id="allBtn">
+    All Products
+  </button>
+</div>
 
 <p id="message"></p>
 
-<p>
-  New customer?
-  <a href="customer-register.html">Create an account</a>
-</p>
-
+  </div>  <h2>Available Products</h2>  <div id="products">
+    Loading products...
   </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
-const form = document.getElementById('loginForm');
-const message = document.getElementById('message');
 
-form.addEventListener('submit', async function(e) {
-  e.preventDefault();
+(function () {
 
-  message.className = '';
-  message.textContent = 'Logging in...';
+  const currentUser = user();
 
-  try {
+  /*
+   * Customer login required.
+   */
+  if (!currentUser) {
+    location.href = 'customer-login.html';
+    return;
+  }
 
-    const result = await api('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: document.getElementById('email').value.trim(),
-        password: document.getElementById('password').value
-      })
-    });
+  /*
+   * Only customers can use this dashboard.
+   */
+  if (currentUser.role !== 'customer') {
 
-    if (result.user.role !== 'customer') {
-      message.className = 'error';
-      message.textContent = 'This login is for customers only.';
-      return;
+    if (currentUser.role === 'seller') {
+      location.href = 'seller.html';
+    } else if (currentUser.role === 'admin') {
+      location.href = 'admin.html';
+    } else {
+      location.href = 'customer-login.html';
     }
 
-    saveAuth(result);
+    return;
+  }
 
-    message.className = 'success';
-    message.textContent = 'Login successful.';
+  const welcome = document.getElementById('welcome');
+  const productsBox = document.getElementById('products');
+  const message = document.getElementById('message');
+  const searchInput = document.getElementById('search');
 
-    setTimeout(function() {
-      location.href = 'customer.html';
-    }, 300);
+  welcome.textContent =
+    'Welcome, ' + (currentUser.name || 'Customer') + '!';
 
-  } catch (error) {
+  /*
+   * Load products from Render API.
+   */
+  async function loadProducts(search = '') {
 
-    message.className = 'error';
-    message.textContent = error.message;
+    productsBox.innerHTML = '<p>Loading products...</p>';
+    message.textContent = '';
+
+    try {
+
+      let url = '/api/products';
+
+      if (search.trim()) {
+        url += '?q=' + encodeURIComponent(search.trim());
+      }
+
+      const data = await api(url);
+
+      if (!data.products || data.products.length === 0) {
+
+        productsBox.innerHTML =
+          '<div class="card">' +
+          '<p>No products found.</p>' +
+          '</div>';
+
+        return;
+      }
+
+      productsBox.innerHTML = data.products.map(function (product) {
+
+        const image = product.image
+          ? '<img src="' + escapeHtml(product.image) +
+            '" alt="' + escapeHtml(product.name) +
+            '" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-bottom:12px">'
+          : '';
+
+        return `
+          <div class="card" style="margin-bottom:15px">
+
+            ${image}
+
+            <h3>${escapeHtml(product.name)}</h3>
+
+            <p>
+              ${escapeHtml(product.description || 'No description available.')}
+            </p>
+
+            <p>
+              <b>Price: ₹${escapeHtml(String(product.price))}</b>
+            </p>
+
+            <p>
+              Stock: ${escapeHtml(String(product.stock))}
+            </p>
+
+            <p>
+              Seller:
+              ${escapeHtml(product.seller_name || 'Seller')}
+            </p>
+
+            ${
+              Number(product.stock) > 0
+                ? '<button type="button" onclick="showMessage()">Buy Now</button>'
+                : '<button type="button" disabled>Out of Stock</button>'
+            }
+
+          </div>
+        `;
+
+      }).join('');
+
+    } catch (error) {
+
+      productsBox.innerHTML =
+        '<div class="card">' +
+        '<p class="error">' +
+        escapeHtml(error.message) +
+        '</p>' +
+        '</div>';
+
+    }
+  }
+
+  /*
+   * Basic HTML escaping for product data.
+   */
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
 
   }
-});
+
+  /*
+   * Buy button is prepared for the next shopping/order system.
+   */
+  window.showMessage = function () {
+
+    message.className = 'success';
+
+    message.textContent =
+      'Product selected. Shopping cart and order system can be added next.';
+
+  };
+
+  /*
+   * Search.
+   */
+  document
+    .getElementById('searchBtn')
+    .addEventListener('click', function () {
+
+      loadProducts(searchInput.value);
+
+    });
+
+  /*
+   * Search by pressing Enter.
+   */
+  searchInput.addEventListener('keydown', function (event) {
+
+    if (event.key === 'Enter') {
+      loadProducts(searchInput.value);
+    }
+
+  });
+
+  /*
+   * Show all products.
+   */
+  document
+    .getElementById('allBtn')
+    .addEventListener('click', function () {
+
+      searchInput.value = '';
+      loadProducts();
+
+    });
+
+  /*
+   * Initial product load.
+   */
+  loadProducts();
+
+})();
+
 </script></body>
 </html>
