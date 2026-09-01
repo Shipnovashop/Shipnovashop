@@ -2,184 +2,53 @@
 
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ShipNova</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShipNova Marketplace</title>
+<link rel="stylesheet" href="style.css">
 </head><body><nav>
-  <b>ShipNova</b>
-  <span>
+  <b>ShipNova</b>  <span>
     <a href="product.html">Products</a>
     <a href="customer.html">Customer</a>
     <a href="seller.html">Seller</a>
     <a href="admin.html">Admin</a>
   </span>
 </nav><main class="container">  <div class="card">
-    <h1>ShipNova Marketplace</h1>
-    <p>Customer, seller and admin dashboard with PostgreSQL + Render.</p>
-  </div>  <div class="grid"><!-- LOGIN -->
-<div class="card">
-  <h2>Login</h2>
+    <h1>ShipNova Marketplace</h1><p>
+  Welcome to ShipNova Marketplace.
+  Shop products, sell your products, or manage the marketplace.
+</p>
 
-  <form id="loginForm">
-    <input
-      id="loginEmail"
-      type="email"
-      placeholder="Email"
-      required
-    >
+  </div>  <div class="grid"><div class="card">
+  <h2>Customer</h2>
+  <p>Browse products and manage your customer account.</p>
 
-    <input
-      id="loginPassword"
-      type="password"
-      placeholder="Password"
-      required
-    >
+  <a href="customer-login.html">
+    <button type="button">Customer Login</button>
+  </a>
 
-    <button type="submit">Login</button>
-  </form>
-
-  <p id="loginMessage"></p>
-
-  <p>
-    Admin demo:
-    <b>admin@shipnova.local</b> /
-    <b>admin123</b>
-  </p>
+  <a href="customer-register.html">
+    <button type="button">Customer Register</button>
+  </a>
 </div>
 
-<!-- SELLER REGISTRATION -->
 <div class="card">
-  <h2>Register Seller</h2>
+  <h2>Seller</h2>
+  <p>Register as a seller or manage your products.</p>
 
-  <form id="registerForm">
-
-    <input
-      id="registerName"
-      type="text"
-      placeholder="Name"
-      required
-    >
-
-    <input
-      id="registerEmail"
-      type="email"
-      placeholder="Email"
-      required
-    >
-
-    <input
-      id="registerPassword"
-      type="password"
-      placeholder="Password"
-      required
-    >
-
-    <button type="submit">Register</button>
-
-  </form>
-
-  <p id="registerMessage"></p>
+  <a href="seller.html">
+    <button type="button">Seller Login / Register</button>
+  </a>
 </div>
 
-  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+<div class="card">
+  <h2>Admin</h2>
+  <p>Manage sellers, customers and products.</p>
 
-const loginForm = document.getElementById('loginForm');
-const loginEmail = document.getElementById('loginEmail');
-const loginPassword = document.getElementById('loginPassword');
-const loginMessage = document.getElementById('loginMessage');
+  <a href="admin.html">
+    <button type="button">Admin Login</button>
+  </a>
+</div>
 
-loginForm.addEventListener('submit', async function(e) {
-
-  e.preventDefault();
-
-  loginMessage.textContent = '';
-
-  try {
-
-    const result = await api('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: loginEmail.value.trim(),
-        password: loginPassword.value
-      })
-    });
-
-    saveAuth(result);
-
-    const currentUser = user();
-
-    if (currentUser.role === 'admin') {
-      location.href = 'admin.html';
-    } else if (currentUser.role === 'seller') {
-      location.href = 'seller.html';
-    } else {
-      location.href = 'customer.html';
-    }
-
-  } catch (error) {
-
-    loginMessage.className = 'error';
-    loginMessage.textContent = error.message;
-
-  }
-
-});
-
-
-const registerForm = document.getElementById('registerForm');
-const registerName = document.getElementById('registerName');
-const registerEmail = document.getElementById('registerEmail');
-const registerPassword = document.getElementById('registerPassword');
-const registerMessage = document.getElementById('registerMessage');
-
-registerForm.addEventListener('submit', async function(e) {
-
-  e.preventDefault();
-
-  registerMessage.textContent = '';
-
-  const nameValue = registerName.value.trim();
-  const emailValue = registerEmail.value.trim();
-  const passwordValue = registerPassword.value;
-
-  if (!nameValue || !emailValue || !passwordValue) {
-    registerMessage.className = 'error';
-    registerMessage.textContent =
-      'Name, email and password are required.';
-    return;
-  }
-
-  try {
-
-    const result = await api('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        name: nameValue,
-        email: emailValue,
-        password: passwordValue,
-        role: 'seller'
-      })
-    });
-
-    saveAuth(result);
-
-    registerMessage.className = 'success';
-    registerMessage.textContent =
-      'Seller registered successfully!';
-
-    setTimeout(function() {
-      location.href = 'seller.html';
-    }, 500);
-
-  } catch (error) {
-
-    registerMessage.className = 'error';
-    registerMessage.textContent = error.message;
-
-  }
-
-});
-
-</script></body>
+  </div></main></body>
 </html>
