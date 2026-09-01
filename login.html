@@ -18,26 +18,26 @@
       min-height: 100vh;
       background: #f5f7fb;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 20px;
     }
 
-    .login-card {
+    .card {
       width: 100%;
-      max-width: 420px;
-      background: white;
-      padding: 32px;
-      border-radius: 14px;
+      max-width: 430px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
       box-shadow: 0 10px 35px rgba(0,0,0,.08);
     }
 
     .logo {
       text-align: center;
-      font-size: 28px;
+      font-size: 29px;
       font-weight: 800;
       color: #2563eb;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
     }
 
     .logo span {
@@ -47,18 +47,41 @@
     .subtitle {
       text-align: center;
       color: #6b7280;
-      margin-bottom: 28px;
+      margin-bottom: 25px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-bottom: 22px;
+    }
+
+    .tab {
+      padding: 10px 5px;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .tab.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .field {
+      margin-bottom: 17px;
     }
 
     label {
       display: block;
       font-weight: 600;
-      margin-bottom: 7px;
       color: #374151;
-    }
-
-    .field {
-      margin-bottom: 18px;
+      margin-bottom: 7px;
     }
 
     input {
@@ -74,7 +97,7 @@
       border-color: #2563eb;
     }
 
-    button {
+    .login-btn {
       width: 100%;
       padding: 13px;
       border: 0;
@@ -86,16 +109,16 @@
       cursor: pointer;
     }
 
-    button:disabled {
+    .login-btn:disabled {
       opacity: .6;
       cursor: not-allowed;
     }
 
     .message {
       display: none;
-      margin-bottom: 18px;
       padding: 12px;
       border-radius: 8px;
+      margin-bottom: 18px;
       font-size: 14px;
     }
 
@@ -112,288 +135,375 @@
     .links {
       text-align: center;
       margin-top: 22px;
-      line-height: 1.8;
+      line-height: 1.9;
     }
 
     .links a {
       color: #2563eb;
-      font-weight: 600;
       text-decoration: none;
+      font-weight: 600;
     }
 
-    .home {
-      display: block;
-      margin-bottom: 8px;
+    .role-info {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #6b7280;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="login-card">
+<div class="card">
 
-    <div class="logo">
-      ShipNova<span>Shop</span>
+  <div class="logo">
+    ShipNova<span>Shop</span>
+  </div>
+
+  <p class="subtitle">
+    Sign in to your account
+  </p>
+
+  <div class="tabs">
+
+    <button class="tab active" data-role="customer">
+      Customer
+    </button>
+
+    <button class="tab" data-role="seller">
+      Seller
+    </button>
+
+    <button class="tab" data-role="admin">
+      Admin
+    </button>
+
+  </div>
+
+  <div id="roleInfo" class="role-info">
+    Customer login
+  </div>
+
+  <div id="message" class="message"></div>
+
+  <form id="loginForm">
+
+    <div class="field">
+
+      <label for="email">
+        Email
+      </label>
+
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        required
+        autocomplete="email"
+      >
+
     </div>
 
-    <p class="subtitle">
-      Login to your account
-    </p>
+    <div class="field">
 
-    <div id="message" class="message"></div>
+      <label for="password">
+        Password
+      </label>
 
-    <form id="loginForm">
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter your password"
+        required
+        autocomplete="current-password"
+      >
 
-      <div class="field">
-        <label for="email">Email</label>
+    </div>
 
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Enter your email"
-          required
-          autocomplete="email"
-        >
-      </div>
+    <button
+      type="submit"
+      class="login-btn"
+      id="loginButton"
+    >
+      Login
+    </button>
 
-      <div class="field">
-        <label for="password">Password</label>
+  </form>
 
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Enter your password"
-          required
-          autocomplete="current-password"
-        >
-      </div>
+  <div class="links">
 
-      <button type="submit" id="loginButton">
-        Login
-      </button>
+    <div>
+      Don't have an account?
+      <a href="register.html">Register</a>
+    </div>
 
-    </form>
-
-    <div class="links">
-
-      <a href="index.html" class="home">
-        ← Back to Home
-      </a>
-
-      <div>
-        Don't have an account?
-        <a href="register.html">Register</a>
-      </div>
-
+    <div>
+      <a href="index.html">← Back to Home</a>
     </div>
 
   </div>
 
-
-  <script src="api-config.js"></script>
-
-  <script>
-
-    const API =
-      window.SHIPNOVA_API ||
-      "https://shipnovashop-1.onrender.com";
+</div>
 
 
-    const form =
-      document.getElementById("loginForm");
+<script src="api-config.js"></script>
 
-    const button =
-      document.getElementById("loginButton");
+<script>
 
-    const message =
-      document.getElementById("message");
+const API =
+  window.SHIPNOVA_API ||
+  "https://shipnovashop-1.onrender.com";
 
 
-    function showMessage(text, type) {
+let selectedRole = "customer";
 
-      message.textContent = text;
 
-      message.className =
-        "message " + type;
+const tabs =
+  document.querySelectorAll(".tab");
 
-      message.style.display = "block";
+const roleInfo =
+  document.getElementById("roleInfo");
+
+const form =
+  document.getElementById("loginForm");
+
+const button =
+  document.getElementById("loginButton");
+
+const message =
+  document.getElementById("message");
+
+
+function showMessage(text, type) {
+
+  message.textContent = text;
+
+  message.className =
+    "message " + type;
+
+  message.style.display = "block";
+}
+
+
+tabs.forEach(tab => {
+
+  tab.addEventListener("click", () => {
+
+    tabs.forEach(t =>
+      t.classList.remove("active")
+    );
+
+    tab.classList.add("active");
+
+    selectedRole =
+      tab.dataset.role;
+
+    roleInfo.textContent =
+      selectedRole.charAt(0).toUpperCase() +
+      selectedRole.slice(1) +
+      " login";
+
+    message.style.display = "none";
+
+  });
+
+});
+
+
+form.addEventListener("submit", async event => {
+
+  event.preventDefault();
+
+  const email =
+    document.getElementById("email")
+      .value
+      .trim();
+
+  const password =
+    document.getElementById("password")
+      .value;
+
+
+  if (!email || !password) {
+
+    showMessage(
+      "Email and password are required.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "Logging in...";
+
+
+  message.style.display =
+    "none";
+
+
+  try {
+
+    const response =
+      await fetch(
+        API.replace(/\/$/, "") +
+        "/api/auth/login",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            email,
+            password
+          })
+        }
+      );
+
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
     }
 
 
-    form.addEventListener("submit", async function(event) {
+    if (!response.ok) {
 
-      event.preventDefault();
+      throw new Error(
+        data.error ||
+        data.message ||
+        "Invalid email or password"
+      );
 
-      const email =
-        document.getElementById("email").value.trim();
-
-      const password =
-        document.getElementById("password").value;
-
-
-      if (!email || !password) {
-
-        showMessage(
-          "Please enter email and password.",
-          "error"
-        );
-
-        return;
-      }
+    }
 
 
-      button.disabled = true;
-      button.textContent = "Logging in...";
-
-      message.style.display = "none";
+    const token =
+      data.token;
 
 
-      try {
-
-        const response = await fetch(
-          API.replace(/\/$/, "") + "/api/auth/login",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-              email: email,
-              password: password
-            })
-          }
-        );
+    const user =
+      data.user;
 
 
-        let data = {};
+    if (!token || !user) {
 
-        try {
-          data = await response.json();
-        } catch (e) {
-          data = {};
-        }
+      throw new Error(
+        "Invalid server response."
+      );
 
-
-        if (!response.ok) {
-
-          throw new Error(
-            data.message ||
-            data.error ||
-            "Login failed. Please check your email and password."
-          );
-
-        }
+    }
 
 
-        const token =
-          data.token ||
-          data.accessToken ||
-          data.jwt;
+    /*
+     * IMPORTANT:
+     * The role returned by the
+     * database is trusted.
+     */
+
+    const actualRole =
+      String(user.role || "")
+        .toLowerCase();
 
 
-        const user =
-          data.user ||
-          data.account ||
-          null;
+    /*
+     * Prevent a customer from
+     * selecting Seller/Admin and
+     * being redirected there.
+     */
+
+    if (actualRole !== selectedRole) {
+
+      throw new Error(
+        "This account is a " +
+        actualRole +
+        " account. Please select " +
+        actualRole +
+        " login."
+      );
+
+    }
 
 
-        if (!token) {
-
-          throw new Error(
-            "Login succeeded but the server did not return a token."
-          );
-
-        }
+    localStorage.setItem(
+      "shipnova_token",
+      token
+    );
 
 
-        localStorage.setItem(
-          "shipnova_token",
-          token
-        );
+    localStorage.setItem(
+      "shipnova_user",
+      JSON.stringify(user)
+    );
 
 
-        if (user) {
-
-          localStorage.setItem(
-            "shipnova_user",
-            JSON.stringify(user)
-          );
-
-        }
+    showMessage(
+      "Login successful. Redirecting...",
+      "success"
+    );
 
 
-        showMessage(
-          "Login successful! Redirecting...",
-          "success"
-        );
+    setTimeout(() => {
 
+      if (actualRole === "admin") {
 
-        setTimeout(function() {
-
-          /*
-           * Dashboard selection based on user role.
-           */
-
-          const role =
-            String(
-              user?.role ||
-              user?.user_role ||
-              user?.account_type ||
-              ""
-            ).toLowerCase();
-
-
-          if (role === "admin") {
-
-            window.location.href =
-              "admin.html";
-
-          } else if (
-            role === "seller" ||
-            role === "vendor"
-          ) {
-
-            window.location.href =
-              "seller.html";
-
-          } else {
-
-            window.location.href =
-              "customer.html";
-
-          }
-
-        }, 700);
-
-
-      } catch (error) {
-
-        console.error(
-          "ShipNovaShop Login Error:",
-          error
-        );
-
-
-        showMessage(
-          error.message ||
-          "Unable to connect to server.",
-          "error"
-        );
-
-      } finally {
-
-        button.disabled = false;
-        button.textContent = "Login";
+        window.location.href =
+          "admin.html";
 
       }
 
-    });
+      else if (actualRole === "seller") {
 
-  </script>
+        window.location.href =
+          "seller.html";
+
+      }
+
+      else {
+
+        window.location.href =
+          "customer.html";
+
+      }
+
+    }, 600);
+
+
+  } catch (error) {
+
+    console.error(
+      "Login error:",
+      error
+    );
+
+
+    showMessage(
+      error.message ||
+      "Unable to connect to server.",
+      "error"
+    );
+
+  }
+
+
+  button.disabled = false;
+
+  button.textContent =
+    "Login";
+
+});
+
+</script>
 
 </body>
 </html>
