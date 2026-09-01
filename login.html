@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Login - ShipNovaShop</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      background: #f5f7fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      padding: 32px;
+      border-radius: 14px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.08);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .logo span {
+      color: #111827;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: #374151;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      margin-bottom: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 22px;
+      line-height: 1.8;
+    }
+
+    .links a {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .home {
+      display: block;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-card">
+
+    <div class="logo">
+      ShipNova<span>Shop</span>
+    </div>
+
+    <p class="subtitle">
+      Login to your account
+    </p>
+
+    <div id="message" class="message"></div>
+
+    <form id="loginForm">
+
+      <div class="field">
+        <label for="email">Email</label>
+
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email"
+          required
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button type="submit" id="loginButton">
+        Login
+      </button>
+
+    </form>
+
+    <div class="links">
+
+      <a href="index.html" class="home">
+        ← Back to Home
+      </a>
+
+      <div>
+        Don't have an account?
+        <a href="register.html">Register</a>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="api-config.js"></script>
+
+  <script>
+
+    const API =
+      window.SHIPNOVA_API ||
+      "https://shipnovashop-1.onrender.com";
+
+
+    const form =
+      document.getElementById("loginForm");
+
+    const button =
+      document.getElementById("loginButton");
+
+    const message =
+      document.getElementById("message");
+
+
+    function showMessage(text, type) {
+
+      message.textContent = text;
+
+      message.className =
+        "message " + type;
+
+      message.style.display = "block";
+    }
+
+
+    form.addEventListener("submit", async function(event) {
+
+      event.preventDefault();
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+
+      if (!email || !password) {
+
+        showMessage(
+          "Please enter email and password.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      button.disabled = true;
+      button.textContent = "Logging in...";
+
+      message.style.display = "none";
+
+
+      try {
+
+        const response = await fetch(
+          API.replace(/\/$/, "") + "/api/auth/login",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              email: email,
+              password: password
+            })
+          }
+        );
+
+
+        let data = {};
+
+        try {
+          data = await response.json();
+        } catch (e) {
+          data = {};
+        }
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.message ||
+            data.error ||
+            "Login failed. Please check your email and password."
+          );
+
+        }
+
+
+        const token =
+          data.token ||
+          data.accessToken ||
+          data.jwt;
+
+
+        const user =
+          data.user ||
+          data.account ||
+          null;
+
+
+        if (!token) {
+
+          throw new Error(
+            "Login succeeded but the server did not return a token."
+          );
+
+        }
+
+
+        localStorage.setItem(
+          "shipnova_token",
+          token
+        );
+
+
+        if (user) {
+
+          localStorage.setItem(
+            "shipnova_user",
+            JSON.stringify(user)
+          );
+
+        }
+
+
+        showMessage(
+          "Login successful! Redirecting...",
+          "success"
+        );
+
+
+        setTimeout(function() {
+
+          /*
+           * Dashboard selection based on user role.
+           */
+
+          const role =
+            String(
+              user?.role ||
+              user?.user_role ||
+              user?.account_type ||
+              ""
+            ).toLowerCase();
+
+
+          if (role === "admin") {
+
+            window.location.href =
+              "admin.html";
+
+          } else if (
+            role === "seller" ||
+            role === "vendor"
+          ) {
+
+            window.location.href =
+              "seller.html";
+
+          } else {
+
+            window.location.href =
+              "customer.html";
+
+          }
+
+        }, 700);
+
+
+      } catch (error) {
+
+        console.error(
+          "ShipNovaShop Login Error:",
+          error
+        );
+
+
+        showMessage(
+          error.message ||
+          "Unable to connect to server.",
+          "error"
+        );
+
+      } finally {
+
+        button.disabled = false;
+        button.textContent = "Login";
+
+      }
+
+    });
+
+  </script>
+
+</body>
+</html>
