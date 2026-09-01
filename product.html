@@ -1,1 +1,574 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Products</title><link rel="stylesheet" href="style.css"></head><body><nav><b>ShipNova</b><a href="index.html">Home</a></nav><main class="container"><h1>Products</h1><input id="q" placeholder="Search products..."><div id="list" class="grid"></div></main><script src="api-config.js"></script><script src="app.js"></script><script>async function load(){const d=await api('/api/products?q='+encodeURIComponent(q.value));list.innerHTML=d.products.map(p=>`<div class="card product">${p.image?`<img src="${p.image}">`:''}<h3>${p.name}</h3><p>${p.description||''}</p><b>₹${Number(p.price).toFixed(2)}</b><p class="muted">Seller: ${p.seller_name}</p><p>Stock: ${p.stock}</p></div>`).join('')||'<p>No products found.</p>'}q.oninput=load;load()</script></body></html>
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products - ShipNova</title>
+<link rel="stylesheet" href="style.css">
+</head><body><nav>
+  <b>ShipNova</b>  <span>
+    <a href="index.html">Home</a>
+    <a href="customer.html">Customer</a>
+    <a href="seller.html">Seller</a>
+    <a href="admin.html">Admin</a>
+  </span>
+</nav><main class="container">  <div class="card">
+    <h1>ShipNova Store</h1><p>
+  Browse products from our sellers.
+</p>
+
+<input
+  id="search"
+  type="search"
+  placeholder="Search products..."
+>
+
+<button type="button" id="searchBtn">
+  Search
+</button>
+
+<button type="button" id="allBtn">
+  All Products
+</button>
+
+<p id="message"></p>
+
+  </div>  <div class="card"><h2>
+  Shopping Cart
+  (<span id="cartCount">0</span>)
+</h2>
+
+<div id="cart">
+  <p>Your cart is empty.</p>
+</div>
+
+<div id="cartTotal"></div>
+
+  </div>  <h2>Products</h2>  <div id="products">
+    Loading products...
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+
+let allProducts = [];
+let cart = JSON.parse(
+  localStorage.getItem('shipnova_cart') || '[]'
+);
+
+
+/* =========================
+   HTML ESCAPE
+========================= */
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+}
+
+
+/* =========================
+   LOAD PRODUCTS
+========================= */
+
+async function loadProducts(search = '') {
+
+  const box =
+    document.getElementById('products');
+
+  box.innerHTML =
+    '<p>Loading products...</p>';
+
+  try {
+
+    let url = '/api/products';
+
+    if (search.trim()) {
+
+      url +=
+        '?q=' +
+        encodeURIComponent(search.trim());
+
+    }
+
+    const data = await api(url);
+
+    allProducts =
+      data.products || [];
+
+    renderProducts();
+
+  } catch(error) {
+
+    box.innerHTML =
+      '<div class="card">' +
+      '<p class="error">' +
+      escapeHtml(error.message) +
+      '</p>' +
+      '</div>';
+
+  }
+
+}
+
+
+/* =========================
+   RENDER PRODUCTS
+========================= */
+
+function renderProducts() {
+
+  const box =
+    document.getElementById('products');
+
+  if (!allProducts.length) {
+
+    box.innerHTML =
+      '<div class="card">' +
+      '<p>No products found.</p>' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    allProducts.map(function(product) {
+
+      const image =
+        product.image
+          ? `
+            <img
+              src="${escapeHtml(product.image)}"
+              alt="${escapeHtml(product.name)}"
+              style="
+                width:100%;
+                max-height:220px;
+                object-fit:cover;
+                border-radius:8px;
+                margin-bottom:12px;
+              "
+            >
+          `
+          : '';
+
+
+      const stock =
+        Number(product.stock || 0);
+
+
+      return `
+
+        <div class="card" style="margin-bottom:15px">
+
+          ${image}
+
+          <h3>
+            ${escapeHtml(product.name)}
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              product.description || 'No description'
+            )}
+          </p>
+
+          <p>
+            <b>
+              ₹${escapeHtml(
+                String(product.price)
+              )}
+            </b>
+          </p>
+
+          <p>
+            Seller:
+            ${escapeHtml(
+              product.seller_name || 'Seller'
+            )}
+          </p>
+
+          <p>
+            Stock:
+            ${stock}
+          </p>
+
+          ${
+            stock > 0
+
+            ? `
+              <button
+                type="button"
+                onclick="addToCart(${product.id})"
+              >
+                Add to Cart
+              </button>
+            `
+
+            : `
+              <button
+                type="button"
+                disabled
+              >
+                Out of Stock
+              </button>
+            `
+          }
+
+        </div>
+
+      `;
+
+    }).join('');
+
+}
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
+function addToCart(productId) {
+
+  const product =
+    allProducts.find(
+      p => Number(p.id) === Number(productId)
+    );
+
+  if (!product) return;
+
+
+  const existing =
+    cart.find(
+      item =>
+        Number(item.id) === Number(productId)
+    );
+
+
+  if (existing) {
+
+    if (
+      existing.quantity >=
+      Number(product.stock)
+    ) {
+
+      showMessage(
+        'Maximum available stock reached.'
+      );
+
+      return;
+
+    }
+
+    existing.quantity += 1;
+
+  } else {
+
+    cart.push({
+
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      stock: Number(product.stock),
+      image: product.image || '',
+      seller_id: product.seller_id,
+      seller_name: product.seller_name || '',
+      quantity: 1
+
+    });
+
+  }
+
+
+  saveCart();
+
+  showMessage(
+    product.name + ' added to cart.'
+  );
+
+}
+
+
+/* =========================
+   REMOVE FROM CART
+========================= */
+
+function removeFromCart(id) {
+
+  cart =
+    cart.filter(
+      item =>
+        Number(item.id) !== Number(id)
+    );
+
+  saveCart();
+
+}
+
+
+/* =========================
+   CHANGE QUANTITY
+========================= */
+
+function changeQuantity(id, change) {
+
+  const item =
+    cart.find(
+      x =>
+        Number(x.id) === Number(id)
+    );
+
+  if (!item) return;
+
+
+  item.quantity += change;
+
+
+  if (item.quantity <= 0) {
+
+    removeFromCart(id);
+    return;
+
+  }
+
+
+  if (item.quantity > item.stock) {
+
+    item.quantity = item.stock;
+
+    showMessage(
+      'Maximum available stock reached.'
+    );
+
+  }
+
+
+  saveCart();
+
+}
+
+
+/* =========================
+   SAVE CART
+========================= */
+
+function saveCart() {
+
+  localStorage.setItem(
+    'shipnova_cart',
+    JSON.stringify(cart)
+  );
+
+  renderCart();
+
+}
+
+
+/* =========================
+   RENDER CART
+========================= */
+
+function renderCart() {
+
+  const cartBox =
+    document.getElementById('cart');
+
+  const countBox =
+    document.getElementById('cartCount');
+
+  const totalBox =
+    document.getElementById('cartTotal');
+
+
+  const count =
+    cart.reduce(
+      (sum, item) =>
+        sum + Number(item.quantity),
+      0
+    );
+
+
+  countBox.textContent =
+    count;
+
+
+  if (!cart.length) {
+
+    cartBox.innerHTML =
+      '<p>Your cart is empty.</p>';
+
+    totalBox.innerHTML = '';
+
+    return;
+
+  }
+
+
+  let total = 0;
+
+
+  cartBox.innerHTML =
+    cart.map(function(item) {
+
+      const itemTotal =
+        Number(item.price) *
+        Number(item.quantity);
+
+      total += itemTotal;
+
+
+      return `
+
+        <div
+          style="
+            padding:12px 0;
+            border-bottom:1px solid #ddd;
+          "
+        >
+
+          <b>
+            ${escapeHtml(item.name)}
+          </b>
+
+          <p>
+            ₹${escapeHtml(
+              String(item.price)
+            )}
+            ×
+            ${item.quantity}
+          </p>
+
+          <button
+            type="button"
+            onclick="changeQuantity(${item.id},-1)"
+          >
+            −
+          </button>
+
+          <button
+            type="button"
+            onclick="changeQuantity(${item.id},1)"
+          >
+            +
+          </button>
+
+          <button
+            type="button"
+            class="danger"
+            onclick="removeFromCart(${item.id})"
+          >
+            Remove
+          </button>
+
+        </div>
+
+      `;
+
+    }).join('');
+
+
+  totalBox.innerHTML = `
+
+    <h3>
+      Cart Total: ₹${total.toFixed(2)}
+    </h3>
+
+    <p>
+      <a href="customer.html">
+        <button type="button">
+          Continue to Customer Dashboard
+        </button>
+      </a>
+    </p>
+
+  `;
+
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(text) {
+
+  const message =
+    document.getElementById('message');
+
+  message.className = 'success';
+  message.textContent = text;
+
+
+  setTimeout(function() {
+
+    message.textContent = '';
+
+  }, 2500);
+
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+document
+  .getElementById('searchBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      loadProducts(
+        document.getElementById('search').value
+      );
+
+    }
+  );
+
+
+document
+  .getElementById('allBtn')
+  .addEventListener(
+    'click',
+    function() {
+
+      document.getElementById('search').value = '';
+
+      loadProducts();
+
+    }
+  );
+
+
+document
+  .getElementById('search')
+  .addEventListener(
+    'keydown',
+    function(event) {
+
+      if (event.key === 'Enter') {
+
+        loadProducts(
+          this.value
+        );
+
+      }
+
+    }
+  );
+
+
+/* =========================
+   START
+========================= */
+
+renderCart();
+loadProducts();
+
+</script></body>
+</html>
