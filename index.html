@@ -2,53 +2,93 @@
 
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ShipNova Marketplace</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ShipNova Marketplace</title>
+  <link rel="stylesheet" href="style.css">
 </head><body><nav>
-  <b>ShipNova</b>  <span>
+  <b>ShipNova</b>
+  <span>
+    <a href="index.html">Home</a>
     <a href="product.html">Products</a>
     <a href="customer.html">Customer</a>
     <a href="seller.html">Seller</a>
     <a href="admin.html">Admin</a>
   </span>
 </nav><main class="container">  <div class="card">
-    <h1>ShipNova Marketplace</h1><p>
-  Welcome to ShipNova Marketplace.
-  Shop products, sell your products, or manage the marketplace.
-</p>
+    <h1>ShipNova Marketplace</h1>
+    <p>Buy and sell products easily with ShipNova.</p>
+    <a href="product.html">
+      <button>View All Products</button>
+    </a>
+  </div>  <h2>Latest Products</h2>  <div id="products" class="grid">
+    <p>Loading products...</p>
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+async function loadProducts() {
+  const box = document.getElementById('products');
 
-  </div>  <div class="grid"><div class="card">
-  <h2>Customer</h2>
-  <p>Browse products and manage your customer account.</p>
+  try {
+    const data = await api('/api/products');
+    const products = data.products || [];
 
-  <a href="customer-login.html">
-    <button type="button">Customer Login</button>
-  </a>
+    if (!products.length) {
+      box.innerHTML = '<div class="card"><p>No products available yet.</p></div>';
+      return;
+    }
 
-  <a href="customer-register.html">
-    <button type="button">Customer Register</button>
-  </a>
-</div>
+    box.innerHTML = products.map(p => `
+      <div class="card">
 
-<div class="card">
-  <h2>Seller</h2>
-  <p>Register as a seller or manage your products.</p>
+        ${
+          p.image
+          ? `<img src="${p.image}"
+                  alt="${escapeHtml(p.name)}"
+                  style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;">`
+          : ''
+        }
 
-  <a href="seller.html">
-    <button type="button">Seller Login / Register</button>
-  </a>
-</div>
+        <h3>${escapeHtml(p.name)}</h3>
 
-<div class="card">
-  <h2>Admin</h2>
-  <p>Manage sellers, customers and products.</p>
+        <p>
+          <b>₹${Number(p.price).toFixed(2)}</b>
+        </p>
 
-  <a href="admin.html">
-    <button type="button">Admin Login</button>
-  </a>
-</div>
+        <p>
+          Stock: ${Number(p.stock)}
+        </p>
 
-  </div></main></body>
+        <p>
+          Seller: ${escapeHtml(p.seller_name || 'Unknown')}
+        </p>
+
+        <a href="product.html?id=${p.id}">
+          <button>View Product</button>
+        </a>
+
+      </div>
+    `).join('');
+
+  } catch (error) {
+    box.innerHTML = `
+      <div class="card">
+        <p class="error">
+          Could not load products.
+        </p>
+      </div>
+    `;
+    console.error(error);
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+loadProducts();
+</script></body>
 </html>
