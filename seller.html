@@ -1,1 +1,207 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Seller</title><link rel="stylesheet" href="style.css"></head><body><nav><b>Seller Dashboard</b><span><a href="product.html">Store</a><button onclick="logout()">Logout</button></span></nav><main class="container"><div class="card"><h2>Add Product</h2><form id="form"><input id="name" placeholder="Product name" required><textarea id="description" placeholder="Description"></textarea><input id="price" type="number" step="0.01" placeholder="Price" required><input id="stock" type="number" placeholder="Stock" required><input id="image" placeholder="Image URL (optional)"><button>Add Product</button></form><p id="msg"></p></div><h2>My Products</h2><div id="list"></div></main><script src="api-config.js"></script><script src="app.js"></script><script>if(!user()||user().role!=='seller'){location.href='index.html'}async function load(){const d=await api('/api/products?seller='+user().id);list.innerHTML=d.products.map(p=>`<div class="card"><div class="row"><div style="flex:1"><b>${p.name}</b><p>₹${p.price} · Stock ${p.stock}</p></div><button class="danger" onclick="del(${p.id})">Delete</button></div></div>`).join('')||'<p>No products yet.</p>'}async function del(id){if(confirm('Delete product?')){await api('/api/products/'+id,{method:'DELETE'});load()}}form.onsubmit=async e=>{e.preventDefault();try{await api('/api/products',{method:'POST',body:JSON.stringify({name:name.value,description:description.value,price:price.value,stock:stock.value,image:image.value})});msg.className='success';msg.textContent='Product added successfully';form.reset();load()}catch(x){msg.className='error';msg.textContent=x.message}};load()</script></body></html>
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seller Dashboard - ShipNova</title>
+<link rel="stylesheet" href="style.css">
+</head><body><nav>
+  <b>Seller Dashboard</b>
+  <span>
+    <a href="product.html">Store</a>
+    <button type="button" onclick="logout()">Logout</button>
+  </span>
+</nav><main class="container">  <div class="card">
+    <h2>Add Product</h2><form id="productForm">
+
+  <input
+    id="productName"
+    type="text"
+    placeholder="Product name"
+    required
+  >
+
+  <textarea
+    id="productDescription"
+    placeholder="Description"
+  ></textarea>
+
+  <input
+    id="productPrice"
+    type="number"
+    step="0.01"
+    min="0"
+    placeholder="Price"
+    required
+  >
+
+  <input
+    id="productStock"
+    type="number"
+    min="0"
+    placeholder="Stock"
+    required
+  >
+
+  <input
+    id="productImage"
+    type="text"
+    placeholder="Image URL (optional)"
+  >
+
+  <button type="submit">Add Product</button>
+
+</form>
+
+<p id="message"></p>
+
+  </div>  <h2>My Products</h2>  <div id="productList">
+    Loading...
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+(async function () {
+
+  const currentUser = user();
+
+  if (!currentUser || currentUser.role !== 'seller') {
+    location.href = 'index.html';
+    return;
+  }
+
+  const form = document.getElementById('productForm');
+  const nameEl = document.getElementById('productName');
+  const descriptionEl = document.getElementById('productDescription');
+  const priceEl = document.getElementById('productPrice');
+  const stockEl = document.getElementById('productStock');
+  const imageEl = document.getElementById('productImage');
+  const messageEl = document.getElementById('message');
+  const listEl = document.getElementById('productList');
+
+  async function loadProducts() {
+
+    try {
+
+      const data = await api(
+        '/api/products?seller=' + encodeURIComponent(currentUser.id)
+      );
+
+      if (!data.products || !data.products.length) {
+        listEl.innerHTML = '<p>No products yet.</p>';
+        return;
+      }
+
+      listEl.innerHTML = data.products.map(function (product) {
+
+        return `
+          <div class="card">
+            <div class="row">
+              <div style="flex:1">
+                <b>${product.name}</b>
+                <p>
+                  ₹${product.price}
+                  · Stock ${product.stock}
+                </p>
+                ${product.description
+                  ? '<p>' + product.description + '</p>'
+                  : ''}
+              </div>
+
+              <button
+                class="danger"
+                type="button"
+                onclick="deleteProduct(${product.id})">
+                Delete
+              </button>
+            </div>
+          </div>
+        `;
+
+      }).join('');
+
+    } catch (error) {
+
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+
+    }
+  }
+
+  form.addEventListener('submit', async function (event) {
+
+    event.preventDefault();
+
+    messageEl.className = '';
+    messageEl.textContent = 'Adding product...';
+
+    const productName = nameEl.value.trim();
+    const price = priceEl.value;
+
+    if (!productName) {
+      messageEl.className = 'error';
+      messageEl.textContent = 'Product name is required';
+      return;
+    }
+
+    if (price === '') {
+      messageEl.className = 'error';
+      messageEl.textContent = 'Price is required';
+      return;
+    }
+
+    try {
+
+      await api('/api/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: productName,
+          description: descriptionEl.value.trim(),
+          price: Number(price),
+          stock: Number(stockEl.value || 0),
+          image: imageEl.value.trim()
+        })
+      });
+
+      messageEl.className = 'success';
+      messageEl.textContent = 'Product added successfully';
+
+      form.reset();
+
+      await loadProducts();
+
+    } catch (error) {
+
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+
+    }
+
+  });
+
+  window.deleteProduct = async function (id) {
+
+    if (!confirm('Delete this product?')) return;
+
+    try {
+
+      await api('/api/products/' + id, {
+        method: 'DELETE'
+      });
+
+      messageEl.className = 'success';
+      messageEl.textContent = 'Product deleted';
+
+      await loadProducts();
+
+    } catch (error) {
+
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+
+    }
+  };
+
+  await loadProducts();
+
+})();
+</script></body>
+</html>
