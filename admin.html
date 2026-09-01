@@ -1,1 +1,206 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Admin</title><link rel="stylesheet" href="style.css"></head><body><nav><b>Admin Dashboard</b><span><a href="product.html">Store</a><button onclick="logout()">Logout</button></span></nav><main class="container"><div id="stats" class="stats"></div><div class="card"><h2>Add Product</h2><form id="form"><select id="seller"></select><input id="name" placeholder="Product name" required><textarea id="description" placeholder="Description"></textarea><input id="price" type="number" step="0.01" placeholder="Price" required><input id="stock" type="number" placeholder="Stock" required><input id="image" placeholder="Image URL"><button>Add Product</button></form><p id="msg"></p></div><div class="card"><h2>All Products</h2><div id="list"></div></div></main><script src="api-config.js"></script><script src="app.js"></script><script>if(!user()||user().role!=='admin'){location.href='index.html'}async function load(){const [s,p,ss]=await Promise.all([api('/api/stats'),api('/api/products'),api('/api/sellers')]);stats.innerHTML=`<div class="card"><div class="stat">${s.customers}</div>Customers</div><div class="card"><div class="stat">${s.sellers}</div>Sellers</div><div class="card"><div class="stat">${s.products}</div>Products</div>`;seller.innerHTML=ss.sellers.map(x=>`<option value="${x.id}">${x.name} (${x.email})</option>`).join('');list.innerHTML=p.products.map(x=>`<div class="card"><div class="row"><div style="flex:1"><b>${x.name}</b><p>₹${x.price} · ${x.seller_name} · Stock ${x.stock}</p></div><button class="danger" onclick="del(${x.id})">Delete</button></div></div>`).join('')||'No products'}async function del(id){if(confirm('Delete?')){await api('/api/products/'+id,{method:'DELETE'});load()}}form.onsubmit=async e=>{e.preventDefault();try{await api('/api/products',{method:'POST',body:JSON.stringify({seller_id:seller.value,name:name.value,description:description.value,price:price.value,stock:stock.value,image:image.value})});msg.className='success';msg.textContent='Product added successfully';form.reset();load()}catch(x){msg.className='error';msg.textContent=x.message}};load()</script></body></html>
+<!doctype html>
+
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShipNova Admin</title>
+<link rel="stylesheet" href="style.css">
+</head><body><nav>
+  <b>Admin Dashboard</b>
+  <span>
+    <a href="product.html">Store</a>
+    <button type="button" onclick="logout()">Logout</button>
+  </span>
+</nav><main class="container">  <div id="stats" class="stats"></div>  <div class="card">
+    <h2>Add Product</h2><form id="productForm">
+
+  <select id="sellerSelect" required>
+    <option value="">Select Seller</option>
+  </select>
+
+  <input id="productName"
+         type="text"
+         placeholder="Product name"
+         required>
+
+  <textarea id="productDescription"
+            placeholder="Description"></textarea>
+
+  <input id="productPrice"
+         type="number"
+         step="0.01"
+         min="0"
+         placeholder="Price"
+         required>
+
+  <input id="productStock"
+         type="number"
+         min="0"
+         placeholder="Stock"
+         required>
+
+  <input id="productImage"
+         type="text"
+         placeholder="Image URL (optional)">
+
+  <button type="submit">Add Product</button>
+
+</form>
+
+<p id="message"></p>
+
+  </div>  <div class="card">
+    <h2>All Products</h2>
+    <div id="productList">Loading...</div>
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+(async function () {
+
+  const currentUser = user();
+
+  if (!currentUser || currentUser.role !== 'admin') {
+    location.href = 'index.html';
+    return;
+  }
+
+  const statsEl = document.getElementById('stats');
+  const sellerEl = document.getElementById('sellerSelect');
+  const formEl = document.getElementById('productForm');
+  const nameEl = document.getElementById('productName');
+  const descriptionEl = document.getElementById('productDescription');
+  const priceEl = document.getElementById('productPrice');
+  const stockEl = document.getElementById('productStock');
+  const imageEl = document.getElementById('productImage');
+  const messageEl = document.getElementById('message');
+  const listEl = document.getElementById('productList');
+
+  async function loadData() {
+    try {
+      const results = await Promise.all([
+        api('/api/stats'),
+        api('/api/products'),
+        api('/api/sellers')
+      ]);
+
+      const stats = results[0];
+      const products = results[1];
+      const sellers = results[2];
+
+      statsEl.innerHTML =
+        '<div class="card"><div class="stat">' + stats.customers + '</div>Customers</div>' +
+        '<div class="card"><div class="stat">' + stats.sellers + '</div>Sellers</div>' +
+        '<div class="card"><div class="stat">' + stats.products + '</div>Products</div>';
+
+      sellerEl.innerHTML = '<option value="">Select Seller</option>';
+
+      sellers.sellers.forEach(function (seller) {
+        const option = document.createElement('option');
+        option.value = seller.id;
+        option.textContent = seller.name + ' (' + seller.email + ')';
+        sellerEl.appendChild(option);
+      });
+
+      if (!products.products.length) {
+        listEl.innerHTML = '<p>No products</p>';
+        return;
+      }
+
+      listEl.innerHTML = products.products.map(function (product) {
+        return '<div class="card">' +
+          '<div class="row">' +
+          '<div style="flex:1">' +
+          '<b>' + product.name + '</b>' +
+          '<p>₹' + product.price +
+          ' · ' + product.seller_name +
+          ' · Stock ' + product.stock + '</p>' +
+          '</div>' +
+          '<button class="danger" type="button" onclick="deleteProduct(' + product.id + ')">Delete</button>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+
+    } catch (error) {
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+    }
+  }
+
+  formEl.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    messageEl.className = '';
+    messageEl.textContent = 'Adding product...';
+
+    const sellerId = sellerEl.value;
+    const productName = nameEl.value.trim();
+    const price = priceEl.value;
+
+    if (!sellerId) {
+      messageEl.className = 'error';
+      messageEl.textContent = 'Please select a seller';
+      return;
+    }
+
+    if (!productName) {
+      messageEl.className = 'error';
+      messageEl.textContent = 'Product name is required';
+      return;
+    }
+
+    if (price === '') {
+      messageEl.className = 'error';
+      messageEl.textContent = 'Price is required';
+      return;
+    }
+
+    try {
+
+      await api('/api/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          seller_id: Number(sellerId),
+          name: productName,
+          description: descriptionEl.value.trim(),
+          price: Number(price),
+          stock: Number(stockEl.value || 0),
+          image: imageEl.value.trim()
+        })
+      });
+
+      messageEl.className = 'success';
+      messageEl.textContent = 'Product added successfully';
+
+      formEl.reset();
+
+      await loadData();
+
+    } catch (error) {
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+    }
+  });
+
+  window.deleteProduct = async function (id) {
+    if (!confirm('Delete this product?')) return;
+
+    try {
+      await api('/api/products/' + id, {
+        method: 'DELETE'
+      });
+
+      messageEl.className = 'success';
+      messageEl.textContent = 'Product deleted';
+
+      await loadData();
+
+    } catch (error) {
+      messageEl.className = 'error';
+      messageEl.textContent = error.message;
+    }
+  };
+
+  await loadData();
+
+})();
+</script></body>
+</html>
