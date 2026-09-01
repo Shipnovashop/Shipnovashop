@@ -6,75 +6,270 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ShipNova Marketplace</title>
   <link rel="stylesheet" href="style.css">  <style>
-    .brand-title {
-      text-align: center;
-      font-size: 48px;
-      font-weight: 800;
-      margin: 25px 0 20px;
-      letter-spacing: 1px;
+    /* ===== PREMIUM BACKGROUND ===== */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 15%, rgba(0, 132, 255, .22), transparent 28%),
+        radial-gradient(circle at 92% 10%, rgba(130, 60, 255, .20), transparent 30%),
+        radial-gradient(circle at 85% 85%, rgba(0, 190, 170, .18), transparent 28%),
+        radial-gradient(circle at 15% 90%, rgba(255, 170, 0, .12), transparent 25%),
+        linear-gradient(135deg, #f7faff 0%, #eef4ff 45%, #faf6ff 100%);
+      background-attachment: fixed;
+      color: #172033;
     }
 
+    /* Decorative background circles */
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      filter: blur(2px);
+    }
+
+    body::before {
+      width: 220px;
+      height: 220px;
+      top: 18%;
+      left: -80px;
+      background: rgba(30, 120, 255, .10);
+    }
+
+    body::after {
+      width: 280px;
+      height: 280px;
+      right: -100px;
+      bottom: 5%;
+      background: rgba(130, 50, 255, .10);
+    }
+
+    /* ===== BIG SHIPNOVA TITLE ===== */
+    .brand-title {
+      text-align: center;
+      font-size: clamp(48px, 8vw, 78px);
+      font-weight: 900;
+      margin: 22px 0 18px;
+      letter-spacing: 3px;
+
+      background: linear-gradient(
+        90deg,
+        #086cff,
+        #6735ff,
+        #a52cff,
+        #00a98f
+      );
+
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      text-shadow: 0 12px 35px rgba(60, 80, 180, .16);
+    }
+
+    /* ===== NAVIGATION ===== */
     .top-nav {
       display: flex;
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
-      padding: 12px;
+      gap: 9px;
+
+      max-width: 1050px;
+      margin: 0 auto 35px;
+      padding: 13px;
+
+      background: rgba(255, 255, 255, .72);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+
+      border: 1px solid rgba(255, 255, 255, .9);
+      border-radius: 18px;
+
+      box-shadow:
+        0 12px 40px rgba(40, 60, 120, .12);
     }
 
+    .top-nav > a,
+    .menu-btn {
+      border: 0;
+      background: transparent;
+      color: #172033;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .top-nav > a:hover,
+    .menu-btn:hover {
+      background: rgba(50, 100, 255, .10);
+      color: #245cff;
+    }
+
+    /* ===== DROPDOWN ===== */
     .menu {
       position: relative;
       display: inline-block;
     }
 
-    .menu-btn {
-      cursor: pointer;
-      border: 0;
-      padding: 9px 15px;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-
     .menu-content {
       display: none;
       position: absolute;
+
       left: 50%;
       transform: translateX(-50%);
-      top: 42px;
-      min-width: 160px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      top: 45px;
+
+      min-width: 175px;
       padding: 8px;
+
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+
+      border: 1px solid #e4e7ef;
+      border-radius: 12px;
+
       z-index: 1000;
-      box-shadow: 0 5px 20px rgba(0,0,0,.15);
+
+      box-shadow:
+        0 12px 35px rgba(30, 50, 100, .18);
     }
 
     .menu-content a {
       display: block;
-      padding: 9px 12px;
+      padding: 11px 13px;
+      color: #202636;
       text-decoration: none;
-      color: #222;
-      border-radius: 5px;
+      border-radius: 8px;
+      font-weight: 600;
     }
 
     .menu-content a:hover {
-      background: #f2f2f2;
+      background: #eef3ff;
+      color: #245cff;
     }
 
     .menu:hover .menu-content {
       display: block;
     }
 
+    /* ===== MAIN HERO CARD ===== */
+    .hero-card {
+      text-align: center;
+      padding: 35px 25px !important;
+
+      background: rgba(255, 255, 255, .78) !important;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+
+      border: 1px solid rgba(255, 255, 255, .95) !important;
+      border-radius: 22px !important;
+
+      box-shadow:
+        0 18px 50px rgba(40, 60, 120, .13) !important;
+    }
+
+    .hero-card h1 {
+      font-size: clamp(28px, 5vw, 45px);
+      margin-bottom: 10px;
+    }
+
+    .hero-card p {
+      font-size: 17px;
+      color: #5c667a;
+    }
+
+    /* ===== BUTTON ===== */
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hero-button {
+      margin-top: 10px;
+      padding: 13px 25px;
+      font-size: 16px;
+
+      background: linear-gradient(90deg, #146cff, #713cff);
+      color: white;
+
+      box-shadow: 0 8px 22px rgba(60, 80, 220, .25);
+    }
+
+    .hero-button:hover {
+      transform: translateY(-2px);
+    }
+
+    /* ===== PRODUCT AREA ===== */
+    .latest-title {
+      text-align: center;
+      margin: 38px 0 20px;
+      font-size: 28px;
+    }
+
+    .product-card {
+      overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease;
+
+      background: rgba(255, 255, 255, .84) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      border: 1px solid rgba(255, 255, 255, .95) !important;
+      box-shadow: 0 12px 35px rgba(40, 60, 120, .10) !important;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 45px rgba(40, 60, 120, .18) !important;
+    }
+
     .product-card img {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 10px;
     }
-  </style></head><body>  <!-- BIG CENTER BRAND -->  <header>
-    <div class="brand-title">ShipNova</div><!-- NAVIGATION -->
+
+    .product-price {
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 600px) {
+
+      .brand-title {
+        font-size: 48px;
+        margin-top: 18px;
+      }
+
+      .top-nav {
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+
+      .top-nav > a,
+      .menu-btn {
+        padding: 9px 11px;
+        font-size: 14px;
+      }
+
+      .hero-card {
+        padding: 25px 18px !important;
+      }
+    }
+  </style></head><body>  <!-- ===== SHIPNOVA BRAND ===== -->  <header>
+    <div class="brand-title">ShipNova</div><!-- ===== NAVIGATION ===== -->
 <nav class="top-nav">
 
   <a href="index.html">Home</a>
@@ -86,8 +281,8 @@
     <button class="menu-btn">Customer ▾</button>
 
     <div class="menu-content">
-      <a href="customer.html">Login</a>
-      <a href="customer.html">Register</a>
+      <a href="customer-login.html">Login</a>
+      <a href="customer-register.html">Register</a>
     </div>
   </div>
 
@@ -106,23 +301,34 @@
 
 </nav>
 
-  </header>  <main class="container"><div class="card">
+  </header>  <main class="container"><!-- ===== HERO ===== -->
+<div class="card hero-card">
+
   <h1>ShipNova Marketplace</h1>
-  <p>Discover products from our sellers and shop easily.</p>
+
+  <p>
+    Discover amazing products from our sellers
+    and shop easily.
+  </p>
 
   <a href="product.html">
-    <button>View All Products</button>
+    <button class="hero-button">
+      🛍️ View All Products
+    </button>
   </a>
+
 </div>
 
 
-<h2>Latest Products</h2>
+<!-- ===== PRODUCTS ===== -->
+<h2 class="latest-title">Latest Products</h2>
 
 <div id="products" class="grid">
   <p>Loading products...</p>
 </div>
 
   </main>  <script src="api-config.js"></script>  <script src="app.js"></script>  <script>
+
     async function loadProducts() {
 
       const box = document.getElementById('products');
@@ -149,34 +355,51 @@
 
             ${
               p.image
-              ? `<img src="${escapeHtml(p.image)}"
-                      alt="${escapeHtml(p.name)}">`
-              : `<div style="
-                    height:200px;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    background:#f3f3f3;
-                    border-radius:8px;
-                  ">No Image</div>`
+              ? `
+                <img
+                  src="${escapeHtml(p.image)}"
+                  alt="${escapeHtml(p.name)}"
+                >
+              `
+              : `
+                <div style="
+                  height:200px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  background:#f1f4fa;
+                  border-radius:10px;
+                  font-weight:700;
+                  color:#778096;
+                ">
+                  No Image
+                </div>
+              `
             }
 
             <h3>${escapeHtml(p.name)}</h3>
 
-            <p>${escapeHtml(p.description || '')}</p>
-
             <p>
-              <b>₹${Number(p.price).toFixed(2)}</b>
+              ${escapeHtml(p.description || '')}
             </p>
 
-            <p>Stock: ${Number(p.stock)}</p>
+            <p class="product-price">
+              ₹${Number(p.price).toFixed(2)}
+            </p>
 
             <p>
-              Seller: ${escapeHtml(p.seller_name || 'Seller')}
+              Stock: ${Number(p.stock)}
+            </p>
+
+            <p>
+              Seller:
+              ${escapeHtml(p.seller_name || 'Seller')}
             </p>
 
             <a href="product.html?id=${p.id}">
-              <button>View Product</button>
+              <button>
+                View Product
+              </button>
             </a>
 
           </div>
@@ -189,26 +412,34 @@
 
         box.innerHTML = `
           <div class="card">
+
             <p class="error">
               Products could not be loaded.
             </p>
+
             <button onclick="loadProducts()">
               Try Again
             </button>
+
           </div>
         `;
       }
     }
 
+
     function escapeHtml(value) {
+
       return String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+
     }
 
+
     loadProducts();
+
   </script></body>
 </html>
