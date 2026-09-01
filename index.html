@@ -1,445 +1,1024 @@
 <!doctype html>
-
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ShipNova Marketplace</title>
-  <link rel="stylesheet" href="style.css">  <style>
-    /* ===== PREMIUM BACKGROUND ===== */
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 8% 15%, rgba(0, 132, 255, .22), transparent 28%),
-        radial-gradient(circle at 92% 10%, rgba(130, 60, 255, .20), transparent 30%),
-        radial-gradient(circle at 85% 85%, rgba(0, 190, 170, .18), transparent 28%),
-        radial-gradient(circle at 15% 90%, rgba(255, 170, 0, .12), transparent 25%),
-        linear-gradient(135deg, #f7faff 0%, #eef4ff 45%, #faf6ff 100%);
-      background-attachment: fixed;
-      color: #172033;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>ShipNova - Online Marketplace</title>
+<link rel="stylesheet" href="style.css">
 
-    /* Decorative background circles */
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: -1;
-      filter: blur(2px);
-    }
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
 
-    body::before {
-      width: 220px;
-      height: 220px;
-      top: 18%;
-      left: -80px;
-      background: rgba(30, 120, 255, .10);
-    }
+body{
+  margin:0;
+  background:#f5f7fa;
+  color:#172033;
+  font-family:Arial,Helvetica,sans-serif;
+  padding-bottom:70px;
+}
 
-    body::after {
-      width: 280px;
-      height: 280px;
-      right: -100px;
-      bottom: 5%;
-      background: rgba(130, 50, 255, .10);
-    }
+a{color:inherit}
 
-    /* ===== BIG SHIPNOVA TITLE ===== */
-    .brand-title {
-      text-align: center;
-      font-size: clamp(48px, 8vw, 78px);
-      font-weight: 900;
-      margin: 22px 0 18px;
-      letter-spacing: 3px;
+/* HEADER */
+.sn-header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #e5e7eb;
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+}
 
-      background: linear-gradient(
-        90deg,
-        #086cff,
-        #6735ff,
-        #a52cff,
-        #00a98f
-      );
+.sn-top{
+  max-width:1200px;
+  margin:auto;
+  padding:12px 15px;
+}
 
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+/* BIG SHIPNOVA */
+.brand{
+  text-align:center;
+  font-size:48px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:2px;
+  margin:8px 0 15px;
 
-      text-shadow: 0 12px 35px rgba(60, 80, 180, .16);
-    }
+  background:linear-gradient(
+    90deg,
+    #1264ff,
+    #713cff,
+    #00a88f
+  );
 
-    /* ===== NAVIGATION ===== */
-    .top-nav {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 9px;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
 
-      max-width: 1050px;
-      margin: 0 auto 35px;
-      padding: 13px;
+/* SEARCH */
+.search-wrap{
+  display:flex;
+  height:50px;
+  border:2px solid #d9dee8;
+  border-radius:28px;
+  background:#fff;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(30,50,90,.08);
+}
 
-      background: rgba(255, 255, 255, .72);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+.search-wrap input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  padding:0 17px;
+  font-size:16px;
+}
 
-      border: 1px solid rgba(255, 255, 255, .9);
-      border-radius: 18px;
+.search-btn{
+  width:60px;
+  border:0;
+  background:#1769ff;
+  color:white;
+  font-size:21px;
+  cursor:pointer;
+}
 
-      box-shadow:
-        0 12px 40px rgba(40, 60, 120, .12);
-    }
+/* TOP MENU */
+.quick-menu{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
 
-    .top-nav > a,
-    .menu-btn {
-      border: 0;
-      background: transparent;
-      color: #172033;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 9px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 15px;
-    }
+.quick-menu a{
+  text-decoration:none;
+  border-radius:20px;
+  padding:9px 14px;
+  background:#f1f4f9;
+  font-size:13px;
+  font-weight:700;
+}
 
-    .top-nav > a:hover,
-    .menu-btn:hover {
-      background: rgba(50, 100, 255, .10);
-      color: #245cff;
-    }
+.quick-menu a:hover{
+  background:#e6edff;
+  color:#145cff;
+}
 
-    /* ===== DROPDOWN ===== */
-    .menu {
-      position: relative;
-      display: inline-block;
-    }
+/* MAIN */
+.sn-main{
+  max-width:1200px;
+  margin:auto;
+  padding:12px;
+}
 
-    .menu-content {
-      display: none;
-      position: absolute;
+/* HERO */
+.hero{
+  margin-top:5px;
+  min-height:210px;
+  border-radius:20px;
+  padding:28px 24px;
+  color:white;
 
-      left: 50%;
-      transform: translateX(-50%);
-      top: 45px;
+  background:
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(255,255,255,.25),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 10% 90%,
+      rgba(0,220,190,.25),
+      transparent 30%
+    ),
+    linear-gradient(
+      120deg,
+      #125cff,
+      #6436e8 58%,
+      #00a98f
+    );
 
-      min-width: 175px;
-      padding: 8px;
+  box-shadow:0 10px 28px rgba(40,75,180,.22);
+  display:flex;
+  align-items:center;
+}
 
-      background: rgba(255, 255, 255, .96);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+.hero h1{
+  margin:0 0 8px;
+  font-size:clamp(28px,6vw,45px);
+  color:white;
+}
 
-      border: 1px solid #e4e7ef;
-      border-radius: 12px;
+.hero p{
+  margin:0 0 18px;
+  font-size:16px;
+  max-width:650px;
+  opacity:.95;
+}
 
-      z-index: 1000;
+.hero-btn{
+  border:0;
+  border-radius:24px;
+  padding:12px 22px;
+  background:white;
+  color:#1859d8;
+  font-weight:800;
+  cursor:pointer;
+}
 
-      box-shadow:
-        0 12px 35px rgba(30, 50, 100, .18);
-    }
+/* SECTION */
+.section-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:24px 4px 12px;
+}
 
-    .menu-content a {
-      display: block;
-      padding: 11px 13px;
-      color: #202636;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-    }
+.section-title h2{
+  margin:0;
+  font-size:23px;
+}
 
-    .menu-content a:hover {
-      background: #eef3ff;
-      color: #245cff;
-    }
+.section-title a{
+  color:#1764dc;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:700;
+}
 
-    .menu:hover .menu-content {
-      display: block;
-    }
+/* CATEGORIES */
+.category-row{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
 
-    /* ===== MAIN HERO CARD ===== */
-    .hero-card {
-      text-align: center;
-      padding: 35px 25px !important;
+.category{
+  text-align:center;
+  background:white;
+  border-radius:14px;
+  padding:10px 5px;
+  text-decoration:none;
+  box-shadow:0 3px 12px rgba(30,50,90,.06);
+}
 
-      background: rgba(255, 255, 255, .78) !important;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+.cat-icon{
+  width:60px;
+  height:60px;
+  margin:auto;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  background:#eaf3ff;
+}
 
-      border: 1px solid rgba(255, 255, 255, .95) !important;
-      border-radius: 22px !important;
+.category span{
+  display:block;
+  margin-top:7px;
+  font-size:12px;
+  font-weight:700;
+}
 
-      box-shadow:
-        0 18px 50px rgba(40, 60, 120, .13) !important;
-    }
+/* ACCOUNT */
+.account-panel{
+  background:white;
+  border-radius:17px;
+  padding:21px;
+  box-shadow:0 4px 16px rgba(30,50,90,.07);
+}
 
-    .hero-card h1 {
-      font-size: clamp(28px, 5vw, 45px);
-      margin-bottom: 10px;
-    }
+.account-panel h2{
+  margin:0 0 7px;
+  font-size:24px;
+}
 
-    .hero-card p {
-      font-size: 17px;
-      color: #5c667a;
-    }
+.account-panel p{
+  margin:0 0 15px;
+  color:#667085;
+}
 
-    /* ===== BUTTON ===== */
-    button {
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 17px;
-      font-weight: 700;
-      cursor: pointer;
-    }
+.account-buttons{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
 
-    .hero-button {
-      margin-top: 10px;
-      padding: 13px 25px;
-      font-size: 16px;
+.account-buttons a{
+  flex:1;
+  min-width:140px;
+  text-align:center;
+  padding:13px 14px;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:800;
+  background:#ffd21a;
+  color:#171717;
+}
 
-      background: linear-gradient(90deg, #146cff, #713cff);
-      color: white;
+.account-buttons a.secondary{
+  background:#edf3ff;
+  color:#1557d6;
+}
 
-      box-shadow: 0 8px 22px rgba(60, 80, 220, .25);
-    }
+/* OFFERS */
+.offers{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
 
-    .hero-button:hover {
-      transform: translateY(-2px);
-    }
+.offer{
+  min-height:110px;
+  border-radius:16px;
+  padding:18px;
+  color:white;
+  box-shadow:0 5px 16px rgba(30,50,90,.10);
+}
 
-    /* ===== PRODUCT AREA ===== */
-    .latest-title {
-      text-align: center;
-      margin: 38px 0 20px;
-      font-size: 28px;
-    }
+.offer:nth-child(1){
+  background:linear-gradient(135deg,#0d72ff,#36a4ff);
+}
 
-    .product-card {
-      overflow: hidden;
-      transition: transform .2s ease, box-shadow .2s ease;
+.offer:nth-child(2){
+  background:linear-gradient(135deg,#7a32e8,#b14cff);
+}
 
-      background: rgba(255, 255, 255, .84) !important;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+.offer:nth-child(3){
+  background:linear-gradient(135deg,#00a184,#16c9a7);
+}
 
-      border: 1px solid rgba(255, 255, 255, .95) !important;
-      box-shadow: 0 12px 35px rgba(40, 60, 120, .10) !important;
-    }
+.offer strong{
+  font-size:20px;
+}
 
-    .product-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 45px rgba(40, 60, 120, .18) !important;
-    }
+.offer small{
+  display:block;
+  margin-top:6px;
+  opacity:.9;
+}
 
-    .product-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
+/* PRODUCTS */
+.products{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
 
-    .product-price {
-      font-size: 21px;
-      font-weight: 800;
-    }
+.product{
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 4px 16px rgba(30,50,90,.07);
+}
 
-    /* ===== MOBILE ===== */
-    @media (max-width: 600px) {
+.product-image{
+  height:170px;
+  background:#eef2f7;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+}
 
-      .brand-title {
-        font-size: 48px;
-        margin-top: 18px;
-      }
+.product-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-      .top-nav {
-        margin-left: 10px;
-        margin-right: 10px;
-      }
+.no-image{
+  font-size:44px;
+}
 
-      .top-nav > a,
-      .menu-btn {
-        padding: 9px 11px;
-        font-size: 14px;
-      }
+.product-body{
+  padding:12px;
+}
 
-      .hero-card {
-        padding: 25px 18px !important;
-      }
-    }
-  </style></head><body>  <!-- ===== SHIPNOVA BRAND ===== -->  <header>
-    <div class="brand-title">ShipNova</div><!-- ===== NAVIGATION ===== -->
-<nav class="top-nav">
+.product-name{
+  font-size:15px;
+  font-weight:800;
+  margin-bottom:6px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-  <a href="index.html">Home</a>
+.product-desc{
+  color:#667085;
+  font-size:12px;
+  min-height:30px;
+}
 
-  <a href="product.html">Products</a>
+.price{
+  font-size:20px;
+  font-weight:900;
+  margin:8px 0;
+}
 
-  <!-- CUSTOMER -->
-  <div class="menu">
-    <button class="menu-btn">Customer ▾</button>
+.stock{
+  font-size:12px;
+  color:#667085;
+  margin-bottom:9px;
+}
 
-    <div class="menu-content">
-      <a href="customer-login.html">Login</a>
-      <a href="customer-register.html">Register</a>
+.view-btn{
+  display:block;
+  text-align:center;
+  text-decoration:none;
+  background:#1769ff;
+  color:white;
+  border-radius:8px;
+  padding:9px;
+  font-size:13px;
+  font-weight:800;
+}
+
+/* LOADING */
+#status{
+  grid-column:1/-1;
+  text-align:center;
+  padding:25px;
+  color:#667085;
+}
+
+.error-box{
+  grid-column:1/-1;
+  background:#fff0f0;
+  color:#b42318;
+  padding:16px;
+  border-radius:10px;
+  text-align:center;
+}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:2000;
+  height:68px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  background:rgba(255,255,255,.98);
+  border-top:1px solid #dfe3e9;
+  box-shadow:0 -5px 20px rgba(0,0,0,.08);
+}
+
+.bottom-nav a{
+  text-decoration:none;
+  text-align:center;
+  padding-top:7px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.bottom-nav .icon{
+  display:block;
+  font-size:23px;
+  line-height:27px;
+}
+
+@media(min-width:701px){
+  body{padding-bottom:0}
+  .bottom-nav{display:none}
+}
+
+@media(max-width:700px){
+
+  .sn-top{
+    padding:10px 9px;
+  }
+
+  .brand{
+    font-size:40px;
+    margin-bottom:12px;
+  }
+
+  .quick-menu{
+    justify-content:flex-start;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding-bottom:3px;
+  }
+
+  .quick-menu a{
+    white-space:nowrap;
+  }
+
+  .sn-main{
+    padding:8px;
+  }
+
+  .hero{
+    min-height:180px;
+    padding:21px 17px;
+  }
+
+  .hero h1{
+    font-size:29px;
+  }
+
+  .hero p{
+    font-size:14px;
+  }
+
+  .category-row{
+    display:flex;
+    overflow-x:auto;
+    gap:9px;
+  }
+
+  .category{
+    min-width:85px;
+  }
+
+  .offers{
+    display:flex;
+    overflow-x:auto;
+    gap:10px;
+  }
+
+  .offer{
+    min-width:220px;
+  }
+
+  .products{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+  }
+
+  .product-image{
+    height:145px;
+  }
+
+  .product-body{
+    padding:9px;
+  }
+
+  .product-name{
+    font-size:14px;
+  }
+
+  .price{
+    font-size:18px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="sn-header">
+
+  <div class="sn-top">
+
+    <div class="brand">
+      ShipNova
     </div>
+
+    <!-- SEARCH -->
+    <form class="search-wrap" id="searchForm">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search products on ShipNova"
+      >
+      <button class="search-btn" type="submit">
+        🔍
+      </button>
+    </form>
+
+    <!-- MENU -->
+    <div class="quick-menu">
+
+      <a href="index.html">Home</a>
+
+      <a href="product.html">Products</a>
+
+      <a href="customer-login.html">
+        Customer Login
+      </a>
+
+      <a href="customer-register.html">
+        Customer Register
+      </a>
+
+      <a href="seller-login.html">
+        Seller Login
+      </a>
+
+      <a href="seller-register.html">
+        Seller Register
+      </a>
+
+      <a href="admin-login.html">
+        Admin
+      </a>
+
+    </div>
+
   </div>
 
-  <!-- SELLER -->
-  <div class="menu">
-    <button class="menu-btn">Seller ▾</button>
+</header>
 
-    <div class="menu-content">
-      <a href="seller-login.html">Login</a>
-      <a href="seller-register.html">Register</a>
+
+<main class="sn-main">
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <div>
+
+      <h1>
+        Welcome to ShipNova
+      </h1>
+
+      <p>
+        Shop products from trusted sellers
+        in one simple marketplace.
+      </p>
+
+      <a href="product.html">
+        <button class="hero-btn">
+          🛍️ Shop Now
+        </button>
+      </a>
+
     </div>
+
+  </section>
+
+
+  <!-- CATEGORY -->
+  <div class="section-title">
+
+    <h2>
+      Shop by Category
+    </h2>
+
+    <a href="product.html">
+      View all
+    </a>
+
   </div>
 
-  <!-- ADMIN -->
-  <a href="admin-login.html">Admin</a>
+
+  <section class="category-row">
+
+    <a class="category" href="product.html?q=mobile">
+      <div class="cat-icon">📱</div>
+      <span>Mobiles</span>
+    </a>
+
+    <a class="category" href="product.html?q=fashion">
+      <div class="cat-icon">👕</div>
+      <span>Fashion</span>
+    </a>
+
+    <a class="category" href="product.html?q=electronics">
+      <div class="cat-icon">💻</div>
+      <span>Electronics</span>
+    </a>
+
+    <a class="category" href="product.html?q=beauty">
+      <div class="cat-icon">💄</div>
+      <span>Beauty</span>
+    </a>
+
+    <a class="category" href="product.html?q=home">
+      <div class="cat-icon">🏠</div>
+      <span>Home</span>
+    </a>
+
+    <a class="category" href="product.html?q=books">
+      <div class="cat-icon">📚</div>
+      <span>Books</span>
+    </a>
+
+  </section>
+
+
+  <!-- CUSTOMER LOGIN -->
+  <div class="section-title">
+
+    <h2>
+      Sign in for your best experience
+    </h2>
+
+  </div>
+
+
+  <section class="account-panel">
+
+    <h2>
+      Welcome to ShipNova
+    </h2>
+
+    <p>
+      Login or create an account to shop,
+      manage orders and more.
+    </p>
+
+    <div class="account-buttons">
+
+      <a href="customer-login.html">
+        Customer Login
+      </a>
+
+      <a
+        class="secondary"
+        href="customer-register.html"
+      >
+        Create Customer Account
+      </a>
+
+    </div>
+
+  </section>
+
+
+  <!-- OFFERS -->
+  <div class="section-title">
+
+    <h2>
+      Special Offers
+    </h2>
+
+  </div>
+
+
+  <section class="offers">
+
+    <div class="offer">
+
+      <strong>
+        🎁 Great Deals
+      </strong>
+
+      <small>
+        Discover products at great prices.
+      </small>
+
+    </div>
+
+
+    <div class="offer">
+
+      <strong>
+        🏪 Sell on ShipNova
+      </strong>
+
+      <small>
+        Register as a seller and add products.
+      </small>
+
+    </div>
+
+
+    <div class="offer">
+
+      <strong>
+        🚚 Easy Shopping
+      </strong>
+
+      <small>
+        Browse products from our marketplace.
+      </small>
+
+    </div>
+
+  </section>
+
+
+  <!-- PRODUCTS -->
+  <div class="section-title">
+
+    <h2>
+      Latest Products
+    </h2>
+
+    <a href="product.html">
+      See all
+    </a>
+
+  </div>
+
+
+  <section
+    id="products"
+    class="products"
+  >
+
+    <div id="status">
+      Loading products...
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav">
+
+  <a href="index.html">
+    <span class="icon">⌂</span>
+    Home
+  </a>
+
+  <a href="customer-login.html">
+    <span class="icon">♙</span>
+    You
+  </a>
+
+  <a href="product.html">
+    <span class="icon">🛍️</span>
+    Shop
+  </a>
+
+  <a href="seller-login.html">
+    <span class="icon">🏪</span>
+    Seller
+  </a>
+
+  <a href="product.html">
+    <span class="icon">☰</span>
+    Browse
+  </a>
 
 </nav>
 
-  </header>  <main class="container"><!-- ===== HERO ===== -->
-<div class="card hero-card">
 
-  <h1>ShipNova Marketplace</h1>
+<script src="api-config.js"></script>
+<script src="app.js"></script>
 
-  <p>
-    Discover amazing products from our sellers
-    and shop easily.
-  </p>
+<script>
 
-  <a href="product.html">
-    <button class="hero-button">
-      🛍️ View All Products
-    </button>
-  </a>
+const productsBox =
+  document.getElementById('products');
 
-</div>
+const searchForm =
+  document.getElementById('searchForm');
+
+const searchInput =
+  document.getElementById('searchInput');
 
 
-<!-- ===== PRODUCTS ===== -->
-<h2 class="latest-title">Latest Products</h2>
+function escapeHtml(value){
 
-<div id="products" class="grid">
-  <p>Loading products...</p>
-</div>
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
 
-  </main>  <script src="api-config.js"></script>  <script src="app.js"></script>  <script>
+}
 
-    async function loadProducts() {
 
-      const box = document.getElementById('products');
+function productCard(p){
 
-      try {
+  const image = p.image
 
-        const data = await api('/api/products');
-        const products = data.products || [];
+    ? `
+      <img
+        src="${escapeHtml(p.image)}"
+        alt="${escapeHtml(p.name)}"
+        loading="lazy"
+      >
+    `
 
-        if (!products.length) {
+    : `
+      <div class="no-image">
+        🛍️
+      </div>
+    `;
 
-          box.innerHTML = `
-            <div class="card">
-              <p>No products available yet.</p>
-            </div>
-          `;
 
-          return;
-        }
+  return `
 
-        box.innerHTML = products.map(p => `
+    <article class="product">
 
-          <div class="card product-card">
+      <div class="product-image">
 
-            ${
-              p.image
-              ? `
-                <img
-                  src="${escapeHtml(p.image)}"
-                  alt="${escapeHtml(p.name)}"
-                >
-              `
-              : `
-                <div style="
-                  height:200px;
-                  display:flex;
-                  align-items:center;
-                  justify-content:center;
-                  background:#f1f4fa;
-                  border-radius:10px;
-                  font-weight:700;
-                  color:#778096;
-                ">
-                  No Image
-                </div>
-              `
-            }
+        ${image}
 
-            <h3>${escapeHtml(p.name)}</h3>
+      </div>
 
-            <p>
-              ${escapeHtml(p.description || '')}
-            </p>
 
-            <p class="product-price">
-              ₹${Number(p.price).toFixed(2)}
-            </p>
+      <div class="product-body">
 
-            <p>
-              Stock: ${Number(p.stock)}
-            </p>
+        <div class="product-name">
+          ${escapeHtml(p.name)}
+        </div>
 
-            <p>
-              Seller:
-              ${escapeHtml(p.seller_name || 'Seller')}
-            </p>
 
-            <a href="product.html?id=${p.id}">
-              <button>
-                View Product
-              </button>
-            </a>
+        <div class="product-desc">
 
-          </div>
+          ${escapeHtml(
+            p.description ||
+            'Quality product from ShipNova seller'
+          )}
 
-        `).join('');
+        </div>
 
-      } catch (error) {
 
-        console.error(error);
+        <div class="price">
 
-        box.innerHTML = `
-          <div class="card">
+          ₹${Number(
+            p.price || 0
+          ).toFixed(2)}
 
-            <p class="error">
-              Products could not be loaded.
-            </p>
+        </div>
 
-            <button onclick="loadProducts()">
-              Try Again
-            </button>
 
-          </div>
-        `;
-      }
+        <div class="stock">
+
+          Stock:
+          ${Number(p.stock || 0)}
+
+          · Seller:
+          ${escapeHtml(
+            p.seller_name || 'Seller'
+          )}
+
+        </div>
+
+
+        <a
+          class="view-btn"
+          href="product.html?id=${encodeURIComponent(p.id)}"
+        >
+          View Product
+        </a>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+async function loadProducts(query=''){
+
+  productsBox.innerHTML =
+    '<div id="status">Loading products...</div>';
+
+
+  try{
+
+    const path = query
+
+      ? '/api/products?q=' +
+        encodeURIComponent(query)
+
+      : '/api/products';
+
+
+    const data =
+      await api(path);
+
+
+    const products =
+      data.products || [];
+
+
+    if(!products.length){
+
+      productsBox.innerHTML = `
+
+        <div
+          class="account-panel"
+          style="grid-column:1/-1;text-align:center;"
+        >
+
+          <h3>
+            No products found
+          </h3>
+
+          <p>
+            Try another search or check back later.
+          </p>
+
+          <a
+            href="product.html"
+            style="
+              color:#1769ff;
+              font-weight:800;
+            "
+          >
+            Browse Products
+          </a>
+
+        </div>
+
+      `;
+
+      return;
+
     }
 
 
-    function escapeHtml(value) {
+    productsBox.innerHTML =
+      products
+        .slice(0,8)
+        .map(productCard)
+        .join('');
 
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+  }
 
-    }
+  catch(error){
+
+    console.error(error);
+
+    productsBox.innerHTML = `
+
+      <div class="error-box">
+
+        Products could not be loaded.
+
+        <br><br>
+
+        <button onclick="loadProducts()">
+          Try Again
+        </button>
+
+      </div>
+
+    `;
+
+  }
+
+}
 
 
-    loadProducts();
+searchForm.addEventListener(
+  'submit',
+  function(e){
 
-  </script></body>
+    e.preventDefault();
+
+    loadProducts(
+      searchInput.value.trim()
+    );
+
+  }
+);
+
+
+loadProducts();
+
+</script>
+
+</body>
 </html>
