@@ -1,547 +1,1315 @@
 <!doctype html>
-
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Seller - ShipNova</title>
-<link rel="stylesheet" href="style.css">
-</head><body><nav>
-  <b>ShipNova Seller</b>  <span>
-    <a href="index.html">Home</a>
-    <a href="product.html">Store</a>
-    <button type="button" onclick="logout()">Logout</button>
-  </span>
-</nav><main class="container">  <!-- SELLER AUTH -->  <div id="authSection"><div class="grid">
 
-  <!-- SELLER LOGIN -->
-  <div class="card">
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1">
 
-    <h2>Seller Login</h2>
+<title>Seller - ShipNovaShop</title>
 
-    <form id="loginForm">
+<link
+  rel="stylesheet"
+  href="style.css">
 
-      <input
-        id="loginEmail"
-        type="email"
-        placeholder="Email"
-        required
-      >
+<style>
 
-      <input
-        id="loginPassword"
-        type="password"
-        placeholder="Password"
-        required
-      >
+.auth-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,1fr);
+  gap:20px;
+}
 
-      <button type="submit">
-        Seller Login
-      </button>
+.message{
+  margin-top:12px;
+  padding:10px;
+  border-radius:7px;
+}
 
-    </form>
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
 
-    <p id="loginMessage"></p>
+.success{
+  background:#dcfce7;
+  color:#166534;
+}
 
-  </div>
+@media(max-width:700px){
 
-  <!-- SELLER REGISTER -->
-  <div class="card">
-
-    <h2>Seller Registration</h2>
-
-    <form id="registerForm">
-
-      <input
-        id="registerName"
-        type="text"
-        placeholder="Full Name"
-        required
-      >
-
-      <input
-        id="registerEmail"
-        type="email"
-        placeholder="Email"
-        required
-      >
-
-      <input
-        id="registerPassword"
-        type="password"
-        placeholder="Password"
-        minlength="6"
-        required
-      >
-
-      <input
-        id="registerConfirm"
-        type="password"
-        placeholder="Confirm Password"
-        minlength="6"
-        required
-      >
-
-      <button type="submit">
-        Register as Seller
-      </button>
-
-    </form>
-
-    <p id="registerMessage"></p>
-
-  </div>
-
-</div>
-
-  </div>  <!-- SELLER DASHBOARD -->  <div id="dashboardSection" style="display:none"><div class="card">
-
-  <h1>Seller Dashboard</h1>
-
-  <p id="welcome"></p>
-
-</div>
-
-
-<div class="card">
-
-  <h2>Add Product</h2>
-
-  <form id="productForm">
-
-    <input
-      id="productName"
-      type="text"
-      placeholder="Product name"
-      required
-    >
-
-    <textarea
-      id="productDescription"
-      placeholder="Description"
-    ></textarea>
-
-    <input
-      id="productPrice"
-      type="number"
-      step="0.01"
-      min="0"
-      placeholder="Price"
-      required
-    >
-
-    <input
-      id="productStock"
-      type="number"
-      min="0"
-      placeholder="Stock"
-      required
-    >
-
-    <input
-      id="productImage"
-      type="text"
-      placeholder="Image URL (optional)"
-    >
-
-    <button type="submit">
-      Add Product
-    </button>
-
-  </form>
-
-  <p id="productMessage"></p>
-
-</div>
-
-
-<h2>My Products</h2>
-
-<div id="productList">
-  Loading...
-</div>
-
-  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
-
-let currentUser = user();
-
-
-/* =========================
-   SHOW SELLER DASHBOARD
-========================= */
-
-function showDashboard() {
-
-  currentUser = user();
-
-  if (!currentUser || currentUser.role !== 'seller') {
-    document.getElementById('authSection').style.display = 'block';
-    document.getElementById('dashboardSection').style.display = 'none';
-    return;
+  .auth-grid{
+    grid-template-columns:1fr;
   }
 
-  document.getElementById('authSection').style.display = 'none';
-  document.getElementById('dashboardSection').style.display = 'block';
+}
 
-  document.getElementById('welcome').textContent =
-    'Welcome, ' + (currentUser.name || 'Seller') + '!';
+</style>
 
-  loadProducts();
+</head>
+
+
+<body>
+
+
+<nav>
+
+  <b>ShipNova Seller</b>
+
+  <span>
+
+    <a href="index.html">
+      Home
+    </a>
+
+    <a href="product.html">
+      Store
+    </a>
+
+    <button
+      type="button"
+      onclick="logout()">
+      Logout
+    </button>
+
+  </span>
+
+</nav>
+
+
+<main class="container">
+
+
+<!-- =================================
+     SELLER AUTH
+================================= -->
+
+<section id="authSection">
+
+  <div class="auth-grid">
+
+
+    <!-- SELLER LOGIN -->
+
+    <div class="card">
+
+      <h2>Seller Login</h2>
+
+      <form id="loginForm">
+
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="Email"
+          autocomplete="username"
+          required>
+
+
+        <input
+          id="loginPassword"
+          type="password"
+          placeholder="Password"
+          autocomplete="current-password"
+          required>
+
+
+        <button
+          id="loginButton"
+          type="submit">
+
+          Seller Login
+
+        </button>
+
+      </form>
+
+
+      <p
+        id="loginMessage"
+        class="message"
+        style="display:none">
+      </p>
+
+    </div>
+
+
+    <!-- SELLER REGISTRATION -->
+
+    <div class="card">
+
+      <h2>Seller Registration</h2>
+
+      <form id="registerForm">
+
+        <input
+          id="registerName"
+          type="text"
+          placeholder="Full Name"
+          required>
+
+
+        <input
+          id="registerEmail"
+          type="email"
+          placeholder="Email"
+          autocomplete="email"
+          required>
+
+
+        <input
+          id="registerPassword"
+          type="password"
+          placeholder="Password"
+          minlength="6"
+          autocomplete="new-password"
+          required>
+
+
+        <input
+          id="registerConfirm"
+          type="password"
+          placeholder="Confirm Password"
+          minlength="6"
+          autocomplete="new-password"
+          required>
+
+
+        <button
+          id="registerButton"
+          type="submit">
+
+          Register as Seller
+
+        </button>
+
+      </form>
+
+
+      <p
+        id="registerMessage"
+        class="message"
+        style="display:none">
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =================================
+     SELLER DASHBOARD
+================================= -->
+
+<section
+  id="dashboardSection"
+  style="display:none">
+
+
+  <div class="card">
+
+    <h1>Seller Dashboard</h1>
+
+    <p id="welcome"></p>
+
+  </div>
+
+
+  <!-- ADD PRODUCT -->
+
+  <div class="card">
+
+    <h2>Add Product</h2>
+
+    <form id="productForm">
+
+      <input
+        id="productName"
+        type="text"
+        placeholder="Product name"
+        required>
+
+
+      <textarea
+        id="productDescription"
+        placeholder="Description">
+      </textarea>
+
+
+      <input
+        id="productPrice"
+        type="number"
+        step="0.01"
+        min="0"
+        placeholder="Price"
+        required>
+
+
+      <input
+        id="productStock"
+        type="number"
+        min="0"
+        placeholder="Stock"
+        required>
+
+
+      <input
+        id="productImage"
+        type="url"
+        placeholder="Image URL (optional)">
+
+
+      <button
+        id="productButton"
+        type="submit">
+
+        Add Product
+
+      </button>
+
+    </form>
+
+
+    <p
+      id="productMessage"
+      class="message"
+      style="display:none">
+    </p>
+
+  </div>
+
+
+  <!-- MY PRODUCTS -->
+
+  <h2>
+    My Products
+  </h2>
+
+
+  <div id="productList">
+
+    Loading...
+
+  </div>
+
+
+</section>
+
+
+</main>
+
+
+<script>
+
+/* =====================================
+   SHIPNOVA RENDER API
+===================================== */
+
+const API =
+  "https://shipnovashop-1.onrender.com";
+
+
+/* =====================================
+   STORAGE KEYS
+===================================== */
+
+const TOKEN_KEY =
+  "shipnova_token";
+
+const USER_KEY =
+  "shipnova_user";
+
+
+/* =====================================
+   ELEMENTS
+===================================== */
+
+const authSection =
+  document.getElementById(
+    "authSection"
+  );
+
+const dashboardSection =
+  document.getElementById(
+    "dashboardSection"
+  );
+
+
+/* =====================================
+   API HELPER
+===================================== */
+
+async function api(
+  path,
+  options = {}
+){
+
+  const token =
+    localStorage.getItem(
+      TOKEN_KEY
+    );
+
+
+  const headers = {
+
+    "Content-Type":
+      "application/json",
+
+    ...(options.headers || {})
+
+  };
+
+
+  if(token){
+
+    headers.Authorization =
+      "Bearer " + token;
+
+  }
+
+
+  const response =
+    await fetch(
+      API + path,
+      {
+        ...options,
+        headers
+      }
+    );
+
+
+  let data = {};
+
+
+  try{
+
+    data =
+      await response.json();
+
+  }catch{
+
+    data = {};
+
+  }
+
+
+  if(!response.ok){
+
+    if(
+      response.status === 401
+    ){
+
+      localStorage.removeItem(
+        TOKEN_KEY
+      );
+
+      localStorage.removeItem(
+        USER_KEY
+      );
+
+    }
+
+
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Request failed (" +
+      response.status +
+      ")"
+    );
+
+  }
+
+
+  return data;
+
 }
 
 
-/* =========================
+/* =====================================
+   GET USER
+===================================== */
+
+function getUser(){
+
+  try{
+
+    return JSON.parse(
+      localStorage.getItem(
+        USER_KEY
+      ) || "null"
+    );
+
+  }catch{
+
+    return null;
+
+  }
+
+}
+
+
+/* =====================================
+   SAVE AUTH
+===================================== */
+
+function saveAuth(data){
+
+  if(
+    !data ||
+    !data.token ||
+    !data.user
+  ){
+
+    throw new Error(
+      "Invalid server response."
+    );
+
+  }
+
+
+  localStorage.setItem(
+    TOKEN_KEY,
+    data.token
+  );
+
+
+  localStorage.setItem(
+    USER_KEY,
+    JSON.stringify(
+      data.user
+    )
+  );
+
+}
+
+
+/* =====================================
+   LOGOUT
+===================================== */
+
+function logout(){
+
+  localStorage.removeItem(
+    TOKEN_KEY
+  );
+
+  localStorage.removeItem(
+    USER_KEY
+  );
+
+  window.location.replace(
+    "login.html"
+  );
+
+}
+
+
+/* =====================================
+   SHOW MESSAGE
+===================================== */
+
+function showMessage(
+  element,
+  text,
+  type
+){
+
+  element.textContent =
+    text;
+
+  element.className =
+    "message " + type;
+
+  element.style.display =
+    "block";
+
+}
+
+
+/* =====================================
+   SHOW DASHBOARD
+===================================== */
+
+function showDashboard(){
+
+  const currentUser =
+    getUser();
+
+  const token =
+    localStorage.getItem(
+      TOKEN_KEY
+    );
+
+
+  if(
+    !token ||
+    !currentUser ||
+    String(
+      currentUser.role
+    ).toLowerCase()
+    !== "seller"
+  ){
+
+    authSection.style.display =
+      "block";
+
+    dashboardSection.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  authSection.style.display =
+    "none";
+
+  dashboardSection.style.display =
+    "block";
+
+
+  document
+    .getElementById(
+      "welcome"
+    )
+    .textContent =
+      "Welcome, " +
+      (
+        currentUser.name ||
+        "Seller"
+      ) +
+      "!";
+
+
+  loadProducts();
+
+}
+
+
+/* =====================================
    SELLER LOGIN
-========================= */
+===================================== */
 
-document.getElementById('loginForm').addEventListener(
-  'submit',
-  async function(e) {
+document
+  .getElementById(
+    "loginForm"
+  )
+  .addEventListener(
+    "submit",
+    async function(e){
 
-    e.preventDefault();
-
-    const message = document.getElementById('loginMessage');
-
-    message.className = '';
-    message.textContent = 'Logging in...';
-
-    try {
-
-      const result = await api('/api/auth/login', {
-
-        method: 'POST',
-
-        body: JSON.stringify({
-
-          email:
-            document.getElementById('loginEmail').value.trim(),
-
-          password:
-            document.getElementById('loginPassword').value
-
-        })
-
-      });
+      e.preventDefault();
 
 
-      if (result.user.role !== 'seller') {
+      const message =
+        document.getElementById(
+          "loginMessage"
+        );
 
-        message.className = 'error';
-        message.textContent =
-          'This account is not a seller account.';
+      const button =
+        document.getElementById(
+          "loginButton"
+        );
+
+
+      const email =
+        document
+          .getElementById(
+            "loginEmail"
+          )
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      const password =
+        document
+          .getElementById(
+            "loginPassword"
+          )
+          .value;
+
+
+      showMessage(
+        message,
+        "Logging in...",
+        ""
+      );
+
+
+      button.disabled =
+        true;
+
+
+      try{
+
+        const result =
+          await api(
+            "/api/auth/login",
+            {
+              method:"POST",
+
+              body:
+                JSON.stringify({
+                  email,
+                  password
+                })
+            }
+          );
+
+
+        if(
+          !result.user ||
+          String(
+            result.user.role
+          ).toLowerCase()
+          !== "seller"
+        ){
+
+          throw new Error(
+            "This account is not a seller account."
+          );
+
+        }
+
+
+        saveAuth(
+          result
+        );
+
+
+        showMessage(
+          message,
+          "Seller login successful.",
+          "success"
+        );
+
+
+        setTimeout(
+          showDashboard,
+          300
+        );
+
+
+      }catch(error){
+
+        console.error(
+          "Seller login:",
+          error
+        );
+
+
+        showMessage(
+          message,
+          error.message ||
+          "Seller login failed.",
+          "error"
+        );
+
+
+        button.disabled =
+          false;
+
+      }
+
+    }
+  );
+
+
+/* =====================================
+   SELLER REGISTRATION
+===================================== */
+
+document
+  .getElementById(
+    "registerForm"
+  )
+  .addEventListener(
+    "submit",
+    async function(e){
+
+      e.preventDefault();
+
+
+      const message =
+        document.getElementById(
+          "registerMessage"
+        );
+
+      const button =
+        document.getElementById(
+          "registerButton"
+        );
+
+
+      const name =
+        document
+          .getElementById(
+            "registerName"
+          )
+          .value
+          .trim();
+
+
+      const email =
+        document
+          .getElementById(
+            "registerEmail"
+          )
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      const password =
+        document
+          .getElementById(
+            "registerPassword"
+          )
+          .value;
+
+
+      const confirm =
+        document
+          .getElementById(
+            "registerConfirm"
+          )
+          .value;
+
+
+      if(
+        password.length < 6
+      ){
+
+        showMessage(
+          message,
+          "Password must be at least 6 characters.",
+          "error"
+        );
 
         return;
 
       }
 
 
-      saveAuth(result);
+      if(
+        password !== confirm
+      ){
 
-      message.className = 'success';
-      message.textContent = 'Login successful.';
+        showMessage(
+          message,
+          "Passwords do not match.",
+          "error"
+        );
 
-      showDashboard();
+        return;
 
-    } catch(error) {
+      }
 
-      message.className = 'error';
-      message.textContent = error.message;
+
+      button.disabled =
+        true;
+
+
+      showMessage(
+        message,
+        "Creating seller account...",
+        ""
+      );
+
+
+      try{
+
+        const result =
+          await api(
+            "/api/auth/register",
+            {
+              method:"POST",
+
+              body:
+                JSON.stringify({
+
+                  name:name,
+
+                  email:email,
+
+                  password:password,
+
+                  role:"seller"
+
+                })
+            }
+          );
+
+
+        if(
+          !result.user ||
+          String(
+            result.user.role
+          ).toLowerCase()
+          !== "seller"
+        ){
+
+          throw new Error(
+            "Server did not create a seller account."
+          );
+
+        }
+
+
+        saveAuth(
+          result
+        );
+
+
+        showMessage(
+          message,
+          "Seller account created successfully.",
+          "success"
+        );
+
+
+        setTimeout(
+          showDashboard,
+          300
+        );
+
+
+      }catch(error){
+
+        console.error(
+          "Seller registration:",
+          error
+        );
+
+
+        showMessage(
+          message,
+          error.message ||
+          "Seller registration failed.",
+          "error"
+        );
+
+
+        button.disabled =
+          false;
+
+      }
 
     }
-
-  }
-);
+  );
 
 
-/* =========================
-   SELLER REGISTRATION
-========================= */
-
-document.getElementById('registerForm').addEventListener(
-  'submit',
-  async function(e) {
-
-    e.preventDefault();
-
-    const message =
-      document.getElementById('registerMessage');
-
-    const password =
-      document.getElementById('registerPassword').value;
-
-    const confirm =
-      document.getElementById('registerConfirm').value;
-
-
-    if (password !== confirm) {
-
-      message.className = 'error';
-      message.textContent =
-        'Passwords do not match.';
-
-      return;
-
-    }
-
-
-    message.className = '';
-    message.textContent =
-      'Creating seller account...';
-
-
-    try {
-
-      const result = await api('/api/auth/register', {
-
-        method: 'POST',
-
-        body: JSON.stringify({
-
-          name:
-            document.getElementById('registerName').value.trim(),
-
-          email:
-            document.getElementById('registerEmail').value.trim(),
-
-          password: password,
-
-          role: 'seller'
-
-        })
-
-      });
-
-
-      saveAuth(result);
-
-      message.className = 'success';
-      message.textContent =
-        'Seller account created successfully.';
-
-      showDashboard();
-
-    } catch(error) {
-
-      message.className = 'error';
-      message.textContent = error.message;
-
-    }
-
-  }
-);
-
-
-/* =========================
+/* =====================================
    LOAD SELLER PRODUCTS
-========================= */
+===================================== */
 
-async function loadProducts() {
+async function loadProducts(){
 
   const list =
-    document.getElementById('productList');
-
-  try {
-
-    const data = await api(
-      '/api/products?seller=' +
-      encodeURIComponent(currentUser.id)
+    document.getElementById(
+      "productList"
     );
 
 
-    if (!data.products || data.products.length === 0) {
+  const currentUser =
+    getUser();
+
+
+  if(
+    !currentUser ||
+    !currentUser.id
+  ){
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    "<div class='card'>Loading products...</div>";
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/products?seller=" +
+        encodeURIComponent(
+          currentUser.id
+        )
+      );
+
+
+    if(
+      !data.products ||
+      data.products.length === 0
+    ){
 
       list.innerHTML =
-        '<div class="card">' +
-        '<p>No products yet.</p>' +
-        '</div>';
+        `
+        <div class="card">
+          <p>No products yet.</p>
+        </div>
+        `;
 
       return;
 
     }
 
 
-    list.innerHTML = data.products.map(function(product) {
+    list.innerHTML =
+      data.products
+        .map(
+          function(product){
 
-      return `
+            return `
 
-        <div class="card">
+              <div class="card">
 
-          <div class="row">
+                <div class="row">
 
-            <div style="flex:1">
+                  <div style="flex:1">
 
-              <h3>${escapeHtml(product.name)}</h3>
+                    <h3>
+                      ${escapeHtml(
+                        product.name
+                      )}
+                    </h3>
 
-              <p>
-                ${escapeHtml(
-                  product.description || ''
-                )}
-              </p>
+                    <p>
+                      ${escapeHtml(
+                        product.description ||
+                        ""
+                      )}
+                    </p>
 
-              <p>
-                <b>₹${escapeHtml(
-                  String(product.price)
-                )}</b>
-                · Stock ${escapeHtml(
-                  String(product.stock)
-                )}
-              </p>
+                    <p>
 
-            </div>
+                      <b>
+                        ₹${escapeHtml(
+                          String(
+                            product.price
+                          )
+                        )}
+                      </b>
 
-            <button
-              class="danger"
-              type="button"
-              onclick="deleteProduct(${product.id})">
+                      · Stock
+                      ${escapeHtml(
+                        String(
+                          product.stock
+                        )
+                      )}
 
-              Delete
+                    </p>
 
-            </button>
-
-          </div>
-
-        </div>
-
-      `;
-
-    }).join('');
+                  </div>
 
 
-  } catch(error) {
+                  <button
+                    class="danger"
+                    type="button"
+                    onclick=
+                      "deleteProduct(${product.id})">
+
+                    Delete
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            `;
+
+          }
+        )
+        .join("");
+
+
+  }catch(error){
 
     list.innerHTML =
-      '<div class="card">' +
-      '<p class="error">' +
-      escapeHtml(error.message) +
-      '</p>' +
-      '</div>';
+      `
+      <div class="card">
+
+        <p class="error">
+          ${escapeHtml(
+            error.message
+          )}
+        </p>
+
+      </div>
+      `;
 
   }
 
 }
 
 
-/* =========================
+/* =====================================
    ADD PRODUCT
-========================= */
+===================================== */
 
-document.getElementById('productForm').addEventListener(
-  'submit',
-  async function(e) {
+document
+  .getElementById(
+    "productForm"
+  )
+  .addEventListener(
+    "submit",
+    async function(e){
 
-    e.preventDefault();
-
-    const message =
-      document.getElementById('productMessage');
-
-    message.className = '';
-    message.textContent = 'Adding product...';
+      e.preventDefault();
 
 
-    try {
+      const message =
+        document.getElementById(
+          "productMessage"
+        );
 
-      await api('/api/products', {
-
-        method: 'POST',
-
-        body: JSON.stringify({
-
-          name:
-            document.getElementById('productName').value.trim(),
-
-          description:
-            document.getElementById('productDescription').value.trim(),
-
-          price:
-            Number(
-              document.getElementById('productPrice').value
-            ),
-
-          stock:
-            Number(
-              document.getElementById('productStock').value || 0
-            ),
-
-          image:
-            document.getElementById('productImage').value.trim()
-
-        })
-
-      });
+      const button =
+        document.getElementById(
+          "productButton"
+        );
 
 
-      message.className = 'success';
-      message.textContent =
-        'Product added successfully.';
+      const name =
+        document
+          .getElementById(
+            "productName"
+          )
+          .value
+          .trim();
 
 
-      document.getElementById('productForm').reset();
+      const description =
+        document
+          .getElementById(
+            "productDescription"
+          )
+          .value
+          .trim();
 
-      loadProducts();
+
+      const price =
+        document
+          .getElementById(
+            "productPrice"
+          )
+          .value;
 
 
-    } catch(error) {
+      const stock =
+        document
+          .getElementById(
+            "productStock"
+          )
+          .value;
 
-      message.className = 'error';
-      message.textContent = error.message;
+
+      const image =
+        document
+          .getElementById(
+            "productImage"
+          )
+          .value
+          .trim();
+
+
+      if(!name){
+
+        showMessage(
+          message,
+          "Product name is required.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if(
+        price === "" ||
+        Number(price) < 0
+      ){
+
+        showMessage(
+          message,
+          "Please enter a valid price.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      button.disabled =
+        true;
+
+
+      showMessage(
+        message,
+        "Adding product...",
+        ""
+      );
+
+
+      try{
+
+        await api(
+          "/api/products",
+          {
+            method:"POST",
+
+            body:
+              JSON.stringify({
+
+                name:name,
+
+                description:
+                  description,
+
+                price:
+                  Number(price),
+
+                stock:
+                  Number(
+                    stock || 0
+                  ),
+
+                image:image
+
+              })
+          }
+        );
+
+
+        showMessage(
+          message,
+          "Product added successfully.",
+          "success"
+        );
+
+
+        document
+          .getElementById(
+            "productForm"
+          )
+          .reset();
+
+
+        await loadProducts();
+
+
+      }catch(error){
+
+        showMessage(
+          message,
+          error.message ||
+          "Could not add product.",
+          "error"
+        );
+
+      }
+
+
+      button.disabled =
+        false;
 
     }
-
-  }
-);
+  );
 
 
-/* =========================
+/* =====================================
    DELETE PRODUCT
-========================= */
+===================================== */
 
-async function deleteProduct(id) {
+async function deleteProduct(id){
 
-  if (!confirm('Delete this product?')) {
+  if(
+    !confirm(
+      "Delete this product?"
+    )
+  ){
+
     return;
+
   }
 
 
-  try {
+  try{
 
-    await api('/api/products/' + id, {
-      method: 'DELETE'
-    });
+    await api(
+      "/api/products/" +
+      id,
+      {
+        method:"DELETE"
+      }
+    );
 
 
-    loadProducts();
+    await loadProducts();
 
 
-  } catch(error) {
+  }catch(error){
 
-    alert(error.message);
+    alert(
+      error.message
+    );
 
   }
 
 }
 
 
-/* =========================
-   HTML ESCAPE
-========================= */
+/* =====================================
+   ESCAPE HTML
+===================================== */
 
-function escapeHtml(value) {
+function escapeHtml(value){
 
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
 
 }
 
 
-/* =========================
+/* =====================================
    START
-========================= */
+===================================== */
 
 showDashboard();
 
-</script></body>
+</script>
+
+</body>
 </html>
