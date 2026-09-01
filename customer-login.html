@@ -1,0 +1,89 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Login - ShipNova</title>
+<link rel="stylesheet" href="style.css">
+</head><body><nav>
+  <b>ShipNova</b>
+  <span>
+    <a href="index.html">Home</a>
+    <a href="customer-register.html">Register</a>
+  </span>
+</nav><main class="container">  <div class="card" style="max-width:500px;margin:40px auto"><h1>Customer Login</h1>
+
+<form id="loginForm">
+
+  <input
+    id="email"
+    type="email"
+    placeholder="Email"
+    autocomplete="email"
+    required
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+    autocomplete="current-password"
+    required
+  >
+
+  <button type="submit">Login</button>
+
+</form>
+
+<p id="message"></p>
+
+<p>
+  New customer?
+  <a href="customer-register.html">Create an account</a>
+</p>
+
+  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+const form = document.getElementById('loginForm');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  message.className = '';
+  message.textContent = 'Logging in...';
+
+  try {
+
+    const result = await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      })
+    });
+
+    if (result.user.role !== 'customer') {
+      message.className = 'error';
+      message.textContent = 'This login is for customers only.';
+      return;
+    }
+
+    saveAuth(result);
+
+    message.className = 'success';
+    message.textContent = 'Login successful.';
+
+    setTimeout(function() {
+      location.href = 'customer.html';
+    }, 300);
+
+  } catch (error) {
+
+    message.className = 'error';
+    message.textContent = error.message;
+
+  }
+});
+</script></body>
+</html>
