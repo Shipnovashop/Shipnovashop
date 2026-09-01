@@ -1,156 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Login - ShipNovaShop</title>
+<title>Login - ShipNovaShop</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-    body {
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-      background: #f5f7fb;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+body{
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  background:#f5f7fb;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
 
-    .card {
-      width: 100%;
-      max-width: 430px;
-      background: #fff;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 35px rgba(0,0,0,.08);
-    }
+.card{
+  width:100%;
+  max-width:430px;
+  background:#fff;
+  padding:30px;
+  border-radius:15px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
 
-    .logo {
-      text-align: center;
-      font-size: 29px;
-      font-weight: 800;
-      color: #2563eb;
-      margin-bottom: 7px;
-    }
+.logo{
+  text-align:center;
+  font-size:29px;
+  font-weight:800;
+  color:#2563eb;
+  margin-bottom:7px;
+}
 
-    .logo span {
-      color: #111827;
-    }
+.logo span{
+  color:#111827;
+}
 
-    .subtitle {
-      text-align: center;
-      color: #6b7280;
-      margin-bottom: 25px;
-    }
+.subtitle{
+  text-align:center;
+  color:#6b7280;
+  margin-bottom:25px;
+}
 
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-      margin-bottom: 22px;
-    }
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin-bottom:22px;
+}
 
-    .tab {
-      padding: 10px 5px;
-      border: 1px solid #d1d5db;
-      background: white;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #374151;
-    }
+.tab{
+  padding:10px 5px;
+  border:1px solid #d1d5db;
+  background:white;
+  border-radius:7px;
+  cursor:pointer;
+  font-weight:600;
+  color:#374151;
+}
 
-    .tab.active {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
+.tab.active{
+  background:#2563eb;
+  color:white;
+  border-color:#2563eb;
+}
 
-    .field {
-      margin-bottom: 17px;
-    }
+.field{
+  margin-bottom:17px;
+}
 
-    label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 7px;
-    }
+label{
+  display:block;
+  font-weight:600;
+  color:#374151;
+  margin-bottom:7px;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 15px;
-      outline: none;
-    }
+input{
+  width:100%;
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  font-size:15px;
+  outline:none;
+}
 
-    input:focus {
-      border-color: #2563eb;
-    }
+input:focus{
+  border-color:#2563eb;
+}
 
-    .login-btn {
-      width: 100%;
-      padding: 13px;
-      border: 0;
-      border-radius: 8px;
-      background: #2563eb;
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
+.login-btn{
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+}
 
-    .login-btn:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
+.login-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
 
-    .message {
-      display: none;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 18px;
-      font-size: 14px;
-    }
+.message{
+  display:none;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:18px;
+  font-size:14px;
+}
 
-    .error {
-      background: #fee2e2;
-      color: #991b1b;
-    }
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
 
-    .success {
-      background: #dcfce7;
-      color: #166534;
-    }
+.success{
+  background:#dcfce7;
+  color:#166534;
+}
 
-    .links {
-      text-align: center;
-      margin-top: 22px;
-      line-height: 1.9;
-    }
+.links{
+  text-align:center;
+  margin-top:22px;
+  line-height:1.9;
+}
 
-    .links a {
-      color: #2563eb;
-      text-decoration: none;
-      font-weight: 600;
-    }
+.links a{
+  color:#2563eb;
+  text-decoration:none;
+  font-weight:600;
+}
 
-    .role-info {
-      text-align: center;
-      margin-bottom: 18px;
-      font-size: 14px;
-      color: #6b7280;
-    }
-  </style>
+.role-info{
+  text-align:center;
+  margin-bottom:18px;
+  font-size:14px;
+  color:#6b7280;
+}
+
+.api-status{
+  text-align:center;
+  margin-top:12px;
+  font-size:12px;
+  color:#6b7280;
+}
+</style>
 </head>
 
 <body>
@@ -167,25 +174,39 @@
 
   <div class="tabs">
 
-    <button class="tab active" data-role="customer">
+    <button
+      type="button"
+      class="tab active"
+      data-role="customer">
       Customer
     </button>
 
-    <button class="tab" data-role="seller">
+    <button
+      type="button"
+      class="tab"
+      data-role="seller">
       Seller
     </button>
 
-    <button class="tab" data-role="admin">
+    <button
+      type="button"
+      class="tab"
+      data-role="admin">
       Admin
     </button>
 
   </div>
 
-  <div id="roleInfo" class="role-info">
+  <div
+    id="roleInfo"
+    class="role-info">
     Customer login
   </div>
 
-  <div id="message" class="message"></div>
+  <div
+    id="message"
+    class="message">
+  </div>
 
   <form id="loginForm">
 
@@ -200,8 +221,7 @@
         id="email"
         placeholder="Enter your email"
         required
-        autocomplete="email"
-      >
+        autocomplete="email">
 
     </div>
 
@@ -216,16 +236,14 @@
         id="password"
         placeholder="Enter your password"
         required
-        autocomplete="current-password"
-      >
+        autocomplete="current-password">
 
     </div>
 
     <button
       type="submit"
       class="login-btn"
-      id="loginButton"
-    >
+      id="loginButton">
       Login
     </button>
 
@@ -233,15 +251,25 @@
 
   <div class="links">
 
-    <div>
+    <div id="registerLink">
       Don't have an account?
-      <a href="register.html">Register</a>
+      <a href="register.html">
+        Register
+      </a>
     </div>
 
     <div>
-      <a href="index.html">← Back to Home</a>
+      <a href="index.html">
+        ← Back to Home
+      </a>
     </div>
 
+  </div>
+
+  <div
+    id="apiStatus"
+    class="api-status">
+    Connecting to ShipNova server...
   </div>
 
 </div>
@@ -251,13 +279,20 @@
 
 <script>
 
+/* =====================================
+   SHIPNOVA RENDER API
+===================================== */
+
 const API =
-  window.SHIPNOVA_API ||
-  "https://shipnovashop-1.onrender.com";
+  (
+    window.SHIPNOVA_API ||
+    "https://shipnovashop-1.onrender.com"
+  ).replace(/\/+$/, "");
 
 
-let selectedRole = "customer";
-
+/* =====================================
+   ELEMENTS
+===================================== */
 
 const tabs =
   document.querySelectorAll(".tab");
@@ -274,234 +309,466 @@ const button =
 const message =
   document.getElementById("message");
 
+const registerLink =
+  document.getElementById("registerLink");
 
-function showMessage(text, type) {
+const apiStatus =
+  document.getElementById("apiStatus");
 
-  message.textContent = text;
+
+let selectedRole =
+  "customer";
+
+
+/* =====================================
+   MESSAGE
+===================================== */
+
+function showMessage(
+  text,
+  type
+){
+
+  message.textContent =
+    text;
 
   message.className =
     "message " + type;
 
-  message.style.display = "block";
+  message.style.display =
+    "block";
 }
 
 
+/* =====================================
+   ROLE SELECT
+===================================== */
+
 tabs.forEach(tab => {
 
-  tab.addEventListener("click", () => {
+  tab.addEventListener(
+    "click",
+    () => {
 
-    tabs.forEach(t =>
-      t.classList.remove("active")
-    );
+      tabs.forEach(t =>
+        t.classList.remove(
+          "active"
+        )
+      );
 
-    tab.classList.add("active");
+      tab.classList.add(
+        "active"
+      );
 
-    selectedRole =
-      tab.dataset.role;
+      selectedRole =
+        tab.dataset.role;
 
-    roleInfo.textContent =
-      selectedRole.charAt(0).toUpperCase() +
-      selectedRole.slice(1) +
-      " login";
+      roleInfo.textContent =
+        selectedRole
+          .charAt(0)
+          .toUpperCase() +
+        selectedRole.slice(1) +
+        " login";
 
-    message.style.display = "none";
+      message.style.display =
+        "none";
 
-  });
+
+      /*
+       * Admin registration should
+       * NOT be public.
+       */
+
+      if (
+        selectedRole === "admin"
+      ){
+
+        registerLink.innerHTML =
+          `
+          <span style="color:#6b7280">
+            Admin accounts are managed by ShipNova
+          </span>
+          `;
+
+      } else {
+
+        registerLink.innerHTML =
+          `
+          Don't have an account?
+          <a href="register.html">
+            Register
+          </a>
+          `;
+
+      }
+
+    }
+  );
 
 });
 
 
-form.addEventListener("submit", async event => {
+/* =====================================
+   CHECK API
+===================================== */
 
-  event.preventDefault();
-
-  const email =
-    document.getElementById("email")
-      .value
-      .trim();
-
-  const password =
-    document.getElementById("password")
-      .value;
-
-
-  if (!email || !password) {
-
-    showMessage(
-      "Email and password are required.",
-      "error"
-    );
-
-    return;
-  }
-
-
-  button.disabled = true;
-
-  button.textContent =
-    "Logging in...";
-
-
-  message.style.display =
-    "none";
-
+async function checkAPI(){
 
   try {
 
     const response =
       await fetch(
-        API.replace(/\/$/, "") +
-        "/api/auth/login",
+        API + "/api/health",
         {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body: JSON.stringify({
-            email,
-            password
-          })
+          method:"GET"
         }
       );
 
 
-    let data = {};
-
-    try {
-      data = await response.json();
-    } catch {
-      data = {};
-    }
-
-
-    if (!response.ok) {
+    if (!response.ok){
 
       throw new Error(
-        data.error ||
-        data.message ||
-        "Invalid email or password"
+        "API unavailable"
       );
 
     }
 
 
-    const token =
-      data.token;
+    const data =
+      await response.json();
 
 
-    const user =
-      data.user;
+    if (
+      data.ok &&
+      data.database === "connected"
+    ){
 
+      apiStatus.textContent =
+        "● ShipNova server connected";
 
-    if (!token || !user) {
+      apiStatus.style.color =
+        "#166534";
 
-      throw new Error(
-        "Invalid server response."
-      );
+    } else {
 
-    }
+      apiStatus.textContent =
+        "● Server connected, database unavailable";
 
-
-    /*
-     * IMPORTANT:
-     * The role returned by the
-     * database is trusted.
-     */
-
-    const actualRole =
-      String(user.role || "")
-        .toLowerCase();
-
-
-    /*
-     * Prevent a customer from
-     * selecting Seller/Admin and
-     * being redirected there.
-     */
-
-    if (actualRole !== selectedRole) {
-
-      throw new Error(
-        "This account is a " +
-        actualRole +
-        " account. Please select " +
-        actualRole +
-        " login."
-      );
+      apiStatus.style.color =
+        "#b45309";
 
     }
 
 
-    localStorage.setItem(
-      "shipnova_token",
-      token
-    );
-
-
-    localStorage.setItem(
-      "shipnova_user",
-      JSON.stringify(user)
-    );
-
-
-    showMessage(
-      "Login successful. Redirecting...",
-      "success"
-    );
-
-
-    setTimeout(() => {
-
-      if (actualRole === "admin") {
-
-        window.location.href =
-          "admin.html";
-
-      }
-
-      else if (actualRole === "seller") {
-
-        window.location.href =
-          "seller.html";
-
-      }
-
-      else {
-
-        window.location.href =
-          "customer.html";
-
-      }
-
-    }, 600);
-
-
-  } catch (error) {
+  } catch(error){
 
     console.error(
-      "Login error:",
+      "API health error:",
       error
     );
 
 
-    showMessage(
-      error.message ||
-      "Unable to connect to server.",
-      "error"
-    );
+    apiStatus.textContent =
+      "● Server connection unavailable";
+
+    apiStatus.style.color =
+      "#991b1b";
 
   }
 
+}
 
-  button.disabled = false;
 
-  button.textContent =
-    "Login";
+checkAPI();
 
-});
+
+/* =====================================
+   LOGIN
+===================================== */
+
+form.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const email =
+      document
+        .getElementById("email")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password =
+      document
+        .getElementById("password")
+        .value;
+
+
+    if (
+      !email ||
+      !password
+    ){
+
+      showMessage(
+        "Email and password are required.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Logging in...";
+
+    message.style.display =
+      "none";
+
+
+    try {
+
+      /*
+       * Always use the Render API.
+       */
+
+      const response =
+        await fetch(
+          API +
+          "/api/auth/login",
+          {
+            method:"POST",
+
+            headers:{
+              "Content-Type":
+                "application/json"
+            },
+
+            body:JSON.stringify({
+              email,
+              password
+            })
+          }
+        );
+
+
+      let data = {};
+
+
+      try {
+
+        data =
+          await response.json();
+
+      } catch {
+
+        data = {};
+
+      }
+
+
+      if (!response.ok){
+
+        throw new Error(
+          data.error ||
+          data.message ||
+          "Invalid email or password"
+        );
+
+      }
+
+
+      const token =
+        data.token;
+
+      const user =
+        data.user;
+
+
+      if (
+        !token ||
+        !user
+      ){
+
+        throw new Error(
+          "Invalid server response."
+        );
+
+      }
+
+
+      const actualRole =
+        String(
+          user.role || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+      /*
+       * Valid roles only.
+       */
+
+      if (
+        ![
+          "customer",
+          "seller",
+          "admin"
+        ].includes(actualRole)
+      ){
+
+        throw new Error(
+          "Invalid account role."
+        );
+
+      }
+
+
+      /*
+       * Selected tab must match
+       * actual database role.
+       */
+
+      if (
+        actualRole !==
+        selectedRole
+      ){
+
+        throw new Error(
+          "This account is registered as " +
+          actualRole +
+          ". Please select " +
+          actualRole +
+          " login."
+        );
+
+      }
+
+
+      /*
+       * Save login.
+       */
+
+      localStorage.setItem(
+        "shipnova_token",
+        token
+      );
+
+
+      localStorage.setItem(
+        "shipnova_user",
+        JSON.stringify(user)
+      );
+
+
+      /*
+       * Also keep API URL available
+       * to other frontend pages.
+       */
+
+      localStorage.setItem(
+        "SHIPNOVA_API",
+        API
+      );
+
+
+      showMessage(
+        "Login successful. Redirecting...",
+        "success"
+      );
+
+
+      /*
+       * Redirect by actual role.
+       */
+
+      setTimeout(
+        () => {
+
+          if (
+            actualRole ===
+            "admin"
+          ){
+
+            window.location.replace(
+              "admin.html"
+            );
+
+            return;
+
+          }
+
+
+          if (
+            actualRole ===
+            "seller"
+          ){
+
+            window.location.replace(
+              "seller.html"
+            );
+
+            return;
+
+          }
+
+
+          window.location.replace(
+            "customer.html"
+          );
+
+        },
+        500
+      );
+
+
+    } catch(error){
+
+      console.error(
+        "Login error:",
+        error
+      );
+
+
+      /*
+       * Clear potentially old
+       * invalid login data.
+       */
+
+      localStorage.removeItem(
+        "shipnova_token"
+      );
+
+      localStorage.removeItem(
+        "shipnova_user"
+      );
+
+
+      showMessage(
+        error.message ||
+        "Unable to connect to ShipNova server.",
+        "error"
+      );
+
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "Login";
+
+      return;
+
+    }
+
+  }
+);
 
 </script>
 
