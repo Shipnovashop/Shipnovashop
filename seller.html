@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
 
 <meta charset="utf-8">
@@ -11,16 +10,13 @@
 
 <title>Seller - ShipNovaShop</title>
 
-<link
-  rel="stylesheet"
-  href="style.css">
+<link rel="stylesheet" href="style.css">
 
 <style>
 
 .auth-grid{
   display:grid;
-  grid-template-columns:
-    repeat(2,1fr);
+  grid-template-columns:repeat(2,1fr);
   gap:20px;
 }
 
@@ -40,10 +36,98 @@
   color:#166534;
 }
 
+.info{
+  background:#e0f2fe;
+  color:#075985;
+}
+
+.card{
+  margin-bottom:20px;
+}
+
+textarea{
+  width:100%;
+  min-height:100px;
+  resize:vertical;
+}
+
+input,
+textarea,
+button{
+  box-sizing:border-box;
+}
+
+.seller-info{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:15px;
+}
+
+.info-box{
+  padding:12px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  background:#fafafa;
+}
+
+.product-card{
+  margin-bottom:15px;
+}
+
+.product-image{
+  width:100px;
+  height:100px;
+  object-fit:cover;
+  border-radius:8px;
+  margin-right:15px;
+}
+
+.product-row{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.product-content{
+  flex:1;
+}
+
+.danger{
+  background:#dc2626;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:7px;
+  cursor:pointer;
+}
+
+.danger:hover{
+  background:#b91c1c;
+}
+
+.logout-btn{
+  margin-left:10px;
+}
+
 @media(max-width:700px){
 
   .auth-grid{
     grid-template-columns:1fr;
+  }
+
+  .seller-info{
+    grid-template-columns:1fr;
+  }
+
+  .product-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .product-image{
+    width:100%;
+    height:180px;
   }
 
 }
@@ -55,6 +139,10 @@
 
 <body>
 
+
+<!-- =====================================
+     NAVIGATION
+===================================== -->
 
 <nav>
 
@@ -72,8 +160,11 @@
 
     <button
       type="button"
+      class="logout-btn"
       onclick="logout()">
+
       Logout
+
     </button>
 
   </span>
@@ -84,16 +175,18 @@
 <main class="container">
 
 
-<!-- =================================
-     SELLER AUTH
-================================= -->
+<!-- =====================================
+     SELLER AUTH SECTION
+===================================== -->
 
 <section id="authSection">
 
   <div class="auth-grid">
 
 
-    <!-- SELLER LOGIN -->
+    <!-- =================================
+         SELLER LOGIN
+    ================================== -->
 
     <div class="card">
 
@@ -108,14 +201,12 @@
           autocomplete="username"
           required>
 
-
         <input
           id="loginPassword"
           type="password"
           placeholder="Password"
           autocomplete="current-password"
           required>
-
 
         <button
           id="loginButton"
@@ -127,7 +218,6 @@
 
       </form>
 
-
       <p
         id="loginMessage"
         class="message"
@@ -137,7 +227,9 @@
     </div>
 
 
-    <!-- SELLER REGISTRATION -->
+    <!-- =================================
+         SELLER REGISTRATION
+    ================================== -->
 
     <div class="card">
 
@@ -145,11 +237,47 @@
 
       <form id="registerForm">
 
+
         <input
           id="registerName"
           type="text"
           placeholder="Full Name"
+          autocomplete="name"
           required>
+
+
+        <input
+          id="registerBusinessName"
+          type="text"
+          placeholder="Business Name"
+          autocomplete="organization"
+          required>
+
+
+        <input
+          id="registerGST"
+          type="text"
+          placeholder="GST Number / GSTIN"
+          maxlength="15"
+          style="text-transform:uppercase"
+          required>
+
+
+        <input
+          id="registerMobile"
+          type="tel"
+          placeholder="Mobile Number"
+          maxlength="10"
+          inputmode="numeric"
+          autocomplete="tel"
+          required>
+
+
+        <textarea
+          id="registerAddress"
+          placeholder="Business / Pickup Address"
+          autocomplete="street-address"
+          required></textarea>
 
 
         <input
@@ -202,14 +330,16 @@
 </section>
 
 
-<!-- =================================
+<!-- =====================================
      SELLER DASHBOARD
-================================= -->
+===================================== -->
 
 <section
   id="dashboardSection"
   style="display:none">
 
+
+  <!-- SELLER DETAILS -->
 
   <div class="card">
 
@@ -217,16 +347,24 @@
 
     <p id="welcome"></p>
 
+    <div
+      id="sellerInfo"
+      class="seller-info">
+    </div>
+
   </div>
 
 
-  <!-- ADD PRODUCT -->
+  <!-- =================================
+       ADD PRODUCT
+  ================================== -->
 
   <div class="card">
 
     <h2>Add Product</h2>
 
     <form id="productForm">
+
 
       <input
         id="productName"
@@ -237,8 +375,7 @@
 
       <textarea
         id="productDescription"
-        placeholder="Description">
-      </textarea>
+        placeholder="Product description"></textarea>
 
 
       <input
@@ -272,6 +409,7 @@
 
       </button>
 
+
     </form>
 
 
@@ -284,7 +422,9 @@
   </div>
 
 
-  <!-- MY PRODUCTS -->
+  <!-- =================================
+       MY PRODUCTS
+  ================================== -->
 
   <h2>
     My Products
@@ -306,12 +446,13 @@
 
 <script>
 
+
 /* =====================================
    SHIPNOVA RENDER API
 ===================================== */
 
 const API =
-  "https://shipnovashop-1.onrender.com";
+  "https://shipnovashop.onrender.com";
 
 
 /* =====================================
@@ -503,8 +644,9 @@ function logout(){
     USER_KEY
   );
 
+
   window.location.replace(
-    "login.html"
+    "index.html"
   );
 
 }
@@ -517,7 +659,7 @@ function logout(){
 function showMessage(
   element,
   text,
-  type
+  type = ""
 ){
 
   element.textContent =
@@ -528,6 +670,73 @@ function showMessage(
 
   element.style.display =
     "block";
+
+}
+
+
+/* =====================================
+   SHOW SELLER INFORMATION
+===================================== */
+
+function showSellerInfo(user){
+
+  const info =
+    document.getElementById(
+      "sellerInfo"
+    );
+
+
+  info.innerHTML = `
+
+    <div class="info-box">
+      <strong>Name</strong>
+      <br>
+      ${escapeHtml(
+        user.name || ""
+      )}
+    </div>
+
+    <div class="info-box">
+      <strong>Business</strong>
+      <br>
+      ${escapeHtml(
+        user.businessName || "Not provided"
+      )}
+    </div>
+
+    <div class="info-box">
+      <strong>GSTIN</strong>
+      <br>
+      ${escapeHtml(
+        user.gstNumber || "Not provided"
+      )}
+    </div>
+
+    <div class="info-box">
+      <strong>Mobile</strong>
+      <br>
+      ${escapeHtml(
+        user.mobile || "Not provided"
+      )}
+    </div>
+
+    <div class="info-box">
+      <strong>Email</strong>
+      <br>
+      ${escapeHtml(
+        user.email || ""
+      )}
+    </div>
+
+    <div class="info-box">
+      <strong>Address</strong>
+      <br>
+      ${escapeHtml(
+        user.address || "Not provided"
+      )}
+    </div>
+
+  `;
 
 }
 
@@ -587,6 +796,11 @@ function showDashboard(){
       "!";
 
 
+  showSellerInfo(
+    currentUser
+  );
+
+
   loadProducts();
 
 }
@@ -636,15 +850,15 @@ document
           .value;
 
 
+      button.disabled =
+        true;
+
+
       showMessage(
         message,
         "Logging in...",
-        ""
+        "info"
       );
-
-
-      button.disabled =
-        true;
 
 
       try{
@@ -657,9 +871,13 @@ document
 
               body:
                 JSON.stringify({
-                  email,
-                  password
+
+                  email:email,
+
+                  password:password
+
                 })
+
             }
           );
 
@@ -674,6 +892,17 @@ document
 
           throw new Error(
             "This account is not a seller account."
+          );
+
+        }
+
+
+        if(
+          !result.token
+        ){
+
+          throw new Error(
+            "Login token was not received."
           );
 
         }
@@ -757,6 +986,43 @@ document
           .trim();
 
 
+      const businessName =
+        document
+          .getElementById(
+            "registerBusinessName"
+          )
+          .value
+          .trim();
+
+
+      const gstNumber =
+        document
+          .getElementById(
+            "registerGST"
+          )
+          .value
+          .trim()
+          .toUpperCase();
+
+
+      const mobile =
+        document
+          .getElementById(
+            "registerMobile"
+          )
+          .value
+          .trim();
+
+
+      const address =
+        document
+          .getElementById(
+            "registerAddress"
+          )
+          .value
+          .trim();
+
+
       const email =
         document
           .getElementById(
@@ -783,6 +1049,8 @@ document
           .value;
 
 
+      /* PASSWORD */
+
       if(
         password.length < 6
       ){
@@ -797,6 +1065,8 @@ document
 
       }
 
+
+      /* CONFIRM PASSWORD */
 
       if(
         password !== confirm
@@ -813,6 +1083,71 @@ document
       }
 
 
+      /* GST VALIDATION */
+
+      const gstRegex =
+        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+
+      if(
+        !gstRegex.test(
+          gstNumber
+        )
+      ){
+
+        showMessage(
+          message,
+          "Please enter a valid 15-character GSTIN.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      /* MOBILE VALIDATION */
+
+      const mobileRegex =
+        /^[6-9][0-9]{9}$/;
+
+
+      if(
+        !mobileRegex.test(
+          mobile
+        )
+      ){
+
+        showMessage(
+          message,
+          "Please enter a valid 10-digit mobile number.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      /* REQUIRED FIELDS */
+
+      if(
+        !name ||
+        !businessName ||
+        !address
+      ){
+
+        showMessage(
+          message,
+          "Please fill all required seller details.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
       button.disabled =
         true;
 
@@ -820,7 +1155,7 @@ document
       showMessage(
         message,
         "Creating seller account...",
-        ""
+        "info"
       );
 
 
@@ -841,9 +1176,22 @@ document
 
                   password:password,
 
-                  role:"seller"
+                  role:"seller",
+
+                  businessName:
+                    businessName,
+
+                  gstNumber:
+                    gstNumber,
+
+                  mobile:
+                    mobile,
+
+                  address:
+                    address
 
                 })
+
             }
           );
 
@@ -863,6 +1211,17 @@ document
         }
 
 
+        if(
+          !result.token
+        ){
+
+          throw new Error(
+            "Registration token was not received."
+          );
+
+        }
+
+
         saveAuth(
           result
         );
@@ -877,7 +1236,7 @@ document
 
         setTimeout(
           showDashboard,
-          300
+          500
         );
 
 
@@ -927,13 +1286,24 @@ async function loadProducts(){
     !currentUser.id
   ){
 
+    list.innerHTML =
+      `
+      <div class="card">
+        <p>Seller information not found.</p>
+      </div>
+      `;
+
     return;
 
   }
 
 
   list.innerHTML =
-    "<div class='card'>Loading products...</div>";
+    `
+    <div class="card">
+      Loading products...
+    </div>
+    `;
 
 
   try{
@@ -955,7 +1325,16 @@ async function loadProducts(){
       list.innerHTML =
         `
         <div class="card">
-          <p>No products yet.</p>
+
+          <p>
+            No products yet.
+          </p>
+
+          <p>
+            Use the Add Product form above
+            to add your first product.
+          </p>
+
         </div>
         `;
 
@@ -969,13 +1348,31 @@ async function loadProducts(){
         .map(
           function(product){
 
+            const image =
+              product.image
+                ? `
+                  <img
+                    class="product-image"
+                    src="${escapeHtml(
+                      product.image
+                    )}"
+                    alt="${escapeHtml(
+                      product.name
+                    )}"
+                    onerror="this.style.display='none'">
+                `
+                : "";
+
+
             return `
 
-              <div class="card">
+              <div class="card product-card">
 
-                <div class="row">
+                <div class="product-row">
 
-                  <div style="flex:1">
+                  ${image}
+
+                  <div class="product-content">
 
                     <h3>
                       ${escapeHtml(
@@ -985,8 +1382,7 @@ async function loadProducts(){
 
                     <p>
                       ${escapeHtml(
-                        product.description ||
-                        ""
+                        product.description || ""
                       )}
                     </p>
 
@@ -994,16 +1390,18 @@ async function loadProducts(){
 
                       <b>
                         ₹${escapeHtml(
-                          String(
-                            product.price
-                          )
+                          Number(
+                            product.price || 0
+                          ).toFixed(2)
                         )}
                       </b>
 
-                      · Stock
+                      &nbsp;·&nbsp;
+
+                      Stock:
                       ${escapeHtml(
                         String(
-                          product.stock
+                          product.stock ?? 0
                         )
                       )}
 
@@ -1015,8 +1413,9 @@ async function loadProducts(){
                   <button
                     class="danger"
                     type="button"
-                    onclick=
-                      "deleteProduct(${product.id})">
+                    onclick="deleteProduct(${Number(
+                      product.id
+                    )})">
 
                     Delete
 
@@ -1034,6 +1433,12 @@ async function loadProducts(){
 
 
   }catch(error){
+
+    console.error(
+      "Load products:",
+      error
+    );
+
 
     list.innerHTML =
       `
@@ -1137,12 +1542,34 @@ document
 
       if(
         price === "" ||
-        Number(price) < 0
+        Number(price) < 0 ||
+        !Number.isFinite(
+          Number(price)
+        )
       ){
 
         showMessage(
           message,
           "Please enter a valid price.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if(
+        stock === "" ||
+        Number(stock) < 0 ||
+        !Number.isInteger(
+          Number(stock)
+        )
+      ){
+
+        showMessage(
+          message,
+          "Please enter a valid stock quantity.",
           "error"
         );
 
@@ -1158,7 +1585,7 @@ document
       showMessage(
         message,
         "Adding product...",
-        ""
+        "info"
       );
 
 
@@ -1181,13 +1608,13 @@ document
                   Number(price),
 
                 stock:
-                  Number(
-                    stock || 0
-                  ),
+                  Number(stock),
 
-                image:image
+                image:
+                  image
 
               })
+
           }
         );
 
@@ -1210,6 +1637,12 @@ document
 
 
       }catch(error){
+
+        console.error(
+          "Add product:",
+          error
+        );
+
 
         showMessage(
           message,
@@ -1249,7 +1682,7 @@ async function deleteProduct(id){
 
     await api(
       "/api/products/" +
-      id,
+      encodeURIComponent(id),
       {
         method:"DELETE"
       }
@@ -1261,8 +1694,15 @@ async function deleteProduct(id){
 
   }catch(error){
 
+    console.error(
+      "Delete product:",
+      error
+    );
+
+
     alert(
-      error.message
+      error.message ||
+      "Could not delete product."
     );
 
   }
@@ -1279,22 +1719,27 @@ function escapeHtml(value){
   return String(
     value ?? ""
   )
+
   .replace(
     /&/g,
     "&amp;"
   )
+
   .replace(
     /</g,
     "&lt;"
   )
+
   .replace(
     />/g,
     "&gt;"
   )
+
   .replace(
     /"/g,
     "&quot;"
   )
+
   .replace(
     /'/g,
     "&#039;"
@@ -1307,9 +1752,4 @@ function escapeHtml(value){
    START
 ===================================== */
 
-showDashboard();
-
-</script>
-
-</body>
-</html>
+show
