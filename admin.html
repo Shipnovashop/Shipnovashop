@@ -1,1568 +1,1964 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - ShipNovaShop</title>
+  <link rel="stylesheet" href="style.css">
 
-<meta charset="utf-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1">
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      font-family: Arial, sans-serif;
+      color: #1f2937;
+    }
 
-<title>Admin Panel - ShipNovaShop</title>
+    .topbar {
+      background: #111827;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-<link rel="stylesheet" href="style.css">
+    .topbar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
 
-<style>
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
 
-.admin-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-}
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
 
-.stat-card{
-  text-align:center;
-  padding:20px;
-}
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 9px 13px;
+      cursor: pointer;
+    }
 
-.stat-number{
-  font-size:32px;
-  font-weight:bold;
-  margin-top:8px;
-}
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
 
-.admin-section{
-  margin-top:25px;
-}
+    .btn-success {
+      background: #16a34a;
+      color: white;
+    }
 
-.table-wrap{
-  overflow-x:auto;
-}
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:700px;
-}
+    .btn-warning {
+      background: #d97706;
+      color: white;
+    }
 
-th,
-td{
-  padding:12px;
-  border-bottom:1px solid #ddd;
-  text-align:left;
-}
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
 
-th{
-  font-weight:bold;
-}
+    .btn-small {
+      padding: 6px 9px;
+      font-size: 12px;
+    }
 
-.status-select{
-  padding:7px;
-  border-radius:6px;
-}
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      padding: 20px;
+    }
 
-.danger{
-  background:#dc2626;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
-  cursor:pointer;
-}
+    .hidden {
+      display: none !important;
+    }
 
-.message{
-  margin-top:12px;
-  padding:10px;
-  border-radius:7px;
-}
+    .login-box {
+      max-width: 420px;
+      margin: 70px auto;
+      background: white;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0,0,0,.08);
+    }
 
-.error{
-  background:#fee2e2;
-  color:#991b1b;
-}
+    .login-box h2 {
+      margin-top: 0;
+    }
 
-.success{
-  background:#dcfce7;
-  color:#166534;
-}
+    .form-group {
+      margin-bottom: 14px;
+    }
 
-.info{
-  background:#e0f2fe;
-  color:#075985;
-}
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
 
-.loading{
-  padding:20px;
-  text-align:center;
-}
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      background: white;
+    }
 
-@media(max-width:900px){
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
 
-  .admin-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
+    .login-error,
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 7px;
+      display: none;
+    }
 
-}
+    .login-error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
 
-@media(max-width:600px){
+    .message {
+      background: #dcfce7;
+      color: #166534;
+    }
 
-  .admin-grid{
-    grid-template-columns:1fr;
-  }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
 
-}
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
 
-</style>
+    .stat-card .label {
+      font-size: 13px;
+      color: #6b7280;
+    }
 
+    .stat-card .value {
+      font-size: 25px;
+      font-weight: bold;
+      margin-top: 7px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .section-header h3 {
+      margin: 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 700;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge-active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-completed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      z-index: 999;
+    }
+
+    .modal-box {
+      background: white;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+    }
+
+    .close {
+      background: #e5e7eb;
+      color: #111827;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .order-summary {
+      background: #f9fafb;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .order-item {
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .order-item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .image-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    @media (max-width: 1100px) {
+      .stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 10px;
+      }
+
+      .topbar {
+        padding: 12px;
+      }
+
+      .topbar h2 {
+        font-size: 16px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+
+      .section {
+        padding: 12px;
+      }
+    }
+  </style>
 </head>
-
 
 <body>
 
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <h2>🚚 ShipNovaShop Admin</h2>
 
-<!-- =====================================
-     NAVIGATION
-===================================== -->
-
-<nav>
-
-  <b>ShipNova Admin</b>
-
-  <span>
-
-    <a href="index.html">
-      Home
-    </a>
-
-    <button
-      type="button"
-      onclick="logout()">
-
-      Logout
-
-    </button>
-
-  </span>
-
-</nav>
-
-
-<main class="container">
-
-
-<!-- =====================================
-     ADMIN LOGIN
-===================================== -->
-
-<section
-  id="loginSection"
-  style="display:none">
-
-  <div
-    class="card"
-    style="max-width:500px;margin:40px auto">
-
-    <h1>Admin Login</h1>
-
-    <p>
-      Login to ShipNovaShop administration.
-    </p>
-
-
-    <form id="loginForm">
-
-      <input
-        id="email"
-        type="email"
-        placeholder="Admin Email"
-        autocomplete="username"
-        required>
-
-
-      <input
-        id="password"
-        type="password"
-        placeholder="Admin Password"
-        autocomplete="current-password"
-        required>
-
-
-      <button
-        id="loginButton"
-        type="submit">
-
-        Admin Login
-
+    <div class="top-actions">
+      <button class="btn-secondary" onclick="location.href='index.html'">
+        Home
       </button>
 
+      <button class="btn-danger" onclick="logout()">
+        Logout
+      </button>
+    </div>
+  </div>
+
+
+  <!-- LOGIN -->
+  <div id="loginSection" class="login-box">
+    <h2>Admin Login</h2>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="Admin email"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Admin password"
+          required
+        >
+      </div>
+
+      <button class="btn-primary" type="submit">
+        Login
+      </button>
     </form>
 
-
-    <p
-      id="loginMessage"
-      class="message"
-      style="display:none">
-    </p>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================
-     ADMIN DASHBOARD
-===================================== -->
-
-<section
-  id="dashboardSection"
-  style="display:none">
-
-
-  <div class="card">
-
-    <h1>Admin Dashboard</h1>
-
-    <p id="welcome"></p>
-
+    <div id="loginError" class="login-error"></div>
   </div>
 
 
-  <!-- =================================
-       STATISTICS
-  ================================== -->
+  <!-- ADMIN DASHBOARD -->
+  <main id="dashboardSection" class="container hidden">
 
-  <div class="admin-grid">
+    <!-- STATS -->
+    <div class="stats">
 
-
-    <div class="card stat-card">
-
-      <div>
-        Users
+      <div class="stat-card">
+        <div class="label">Users</div>
+        <div class="value" id="statUsers">0</div>
       </div>
 
-      <div
-        id="totalUsers"
-        class="stat-number">
-
-        0
-
+      <div class="stat-card">
+        <div class="label">Customers</div>
+        <div class="value" id="statCustomers">0</div>
       </div>
 
-    </div>
-
-
-    <div class="card stat-card">
-
-      <div>
-        Sellers
+      <div class="stat-card">
+        <div class="label">Sellers</div>
+        <div class="value" id="statSellers">0</div>
       </div>
 
-      <div
-        id="totalSellers"
-        class="stat-number">
-
-        0
-
+      <div class="stat-card">
+        <div class="label">Active Sellers</div>
+        <div class="value" id="statActiveSellers">0</div>
       </div>
 
-    </div>
-
-
-    <div class="card stat-card">
-
-      <div>
-        Products
+      <div class="stat-card">
+        <div class="label">Products</div>
+        <div class="value" id="statProducts">0</div>
       </div>
 
-      <div
-        id="totalProducts"
-        class="stat-number">
+      <div class="stat-card">
+        <div class="label">Orders</div>
+        <div class="value" id="statOrders">0</div>
+      </div>
 
-        0
-
+      <div class="stat-card">
+        <div class="label">Revenue</div>
+        <div class="value" id="statRevenue">₹0</div>
       </div>
 
     </div>
 
 
-    <div class="card stat-card">
+    <!-- SELLER MANAGEMENT -->
+    <section class="section">
 
-      <div>
-        Orders
+      <div class="section-header">
+        <h3>👨‍💼 Seller Management</h3>
+
+        <button
+          class="btn-primary btn-small"
+          onclick="loadSellers()"
+        >
+          Refresh
+        </button>
       </div>
 
-      <div
-        id="totalOrders"
-        class="stat-number">
+      <div class="table-wrap">
 
-        0
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Seller</th>
+              <th>Business</th>
+              <th>GSTIN</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Address</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="sellerList"></tbody>
+        </table>
 
       </div>
+    </section>
+
+
+    <!-- CUSTOMER MANAGEMENT -->
+    <section class="section">
+
+      <div class="section-header">
+        <h3>👥 Customers / Users</h3>
+
+        <button
+          class="btn-primary btn-small"
+          onclick="loadCustomers()"
+        >
+          Refresh
+        </button>
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Mobile</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+
+          <tbody id="customerList"></tbody>
+        </table>
+
+      </div>
+    </section>
+
+
+    <!-- PRODUCT MANAGEMENT -->
+    <section class="section">
+
+      <div class="section-header">
+        <h3>📦 Product Management</h3>
+
+        <button
+          class="btn-primary btn-small"
+          onclick="loadProducts()"
+        >
+          Refresh
+        </button>
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Image</th>
+              <th>Product</th>
+              <th>Seller</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="productList"></tbody>
+        </table>
+
+      </div>
+    </section>
+
+
+    <!-- ORDERS -->
+    <section class="section">
+
+      <div class="section-header">
+        <h3>🛒 Orders</h3>
+
+        <button
+          class="btn-primary btn-small"
+          onclick="loadOrders()"
+        >
+          Refresh
+        </button>
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="orderList"></tbody>
+        </table>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- SELLER EDIT MODAL -->
+  <div id="sellerModal" class="modal hidden">
+
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <h3>✏️ Edit Seller</h3>
+
+        <button
+          class="close"
+          onclick="closeModal('sellerModal')"
+        >
+          ×
+        </button>
+      </div>
+
+      <form id="sellerForm">
+
+        <input type="hidden" id="sellerId">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Name</label>
+            <input id="sellerName" required>
+          </div>
+
+          <div class="form-group">
+            <label>Email</label>
+            <input id="sellerEmail" type="email" required>
+          </div>
+
+          <div class="form-group">
+            <label>Business Name</label>
+            <input id="sellerBusiness">
+          </div>
+
+          <div class="form-group">
+            <label>GSTIN</label>
+            <input id="sellerGST">
+          </div>
+
+          <div class="form-group">
+            <label>Mobile</label>
+            <input id="sellerMobile">
+          </div>
+
+          <div class="form-group full">
+            <label>Address</label>
+            <textarea id="sellerAddress"></textarea>
+          </div>
+
+        </div>
+
+        <button class="btn-success" type="submit">
+          Save Seller
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          onclick="closeModal('sellerModal')"
+        >
+          Cancel
+        </button>
+
+      </form>
 
     </div>
-
-
   </div>
 
 
-  <!-- =================================
-       SELLERS
-  ================================== -->
+  <!-- PRODUCT EDIT MODAL -->
+  <div id="productModal" class="modal hidden">
 
-  <section class="admin-section">
+    <div class="modal-box">
 
-    <div class="card">
+      <div class="modal-header">
+        <h3>✏️ Edit Product</h3>
 
-      <h2>All Sellers</h2>
-
-      <div
-        id="sellerList"
-        class="table-wrap">
-
-        <div class="loading">
-          Loading sellers...
-        </div>
-
+        <button
+          class="close"
+          onclick="closeModal('productModal')"
+        >
+          ×
+        </button>
       </div>
 
-    </div>
+      <form id="productForm">
 
-  </section>
+        <input type="hidden" id="productId">
 
+        <div class="form-grid">
 
-  <!-- =================================
-       CUSTOMERS
-  ================================== -->
+          <div class="form-group full">
+            <label>Product Name</label>
+            <input id="productName" required>
+          </div>
 
-  <section class="admin-section">
+          <div class="form-group">
+            <label>Price</label>
+            <input id="productPrice" type="number" min="0" step="0.01" required>
+          </div>
 
-    <div class="card">
+          <div class="form-group">
+            <label>Stock</label>
+            <input id="productStock" type="number" min="0" required>
+          </div>
 
-      <h2>All Customers</h2>
+          <div class="form-group full">
+            <label>Image URL</label>
+            <input id="productImage">
+          </div>
 
-      <div
-        id="customerList"
-        class="table-wrap">
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="productDescription"></textarea>
+          </div>
 
-        <div class="loading">
-          Loading customers...
+          <div class="form-group">
+            <label>Status</label>
+
+            <select id="productActive">
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
         </div>
 
-      </div>
+        <button class="btn-success" type="submit">
+          Save Product
+        </button>
+
+        <button
+          type="button"
+          class="btn-secondary"
+          onclick="closeModal('productModal')"
+        >
+          Cancel
+        </button>
+
+      </form>
 
     </div>
+  </div>
 
-  </section>
 
+  <!-- ORDER DETAILS MODAL -->
+  <div id="orderModal" class="modal hidden">
 
-  <!-- =================================
-       PRODUCTS
-  ================================== -->
+    <div class="modal-box">
 
-  <section class="admin-section">
+      <div class="modal-header">
+        <h3>🧾 Order Details</h3>
 
-    <div class="card">
-
-      <h2>All Products</h2>
-
-      <div
-        id="productList"
-        class="table-wrap">
-
-        <div class="loading">
-          Loading products...
-        </div>
-
+        <button
+          class="close"
+          onclick="closeModal('orderModal')"
+        >
+          ×
+        </button>
       </div>
 
-    </div>
-
-  </section>
-
-
-  <!-- =================================
-       ORDERS
-  ================================== -->
-
-  <section class="admin-section">
-
-    <div class="card">
-
-      <h2>All Orders</h2>
-
-      <div
-        id="orderList"
-        class="table-wrap">
-
-        <div class="loading">
-          Loading orders...
-        </div>
-
-      </div>
+      <div id="orderDetails"></div>
 
     </div>
-
-  </section>
-
-
-</section>
-
-
-</main>
+  </div>
 
 
 <script>
 
-
-/* =====================================
-   API
-===================================== */
-
 const API =
+  window.SHIPNOVA_API ||
   "https://shipnovashop.onrender.com";
 
-
-/* =====================================
-   STORAGE
-===================================== */
-
-const TOKEN_KEY =
-  "shipnova_token";
-
-const USER_KEY =
-  "shipnova_user";
+const TOKEN_KEY = "shipnova_token";
+const USER_KEY = "shipnova_user";
 
 
-/* =====================================
-   ELEMENTS
-===================================== */
-
-const loginSection =
-  document.getElementById(
-    "loginSection"
-  );
-
-const dashboardSection =
-  document.getElementById(
-    "dashboardSection"
-  );
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
 
 
-/* =====================================
-   API HELPER
-===================================== */
+function escapeHTML(value) {
 
-async function api(
-  path,
-  options = {}
-){
+  if (value === null || value === undefined) {
+    return "";
+  }
 
-  const token =
-    localStorage.getItem(
-      TOKEN_KEY
-    );
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
+
+async function api(path, options = {}) {
 
   const headers = {
-
-    "Content-Type":
-      "application/json",
-
+    "Content-Type": "application/json",
     ...(options.headers || {})
-
   };
 
+  const token = getToken();
 
-  if(token){
-
-    headers.Authorization =
-      "Bearer " + token;
-
+  if (token) {
+    headers.Authorization = "Bearer " + token;
   }
 
+  const response = await fetch(API + path, {
+    ...options,
+    headers
+  });
 
-  const response =
-    await fetch(
-      API + path,
-      {
-        ...options,
-        headers
-      }
-    );
+  let data = null;
 
-
-  let data = {};
-
-
-  try{
-
-    data =
-      await response.json();
-
-  }catch{
-
+  try {
+    data = await response.json();
+  } catch {
     data = {};
-
   }
 
-
-  if(!response.ok){
-
-    if(
-      response.status === 401 ||
-      response.status === 403
-    ){
-
-      localStorage.removeItem(
-        TOKEN_KEY
-      );
-
-      localStorage.removeItem(
-        USER_KEY
-      );
-
-    }
-
-
-    throw new Error(
-      data.error ||
-      data.message ||
-      "Request failed (" +
-      response.status +
-      ")"
-    );
-
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
   }
-
 
   return data;
-
 }
 
 
-/* =====================================
-   USER
-===================================== */
-
-function getUser(){
-
-  try{
-
-    return JSON.parse(
-      localStorage.getItem(
-        USER_KEY
-      ) || "null"
-    );
-
-  }catch{
-
-    return null;
-
-  }
-
-}
-
-
-/* =====================================
-   SAVE AUTH
-===================================== */
-
-function saveAuth(data){
-
-  if(
-    !data ||
-    !data.token ||
-    !data.user
-  ){
-
-    throw new Error(
-      "Invalid login response."
-    );
-
-  }
-
-
-  localStorage.setItem(
-    TOKEN_KEY,
-    data.token
-  );
-
-
-  localStorage.setItem(
-    USER_KEY,
-    JSON.stringify(
-      data.user
-    )
-  );
-
-}
-
-
-/* =====================================
-   LOGOUT
-===================================== */
-
-function logout(){
-
-  localStorage.removeItem(
-    TOKEN_KEY
-  );
-
-  localStorage.removeItem(
-    USER_KEY
-  );
-
-
-  window.location.replace(
-    "index.html"
-  );
-
-}
-
-
-/* =====================================
-   ESCAPE HTML
-===================================== */
-
-function escapeHtml(value){
-
-  return String(
-    value ?? ""
-  )
-
-  .replace(
-    /&/g,
-    "&amp;"
-  )
-
-  .replace(
-    /</g,
-    "&lt;"
-  )
-
-  .replace(
-    />/g,
-    "&gt;"
-  )
-
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-
-  .replace(
-    /'/g,
-    "&#039;"
-  );
-
-}
-
-
-/* =====================================
-   LOGIN
-===================================== */
+/* LOGIN */
 
 document
-  .getElementById(
-    "loginForm"
-  )
-  .addEventListener(
-    "submit",
-    async function(e){
+  .getElementById("loginForm")
+  .addEventListener("submit", async function(e) {
 
-      e.preventDefault();
+    e.preventDefault();
 
+    const email =
+      document.getElementById("loginEmail").value.trim();
 
-      const email =
-        document
-          .getElementById(
-            "email"
-          )
-          .value
-          .trim()
-          .toLowerCase();
+    const password =
+      document.getElementById("loginPassword").value;
 
+    const errorBox =
+      document.getElementById("loginError");
 
-      const password =
-        document
-          .getElementById(
-            "password"
-          )
-          .value;
+    errorBox.style.display = "none";
 
+    try {
 
-      const button =
-        document.getElementById(
-          "loginButton"
-        );
+      const data = await api("/api/auth/login", {
+        method: "POST",
 
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
 
-      const message =
-        document.getElementById(
-          "loginMessage"
-        );
-
-
-      button.disabled =
-        true;
-
-
-      message.style.display =
-        "block";
-
-      message.className =
-        "message info";
-
-      message.textContent =
-        "Logging in...";
-
-
-      try{
-
-        const result =
-          await api(
-            "/api/auth/login",
-            {
-              method:"POST",
-
-              body:
-                JSON.stringify({
-
-                  email:email,
-
-                  password:password
-
-                })
-
-            }
-          );
-
-
-        if(
-          !result.user ||
-          String(
-            result.user.role
-          ).toLowerCase()
-          !== "admin"
-        ){
-
-          throw new Error(
-            "This account is not an admin account."
-          );
-
-        }
-
-
-        saveAuth(
-          result
-        );
-
-
-        message.className =
-          "message success";
-
-        message.textContent =
-          "Admin login successful.";
-
-
-        setTimeout(
-          showDashboard,
-          300
-        );
-
-
-      }catch(error){
-
-        console.error(
-          "Admin login:",
-          error
-        );
-
-
-        message.className =
-          "message error";
-
-        message.textContent =
-          error.message ||
-          "Admin login failed.";
-
-
-        button.disabled =
-          false;
-
+      if (!data.token) {
+        throw new Error("Login token not received");
       }
 
+      localStorage.setItem(
+        TOKEN_KEY,
+        data.token
+      );
+
+      localStorage.setItem(
+        USER_KEY,
+        JSON.stringify(data.user || {})
+      );
+
+      checkAdmin();
+
+    } catch (error) {
+
+      errorBox.textContent =
+        error.message || "Login failed";
+
+      errorBox.style.display = "block";
     }
-  );
+
+  });
 
 
-/* =====================================
-   SHOW DASHBOARD
-===================================== */
+/* ADMIN CHECK */
 
-function showDashboard(){
+function checkAdmin() {
 
-  const user =
-    getUser();
+  const token = getToken();
 
-  const token =
-    localStorage.getItem(
-      TOKEN_KEY
-    );
+  if (!token) {
 
+    document
+      .getElementById("loginSection")
+      .classList.remove("hidden");
 
-  if(
-    !token ||
-    !user ||
-    String(
-      user.role
-    ).toLowerCase()
-    !== "admin"
-  ){
-
-    loginSection.style.display =
-      "block";
-
-    dashboardSection.style.display =
-      "none";
+    document
+      .getElementById("dashboardSection")
+      .classList.add("hidden");
 
     return;
-
   }
 
+  let user = {};
 
-  loginSection.style.display =
-    "none";
+  try {
+    user = JSON.parse(
+      localStorage.getItem(USER_KEY) || "{}"
+    );
+  } catch {}
 
-  dashboardSection.style.display =
-    "block";
+  if (user.role && user.role !== "admin") {
 
+    alert("Admin access required.");
+
+    logout();
+
+    return;
+  }
 
   document
-    .getElementById(
-      "welcome"
-    )
-    .textContent =
-      "Welcome, " +
-      (
-        user.name ||
-        "Admin"
-      ) +
-      "!";
+    .getElementById("loginSection")
+    .classList.add("hidden");
 
+  document
+    .getElementById("dashboardSection")
+    .classList.remove("hidden");
 
   loadDashboard();
-
 }
 
 
-/* =====================================
-   LOAD DASHBOARD
-===================================== */
+/* DASHBOARD */
 
-async function loadDashboard(){
+async function loadDashboard() {
 
-  await Promise.allSettled([
+  try {
 
-    loadStats(),
+    const stats = await api("/api/stats");
 
-    loadSellers(),
+    document.getElementById("statUsers").textContent =
+      stats.users ?? 0;
 
-    loadCustomers(),
+    document.getElementById("statCustomers").textContent =
+      stats.customers ?? 0;
 
-    loadProducts(),
+    document.getElementById("statSellers").textContent =
+      stats.sellers ?? 0;
 
-    loadOrders()
+    document.getElementById("statActiveSellers").textContent =
+      stats.activeSellers ?? 0;
 
-  ]);
+    document.getElementById("statProducts").textContent =
+      stats.products ?? 0;
 
-}
+    document.getElementById("statOrders").textContent =
+      stats.orders ?? 0;
 
+    document.getElementById("statRevenue").textContent =
+      "₹" + Number(stats.revenue || 0).toLocaleString("en-IN");
 
-/* =====================================
-   STATISTICS
-===================================== */
+  } catch (error) {
 
-async function loadStats(){
-
-  try{
-
-    const data =
-      await api(
-        "/api/stats"
-      );
-
-
-    const stats =
-      data.stats ||
-      data;
-
-
-    document
-      .getElementById(
-        "totalUsers"
-      )
-      .textContent =
-        stats.users ??
-        stats.totalUsers ??
-        0;
-
-
-    document
-      .getElementById(
-        "totalSellers"
-      )
-      .textContent =
-        stats.sellers ??
-        stats.totalSellers ??
-        0;
-
-
-    document
-      .getElementById(
-        "totalProducts"
-      )
-      .textContent =
-        stats.products ??
-        stats.totalProducts ??
-        0;
-
-
-    document
-      .getElementById(
-        "totalOrders"
-      )
-      .textContent =
-        stats.orders ??
-        stats.totalOrders ??
-        0;
-
-
-  }catch(error){
-
-    console.error(
-      "Stats:",
-      error
-    );
+    console.error("Stats error:", error);
 
   }
 
+  await Promise.all([
+    loadSellers(),
+    loadCustomers(),
+    loadProducts(),
+    loadOrders()
+  ]);
 }
 
 
-/* =====================================
-   SELLERS
-===================================== */
+/* SELLERS */
 
-async function loadSellers(){
+async function loadSellers() {
 
-  const box =
-    document.getElementById(
-      "sellerList"
-    );
+  const tbody =
+    document.getElementById("sellerList");
 
+  tbody.innerHTML =
+    `<tr><td colspan="9">Loading...</td></tr>`;
 
-  try{
+  try {
 
     const data =
-      await api(
-        "/api/sellers"
-      );
-
+      await api("/api/admin/sellers");
 
     const sellers =
-      data.sellers ||
-      [];
+      Array.isArray(data)
+        ? data
+        : (data.sellers || []);
 
+    if (!sellers.length) {
 
-    if(
-      sellers.length === 0
-    ){
-
-      box.innerHTML =
-        "<p>No sellers found.</p>";
+      tbody.innerHTML =
+        `<tr><td colspan="9" class="empty">
+          No sellers found
+        </td></tr>`;
 
       return;
+    }
+
+    tbody.innerHTML = sellers.map(seller => {
+
+      const active =
+        seller.active !== false;
+
+      return `
+        <tr>
+
+          <td>${escapeHTML(seller.id)}</td>
+
+          <td>
+            <strong>${escapeHTML(seller.name)}</strong>
+          </td>
+
+          <td>
+            ${escapeHTML(seller.businessName || "-")}
+          </td>
+
+          <td>
+            ${escapeHTML(seller.gstNumber || "-")}
+          </td>
+
+          <td>
+            ${escapeHTML(seller.mobile || "-")}
+          </td>
+
+          <td>
+            ${escapeHTML(seller.email || "-")}
+          </td>
+
+          <td>
+            ${escapeHTML(seller.address || "-")}
+          </td>
+
+          <td>
+            <span class="badge ${
+              active
+                ? "badge-active"
+                : "badge-inactive"
+            }">
+              ${active ? "Active" : "Inactive"}
+            </span>
+          </td>
+
+          <td>
+            <div class="actions">
+
+              <button
+                class="btn-primary btn-small"
+                onclick='editSeller(${JSON.stringify(seller)})'
+              >
+                Edit
+              </button>
+
+              <button
+                class="${
+                  active
+                    ? "btn-danger"
+                    : "btn-success"
+                } btn-small"
+                onclick="toggleSeller(${seller.id}, ${active})"
+              >
+                ${active ? "Deactivate" : "Activate"}
+              </button>
+
+            </div>
+          </td>
+
+        </tr>
+      `;
+
+    }).join("");
+
+  } catch (error) {
+
+    tbody.innerHTML =
+      `<tr><td colspan="9">
+        Error: ${escapeHTML(error.message)}
+      </td></tr>`;
+
+  }
+}
+
+
+function editSeller(seller) {
+
+  document.getElementById("sellerId").value =
+    seller.id;
+
+  document.getElementById("sellerName").value =
+    seller.name || "";
+
+  document.getElementById("sellerEmail").value =
+    seller.email || "";
+
+  document.getElementById("sellerBusiness").value =
+    seller.businessName || "";
+
+  document.getElementById("sellerGST").value =
+    seller.gstNumber || "";
+
+  document.getElementById("sellerMobile").value =
+    seller.mobile || "";
+
+  document.getElementById("sellerAddress").value =
+    seller.address || "";
+
+  document
+    .getElementById("sellerModal")
+    .classList.remove("hidden");
+}
+
+
+document
+  .getElementById("sellerForm")
+  .addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const id =
+      document.getElementById("sellerId").value;
+
+    try {
+
+      await api(
+        "/api/admin/sellers/" + id,
+        {
+          method: "PUT",
+
+          body: JSON.stringify({
+            name:
+              document.getElementById("sellerName").value.trim(),
+
+            email:
+              document.getElementById("sellerEmail").value.trim(),
+
+            businessName:
+              document.getElementById("sellerBusiness").value.trim(),
+
+            gstNumber:
+              document.getElementById("sellerGST").value.trim(),
+
+            mobile:
+              document.getElementById("sellerMobile").value.trim(),
+
+            address:
+              document.getElementById("sellerAddress").value.trim()
+          })
+        }
+      );
+
+      alert("Seller updated successfully.");
+
+      closeModal("sellerModal");
+
+      await loadSellers();
+      await loadDashboardStatsOnly();
+
+    } catch (error) {
+
+      alert(error.message);
 
     }
 
-
-    box.innerHTML = `
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>ID</th>
-            <th>Name</th>
-            <th>Business</th>
-            <th>GSTIN</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Address</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          ${sellers.map(
-            seller => `
-
-              <tr>
-
-                <td>
-                  ${escapeHtml(
-                    seller.id
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.name
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.businessName ||
-                    ""
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.gstNumber ||
-                    ""
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.mobile ||
-                    ""
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.email
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    seller.address ||
-                    ""
-                  )}
-                </td>
-
-              </tr>
-
-            `
-          ).join("")}
-
-        </tbody>
-
-      </table>
-
-    `;
+  });
 
 
-  }catch(error){
+async function toggleSeller(id, active) {
 
-    box.innerHTML =
-      `
-      <p class="error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>
-      `;
+  const action =
+    active ? "deactivate" : "activate";
 
+  if (
+    !confirm(
+      `Are you sure you want to ${action} this seller?`
+    )
+  ) {
+    return;
   }
 
+  try {
+
+    await api(
+      "/api/admin/sellers/" + id + "/status",
+      {
+        method: "PUT",
+
+        body: JSON.stringify({
+          active: !active
+        })
+      }
+    );
+
+    await loadSellers();
+    await loadProducts();
+    await loadDashboardStatsOnly();
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
 }
 
 
-/* =====================================
-   CUSTOMERS
-===================================== */
+/* CUSTOMERS */
 
-async function loadCustomers(){
+async function loadCustomers() {
 
-  const box =
-    document.getElementById(
-      "customerList"
-    );
+  const tbody =
+    document.getElementById("customerList");
 
+  tbody.innerHTML =
+    `<tr><td colspan="6">Loading...</td></tr>`;
 
-  try{
+  try {
 
     const data =
-      await api(
-        "/api/users"
-      );
-
+      await api("/api/users");
 
     const users =
-      data.users ||
-      [];
-
+      Array.isArray(data)
+        ? data
+        : (data.users || []);
 
     const customers =
       users.filter(
-        user =>
-          String(
-            user.role
-          ).toLowerCase()
-          === "customer"
+        user => user.role === "customer"
       );
 
+    if (!customers.length) {
 
-    if(
-      customers.length === 0
-    ){
-
-      box.innerHTML =
-        "<p>No customers found.</p>";
+      tbody.innerHTML =
+        `<tr>
+          <td colspan="6" class="empty">
+            No customers found
+          </td>
+        </tr>`;
 
       return;
-
     }
 
+    tbody.innerHTML =
+      customers.map(user => `
+        <tr>
 
-    box.innerHTML = `
+          <td>${escapeHTML(user.id)}</td>
 
-      <table>
+          <td>${escapeHTML(user.name || "-")}</td>
 
-        <thead>
+          <td>${escapeHTML(user.email || "-")}</td>
 
-          <tr>
+          <td>${escapeHTML(user.role || "-")}</td>
 
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Created</th>
+          <td>${escapeHTML(user.mobile || "-")}</td>
 
-          </tr>
+          <td>
+            ${user.created_at
+              ? new Date(user.created_at).toLocaleString("en-IN")
+              : "-"}
+          </td>
 
-        </thead>
+        </tr>
+      `).join("");
 
-        <tbody>
+  } catch (error) {
 
-          ${customers.map(
-            user => `
-
-              <tr>
-
-                <td>
-                  ${escapeHtml(
-                    user.id
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    user.name
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    user.email
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    user.created_at ||
-                    ""
-                  )}
-                </td>
-
-              </tr>
-
-            `
-          ).join("")}
-
-        </tbody>
-
-      </table>
-
-    `;
-
-
-  }catch(error){
-
-    box.innerHTML =
-      `
-      <p class="error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>
-      `;
+    tbody.innerHTML =
+      `<tr><td colspan="6">
+        Error: ${escapeHTML(error.message)}
+      </td></tr>`;
 
   }
-
 }
 
 
-/* =====================================
-   PRODUCTS
-===================================== */
+/* PRODUCTS */
 
-async function loadProducts(){
+async function loadProducts() {
 
-  const box =
-    document.getElementById(
-      "productList"
-    );
+  const tbody =
+    document.getElementById("productList");
 
+  tbody.innerHTML =
+    `<tr><td colspan="8">Loading...</td></tr>`;
 
-  try{
+  try {
 
     const data =
-      await api(
-        "/api/products"
-      );
-
+      await api("/api/admin/products");
 
     const products =
-      data.products ||
-      [];
+      Array.isArray(data)
+        ? data
+        : (data.products || []);
 
+    if (!products.length) {
 
-    if(
-      products.length === 0
-    ){
-
-      box.innerHTML =
-        "<p>No products found.</p>";
+      tbody.innerHTML =
+        `<tr>
+          <td colspan="8" class="empty">
+            No products found
+          </td>
+        </tr>`;
 
       return;
-
     }
 
+    tbody.innerHTML =
+      products.map(product => {
 
-    box.innerHTML = `
+        const active =
+          product.active !== false;
 
-      <table>
-
-        <thead>
-
+        return `
           <tr>
 
-            <th>ID</th>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Seller ID</th>
-            <th>Active</th>
+            <td>${escapeHTML(product.id)}</td>
+
+            <td>
+              ${
+                product.image
+                ? `<img
+                    src="${escapeHTML(product.image)}"
+                    class="image-thumb"
+                    onerror="this.style.display='none'"
+                   >`
+                : "-"
+              }
+            </td>
+
+            <td>
+              <strong>
+                ${escapeHTML(product.name || "-")}
+              </strong>
+            </td>
+
+            <td>
+              ${escapeHTML(
+                product.seller_name ||
+                product.sellerName ||
+                "-"
+              )}
+            </td>
+
+            <td>
+              ₹${Number(product.price || 0).toLocaleString("en-IN")}
+            </td>
+
+            <td>
+              ${escapeHTML(product.stock ?? 0)}
+            </td>
+
+            <td>
+              <span class="badge ${
+                active
+                  ? "badge-active"
+                  : "badge-inactive"
+              }">
+                ${active ? "Active" : "Inactive"}
+              </span>
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="btn-primary btn-small"
+                  onclick='editProduct(${JSON.stringify(product)})'
+                >
+                  Edit
+                </button>
+
+                <button
+                  class="btn-danger btn-small"
+                  onclick="deleteProduct(${product.id})"
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </td>
 
           </tr>
+        `;
 
-        </thead>
+      }).join("");
 
-        <tbody>
+  } catch (error) {
 
-          ${products.map(
-            product => `
-
-              <tr>
-
-                <td>
-                  ${escapeHtml(
-                    product.id
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    product.name
-                  )}
-                </td>
-
-                <td>
-                  ₹${escapeHtml(
-                    String(
-                      product.price
-                    )
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    String(
-                      product.stock
-                    )
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    String(
-                      product.seller_id ||
-                      ""
-                    )
-                  )}
-                </td>
-
-                <td>
-                  ${product.active
-                    ? "Yes"
-                    : "No"}
-                </td>
-
-              </tr>
-
-            `
-          ).join("")}
-
-        </tbody>
-
-      </table>
-
-    `;
-
-
-  }catch(error){
-
-    box.innerHTML =
-      `
-      <p class="error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>
-      `;
+    tbody.innerHTML =
+      `<tr><td colspan="8">
+        Error: ${escapeHTML(error.message)}
+      </td></tr>`;
 
   }
-
 }
 
 
-/* =====================================
-   ORDERS
-===================================== */
+function editProduct(product) {
 
-async function loadOrders(){
+  document.getElementById("productId").value =
+    product.id;
 
-  const box =
-    document.getElementById(
-      "orderList"
-    );
+  document.getElementById("productName").value =
+    product.name || "";
+
+  document.getElementById("productPrice").value =
+    product.price ?? 0;
+
+  document.getElementById("productStock").value =
+    product.stock ?? 0;
+
+  document.getElementById("productImage").value =
+    product.image || "";
+
+  document.getElementById("productDescription").value =
+    product.description || "";
+
+  document.getElementById("productActive").value =
+    product.active === false ? "false" : "true";
+
+  document
+    .getElementById("productModal")
+    .classList.remove("hidden");
+}
 
 
-  try{
+document
+  .getElementById("productForm")
+  .addEventListener("submit", async function(e) {
 
-    const data =
+    e.preventDefault();
+
+    const id =
+      document.getElementById("productId").value;
+
+    try {
+
       await api(
-        "/api/admin/orders"
+        "/api/products/" + id,
+        {
+          method: "PUT",
+
+          body: JSON.stringify({
+            name:
+              document.getElementById("productName").value.trim(),
+
+            price:
+              Number(document.getElementById("productPrice").value),
+
+            stock:
+              Number(document.getElementById("productStock").value),
+
+            image:
+              document.getElementById("productImage").value.trim(),
+
+            description:
+              document.getElementById("productDescription").value.trim(),
+
+            active:
+              document.getElementById("productActive").value === "true"
+          })
+        }
       );
 
+      alert("Product updated successfully.");
 
-    const orders =
-      data.orders ||
-      [];
+      closeModal("productModal");
 
+      await loadProducts();
+      await loadDashboardStatsOnly();
 
-    if(
-      orders.length === 0
-    ){
+    } catch (error) {
 
-      box.innerHTML =
-        "<p>No orders found.</p>";
-
-      return;
+      alert(error.message);
 
     }
 
-
-    box.innerHTML = `
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Date</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          ${orders.map(
-            order => `
-
-              <tr>
-
-                <td>
-                  #${escapeHtml(
-                    order.id
-                  )}
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    order.customer_name ||
-                    order.customer_email ||
-                    ""
-                  )}
-                </td>
-
-                <td>
-                  ₹${escapeHtml(
-                    String(
-                      order.total ||
-                      order.total_amount ||
-                      0
-                    )
-                  )}
-                </td>
-
-                <td>
-
-                  <select
-                    class="status-select"
-                    onchange="updateOrderStatus(
-                      ${Number(order.id)},
-                      this.value
-                    )">
-
-                    ${[
-                      "pending",
-                      "confirmed",
-                      "shipped",
-                      "delivered",
-                      "cancelled"
-                    ].map(
-                      status => `
-
-                        <option
-                          value="${status}"
-                          ${
-                            String(
-                              order.status
-                            ).toLowerCase()
-                            === status
-                              ? "selected"
-                              : ""
-                          }>
-
-                          ${status}
-
-                        </option>
-
-                      `
-                    ).join("")}
-
-                  </select>
-
-                </td>
-
-                <td>
-                  ${escapeHtml(
-                    order.created_at ||
-                    ""
-                  )}
-                </td>
-
-              </tr>
-
-            `
-          ).join("")}
-
-        </tbody>
-
-      </table>
-
-    `;
+  });
 
 
-  }catch(error){
+async function deleteProduct(id) {
 
-    box.innerHTML =
-      `
-      <p class="error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>
-      `;
-
+  if (
+    !confirm(
+      "Are you sure you want to delete this product?"
+    )
+  ) {
+    return;
   }
 
+  try {
+
+    const result =
+      await api(
+        "/api/products/" + id,
+        {
+          method: "DELETE"
+        }
+      );
+
+    alert(
+      result.message ||
+      "Product deleted successfully."
+    );
+
+    await loadProducts();
+    await loadDashboardStatsOnly();
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
 }
 
 
-/* =====================================
-   UPDATE ORDER STATUS
-===================================== */
+/* ORDERS */
 
-async function updateOrderStatus(
-  id,
-  status
-){
+async function loadOrders() {
 
-  try{
+  const tbody =
+    document.getElementById("orderList");
+
+  tbody.innerHTML =
+    `<tr><td colspan="7">Loading...</td></tr>`;
+
+  try {
+
+    const data =
+      await api("/api/admin/orders");
+
+    const orders =
+      Array.isArray(data)
+        ? data
+        : (data.orders || []);
+
+    if (!orders.length) {
+
+      tbody.innerHTML =
+        `<tr>
+          <td colspan="7" class="empty">
+            No orders found
+          </td>
+        </tr>`;
+
+      return;
+    }
+
+    tbody.innerHTML =
+      orders.map(order => {
+
+        const itemCount =
+          Array.isArray(order.items)
+            ? order.items.reduce(
+                (sum, item) =>
+                  sum + Number(item.quantity || 0),
+                0
+              )
+            : (order.item_count || 0);
+
+        return `
+          <tr>
+
+            <td>
+              <strong>#${escapeHTML(order.id)}</strong>
+            </td>
+
+            <td>
+              ${escapeHTML(
+                order.customer_name ||
+                order.customerName ||
+                "-"
+              )}
+
+              <br>
+
+              <small>
+                ${escapeHTML(
+                  order.customer_email ||
+                  order.customerEmail ||
+                  ""
+                )}
+              </small>
+            </td>
+
+            <td>
+              ${
+                order.created_at
+                ? new Date(
+                    order.created_at
+                  ).toLocaleString("en-IN")
+                : "-"
+              }
+            </td>
+
+            <td>
+              ${itemCount}
+            </td>
+
+            <td>
+              <strong>
+                ₹${Number(
+                  order.total || 0
+                ).toLocaleString("en-IN")}
+              </strong>
+            </td>
+
+            <td>
+              <select
+                onchange="updateOrderStatus(${order.id}, this.value)"
+              >
+
+                ${statusOptions(
+                  order.status
+                )}
+
+              </select>
+            </td>
+
+            <td>
+
+              <button
+                class="btn-primary btn-small"
+                onclick="viewOrder(${order.id})"
+              >
+                View Details
+              </button>
+
+            </td>
+
+          </tr>
+        `;
+
+      }).join("");
+
+  } catch (error) {
+
+    tbody.innerHTML =
+      `<tr><td colspan="7">
+        Error: ${escapeHTML(error.message)}
+      </td></tr>`;
+
+  }
+}
+
+
+function statusOptions(current) {
+
+  const statuses = [
+    "pending",
+    "confirmed",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled"
+  ];
+
+  return statuses.map(status => `
+    <option
+      value="${status}"
+      ${current === status ? "selected" : ""}
+    >
+      ${status.charAt(0).toUpperCase() + status.slice(1)}
+    </option>
+  `).join("");
+}
+
+
+async function updateOrderStatus(id, status) {
+
+  try {
 
     await api(
-      "/api/admin/orders/" +
-      encodeURIComponent(id) +
-      "/status",
+      "/api/admin/orders/" + id + "/status",
       {
-        method:"PUT",
+        method: "PUT",
 
-        body:
-          JSON.stringify({
-            status:status
-          })
-
+        body: JSON.stringify({
+          status
+        })
       }
     );
 
-
-    alert(
-      "Order status updated successfully."
-    );
-
-
     await loadOrders();
+    await loadDashboardStatsOnly();
 
+  } catch (error) {
 
-  }catch(error){
-
-    alert(
-      error.message ||
-      "Could not update order status."
-    );
-
+    alert(error.message);
 
     await loadOrders();
 
   }
-
 }
 
 
-/* =====================================
-   START
-===================================== */
+/* ORDER DETAILS */
 
-showDashboard();
+async function viewOrder(id) {
 
+  const box =
+    document.getElementById("orderDetails");
+
+  box.innerHTML =
+    "<p>Loading order details...</p>";
+
+  document
+    .getElementById("orderModal")
+    .classList.remove("hidden");
+
+  try {
+
+    const data =
+      await api(
+        "/api/admin/orders/" + id
+      );
+
+    const order =
+      data.order || data;
+
+    const items =
+      Array.isArray(order.items)
+        ? order.items
+        : [];
+
+    let html = `
+
+      <div class="order-summary">
+
+        <strong>
+          Order #${escapeHTML(order.id)}
+        </strong>
+
+        <p>
+          <b>Customer:</b>
+          ${escapeHTML(
+            order.customer_name ||
+            order.customerName ||
+            "-"
+          )}
+        </p>
+
+        <p>
+          <b>Email:</b>
+          ${escapeHTML(
+            order.customer_email ||
+            order.customerEmail ||
+            "-"
+          )}
+        </p>
+
+        <p>
+          <b>Mobile:</b>
+          ${escapeHTML(
+            order.customer_mobile ||
+            order.mobile ||
+            "-"
+          )}
+        </p>
+
+        <p>
+          <b>Address:</b>
+          ${escapeHTML(
+            order.shipping_address ||
+            order.address ||
+            "-"
+          )}
+        </p>
+
+        <p>
+          <b>Status:</b>
+          ${escapeHTML(order.status || "-")}
+        </p>
+
+        <p>
+          <b>Total:</b>
+          ₹${Number(
+            order.total || 0
+          ).toLocaleString("en-IN")}
+        </p>
+
+      </div>
+
+      <h4>Order Items</h4>
+    `;
+
+    if (!items.length) {
+
+      html +=
+        `<div class="empty">
+          No item details available.
+        </div>`;
+
+    } else {
+
+      html += items.map(item => `
+
+        <div class="order-item">
+
+          <strong>
+            ${escapeHTML(
+              item.product_name ||
+              item.productName ||
+              "-"
+            )}
+          </strong>
+
+          <div>
+            Seller:
+            ${escapeHTML(
+              item.seller_name ||
+              item.sellerName ||
+              "-"
+            )}
+          </div>
+
+          <div>
+            Quantity:
+            ${escapeHTML(item.quantity || 0)}
+          </div>
+
+          <div>
+            Price:
+            ₹${Number(
+              item.price || 0
+            ).toLocaleString("en-IN")}
+          </div>
+
+          <div>
+            Subtotal:
+            <strong>
+              ₹${Number(
+                item.subtotal || 0
+              ).toLocaleString("en-IN")}
+            </strong>
+          </div>
+
+        </div>
+
+      `).join("");
+
+    }
+
+    box.innerHTML = html;
+
+  } catch (error) {
+
+    box.innerHTML =
+      `<p style="color:#dc2626">
+        Error: ${escapeHTML(error.message)}
+      </p>`;
+
+  }
+}
+
+
+/* STATS ONLY */
+
+async function loadDashboardStatsOnly() {
+
+  try {
+
+    const stats =
+      await api("/api/stats");
+
+    document.getElementById("statUsers").textContent =
+      stats.users ?? 0;
+
+    document.getElementById("statCustomers").textContent =
+      stats.customers ?? 0;
+
+    document.getElementById("statSellers").textContent =
+      stats.sellers ?? 0;
+
+    document.getElementById("statActiveSellers").textContent =
+      stats.activeSellers ?? 0;
+
+    document.getElementById("statProducts").textContent =
+      stats.products ?? 0;
+
+    document.getElementById("statOrders").textContent =
+      stats.orders ?? 0;
+
+    document.getElementById("statRevenue").textContent =
+      "₹" + Number(
+        stats.revenue || 0
+      ).toLocaleString("en-IN");
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+}
+
+
+/* MODAL */
+
+function closeModal(id) {
+
+  document
+    .getElementById(id)
+    .classList.add("hidden");
+}
+
+
+/* LOGOUT */
+
+function logout() {
+
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+
+  location.reload();
+}
+
+
+/* START */
+
+checkAdmin();
 
 </script>
 
