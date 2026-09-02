@@ -1,518 +1,753 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="utf-8">
+  <title>Seller Dashboard - ShipNovaShop</title>
 
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<title>Seller - ShipNovaShop</title>
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      font-family: Arial, sans-serif;
+      color: #1f2937;
+    }
 
-<link rel="stylesheet" href="style.css">
+    .topbar {
+      background: #111827;
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
 
-<style>
+    .topbar h2 {
+      margin: 0;
+      font-size: 19px;
+    }
 
-.auth-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:20px;
-}
+    .top-actions {
+      display: flex;
+      gap: 7px;
+    }
 
-.message{
-  margin-top:12px;
-  padding:10px;
-  border-radius:7px;
-}
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-.error{
-  background:#fee2e2;
-  color:#991b1b;
-}
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
 
-.success{
-  background:#dcfce7;
-  color:#166534;
-}
+    .btn-success {
+      background: #16a34a;
+      color: white;
+    }
 
-.info{
-  background:#e0f2fe;
-  color:#075985;
-}
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
 
-.card{
-  margin-bottom:20px;
-}
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
 
-textarea{
-  width:100%;
-  min-height:100px;
-  resize:vertical;
-}
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 18px;
+    }
 
-input,
-textarea,
-button{
-  box-sizing:border-box;
-}
+    .hidden {
+      display: none !important;
+    }
 
-.seller-info{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  margin-top:15px;
-}
+    .login-box,
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 15px rgba(0,0,0,.07);
+    }
 
-.info-box{
-  padding:12px;
-  border:1px solid #ddd;
-  border-radius:8px;
-  background:#fafafa;
-}
+    .login-box {
+      max-width: 420px;
+      margin: 60px auto;
+    }
 
-.product-card{
-  margin-bottom:15px;
-}
+    h2,
+    h3 {
+      margin-top: 0;
+    }
 
-.product-image{
-  width:100px;
-  height:100px;
-  object-fit:cover;
-  border-radius:8px;
-  margin-right:15px;
-}
+    .seller-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
 
-.product-row{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
+    .info-box {
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
 
-.product-content{
-  flex:1;
-}
+    .info-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
 
-.danger{
-  background:#dc2626;
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:7px;
-  cursor:pointer;
-}
+    .info-value {
+      font-weight: bold;
+      word-break: break-word;
+    }
 
-.danger:hover{
-  background:#b91c1c;
-}
+    .form-group {
+      margin-bottom: 14px;
+    }
 
-.logout-btn{
-  margin-left:10px;
-}
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
 
-@media(max-width:700px){
+    input,
+    textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 14px;
+      background: white;
+    }
 
-  .auth-grid{
-    grid-template-columns:1fr;
-  }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
 
-  .seller-info{
-    grid-template-columns:1fr;
-  }
+    .image-section {
+      border: 1px solid #dbe1ea;
+      border-radius: 10px;
+      padding: 14px;
+      background: #fafbfc;
+    }
 
-  .product-row{
-    flex-direction:column;
-    align-items:flex-start;
-  }
+    .image-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
 
-  .product-image{
-    width:100%;
-    height:180px;
-  }
+    .file-label {
+      background: #2563eb;
+      color: white;
+      padding: 11px;
+      text-align: center;
+      border-radius: 7px;
+      cursor: pointer;
+      display: block;
+      font-weight: 600;
+    }
 
-}
+    #imageFile {
+      display: none;
+    }
 
-</style>
+    .or {
+      text-align: center;
+      margin: 10px 0;
+      color: #6b7280;
+      font-size: 13px;
+    }
 
+    .preview-box {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .preview-box img {
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      object-fit: contain;
+      background: white;
+    }
+
+    .remove-image {
+      margin-top: 8px;
+      display: none;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #f3f4f6;
+      display: block;
+    }
+
+    .no-image {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    .product-body {
+      padding: 14px;
+    }
+
+    .product-name {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .product-price {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .product-stock {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 7px;
+      display: none;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+    }
+
+    @media (max-width: 800px) {
+      .seller-info {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 550px) {
+      .topbar h2 {
+        font-size: 15px;
+      }
+
+      .top-actions button {
+        padding: 8px 9px;
+        font-size: 12px;
+      }
+
+      .container {
+        padding: 10px;
+      }
+
+      .seller-info {
+        grid-template-columns: 1fr;
+      }
+
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .image-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .form-actions button {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
-
 
 <body>
 
+  <!-- TOP BAR -->
 
-<!-- =====================================
-     NAVIGATION
-===================================== -->
+  <div class="topbar">
 
-<nav>
+    <h2>🚚 ShipNovaShop Seller</h2>
 
-  <b>ShipNova Seller</b>
-
-  <span>
-
-    <a href="index.html">
-      Home
-    </a>
-
-    <a href="product.html">
-      Store
-    </a>
-
-    <button
-      type="button"
-      class="logout-btn"
-      onclick="logout()">
-
-      Logout
-
-    </button>
-
-  </span>
-
-</nav>
-
-
-<main class="container">
-
-
-<!-- =====================================
-     SELLER AUTH SECTION
-===================================== -->
-
-<section id="authSection">
-
-  <div class="auth-grid">
-
-
-    <!-- =================================
-         SELLER LOGIN
-    ================================== -->
-
-    <div class="card">
-
-      <h2>Seller Login</h2>
-
-      <form id="loginForm">
-
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="username"
-          required>
-
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          required>
-
-        <button
-          id="loginButton"
-          type="submit">
-
-          Seller Login
-
-        </button>
-
-      </form>
-
-      <p
-        id="loginMessage"
-        class="message"
-        style="display:none">
-      </p>
-
-    </div>
-
-
-    <!-- =================================
-         SELLER REGISTRATION
-    ================================== -->
-
-    <div class="card">
-
-      <h2>Seller Registration</h2>
-
-      <form id="registerForm">
-
-
-        <input
-          id="registerName"
-          type="text"
-          placeholder="Full Name"
-          autocomplete="name"
-          required>
-
-
-        <input
-          id="registerBusinessName"
-          type="text"
-          placeholder="Business Name"
-          autocomplete="organization"
-          required>
-
-
-        <input
-          id="registerGST"
-          type="text"
-          placeholder="GST Number / GSTIN"
-          maxlength="15"
-          style="text-transform:uppercase"
-          required>
-
-
-        <input
-          id="registerMobile"
-          type="tel"
-          placeholder="Mobile Number"
-          maxlength="10"
-          inputmode="numeric"
-          autocomplete="tel"
-          required>
-
-
-        <textarea
-          id="registerAddress"
-          placeholder="Business / Pickup Address"
-          autocomplete="street-address"
-          required></textarea>
-
-
-        <input
-          id="registerEmail"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-          required>
-
-
-        <input
-          id="registerPassword"
-          type="password"
-          placeholder="Password"
-          minlength="6"
-          autocomplete="new-password"
-          required>
-
-
-        <input
-          id="registerConfirm"
-          type="password"
-          placeholder="Confirm Password"
-          minlength="6"
-          autocomplete="new-password"
-          required>
-
-
-        <button
-          id="registerButton"
-          type="submit">
-
-          Register as Seller
-
-        </button>
-
-      </form>
-
-
-      <p
-        id="registerMessage"
-        class="message"
-        style="display:none">
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================
-     SELLER DASHBOARD
-===================================== -->
-
-<section
-  id="dashboardSection"
-  style="display:none">
-
-
-  <!-- SELLER DETAILS -->
-
-  <div class="card">
-
-    <h1>Seller Dashboard</h1>
-
-    <p id="welcome"></p>
-
-    <div
-      id="sellerInfo"
-      class="seller-info">
-    </div>
-
-  </div>
-
-
-  <!-- =================================
-       ADD PRODUCT
-  ================================== -->
-
-  <div class="card">
-
-    <h2>Add Product</h2>
-
-    <form id="productForm">
-
-
-      <input
-        id="productName"
-        type="text"
-        placeholder="Product name"
-        required>
-
-
-      <textarea
-        id="productDescription"
-        placeholder="Product description"></textarea>
-
-
-      <input
-        id="productPrice"
-        type="number"
-        step="0.01"
-        min="0"
-        placeholder="Price"
-        required>
-
-
-      <input
-        id="productStock"
-        type="number"
-        min="0"
-        placeholder="Stock"
-        required>
-
-
-      <input
-        id="productImage"
-        type="url"
-        placeholder="Image URL (optional)">
-
+    <div class="top-actions">
 
       <button
-        id="productButton"
-        type="submit">
-
-        Add Product
-
+        class="btn-secondary"
+        onclick="location.href='index.html'"
+      >
+        Home
       </button>
 
+      <button
+        class="btn-danger"
+        onclick="logout()"
+      >
+        Logout
+      </button>
 
-    </form>
+    </div>
+
+  </div>
 
 
-    <p
-      id="productMessage"
-      class="message"
-      style="display:none">
+  <!-- LOGIN REQUIRED -->
+
+  <div
+    id="loginRequired"
+    class="login-box hidden"
+  >
+
+    <h2>Seller Login Required</h2>
+
+    <p>
+      Please login as seller to access your dashboard.
     </p>
 
-  </div>
-
-
-  <!-- =================================
-       MY PRODUCTS
-  ================================== -->
-
-  <h2>
-    My Products
-  </h2>
-
-
-  <div id="productList">
-
-    Loading...
+    <button
+      class="btn-primary"
+      onclick="location.href='seller-login.html'"
+    >
+      Seller Login
+    </button>
 
   </div>
 
 
-</section>
+  <!-- DASHBOARD -->
+
+  <main
+    id="dashboard"
+    class="container hidden"
+  >
+
+    <!-- SELLER INFO -->
+
+    <div class="seller-info">
+
+      <div class="info-box">
+        <div class="info-label">Seller Name</div>
+        <div
+          class="info-value"
+          id="sellerName"
+        >
+          -
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-label">Business</div>
+        <div
+          class="info-value"
+          id="businessName"
+        >
+          -
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-label">GSTIN</div>
+        <div
+          class="info-value"
+          id="gstNumber"
+        >
+          -
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-label">Mobile</div>
+        <div
+          class="info-value"
+          id="mobile"
+        >
+          -
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-label">Email</div>
+        <div
+          class="info-value"
+          id="email"
+        >
+          -
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-label">Address</div>
+        <div
+          class="info-value"
+          id="address"
+        >
+          -
+        </div>
+      </div>
+
+    </div>
 
 
-</main>
+    <!-- ADD PRODUCT -->
+
+    <section class="card">
+
+      <h3>➕ Add New Product</h3>
+
+      <form id="productForm">
+
+        <div class="form-group">
+
+          <label>
+            Product Name *
+          </label>
+
+          <input
+            type="text"
+            id="productName"
+            placeholder="Enter product name"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Price *
+          </label>
+
+          <input
+            type="number"
+            id="productPrice"
+            min="0"
+            step="0.01"
+            placeholder="Enter price"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Stock *
+          </label>
+
+          <input
+            type="number"
+            id="productStock"
+            min="0"
+            placeholder="Enter stock quantity"
+            required
+          >
+
+        </div>
+
+
+        <!-- IMAGE -->
+
+        <div class="form-group">
+
+          <label>
+            Product Image
+          </label>
+
+          <div class="image-section">
+
+            <div class="image-buttons">
+
+              <label
+                for="imageFile"
+                class="file-label"
+              >
+                🖼️ Choose Image
+              </label>
+
+              <button
+                type="button"
+                class="btn-secondary"
+                onclick="useImageURL()"
+              >
+                🔗 Use Image URL
+              </button>
+
+            </div>
+
+            <input
+              type="file"
+              id="imageFile"
+              accept="image/*"
+            >
+
+            <div
+              class="or"
+              id="urlHint"
+            >
+              Or enter an image URL below
+            </div>
+
+            <input
+              type="url"
+              id="imageURL"
+              placeholder="https://example.com/product.jpg"
+            >
+
+            <div
+              class="preview-box"
+              id="previewBox"
+            ></div>
+
+            <button
+              type="button"
+              id="removeImageBtn"
+              class="btn-danger remove-image"
+              onclick="removeImage()"
+            >
+              ❌ Remove Image
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- DESCRIPTION -->
+
+        <div class="form-group">
+
+          <label>
+            Description
+          </label>
+
+          <textarea
+            id="productDescription"
+            placeholder="Enter product description"
+          ></textarea>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            type="submit"
+            class="btn-success"
+            id="addProductBtn"
+          >
+            ➕ Add Product
+          </button>
+
+          <button
+            type="reset"
+            class="btn-secondary"
+            onclick="resetImage()"
+          >
+            Reset
+          </button>
+
+        </div>
+
+      </form>
+
+
+      <div
+        id="productMessage"
+        class="message"
+      ></div>
+
+    </section>
+
+
+    <!-- MY PRODUCTS -->
+
+    <section
+      class="card"
+      style="margin-top:20px"
+    >
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:10px;
+          margin-bottom:10px;
+        "
+      >
+
+        <h3 style="margin:0">
+          📦 My Products
+        </h3>
+
+        <button
+          class="btn-primary"
+          onclick="loadProducts()"
+        >
+          Refresh
+        </button>
+
+      </div>
+
+      <div
+        id="productsGrid"
+        class="products-grid"
+      ></div>
+
+    </section>
+
+  </main>
 
 
 <script>
 
-
-/* =====================================
-   SHIPNOVA RENDER API
-===================================== */
-
 const API =
+  window.SHIPNOVA_API ||
   "https://shipnovashop.onrender.com";
 
-
-/* =====================================
-   STORAGE KEYS
-===================================== */
-
-const TOKEN_KEY =
-  "shipnova_token";
-
-const USER_KEY =
-  "shipnova_user";
+const TOKEN_KEY = "shipnova_token";
+const USER_KEY = "shipnova_user";
 
 
-/* =====================================
-   ELEMENTS
-===================================== */
+let selectedImageData = "";
 
-const authSection =
-  document.getElementById(
-    "authSection"
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function escapeHTML(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function getToken() {
+
+  return localStorage.getItem(
+    TOKEN_KEY
   );
-
-const dashboardSection =
-  document.getElementById(
-    "dashboardSection"
-  );
+}
 
 
-/* =====================================
-   API HELPER
-===================================== */
+function getUser() {
+
+  try {
+
+    return JSON.parse(
+      localStorage.getItem(USER_KEY) || "{}"
+    );
+
+  } catch {
+
+    return {};
+
+  }
+}
+
 
 async function api(
   path,
   options = {}
-){
-
-  const token =
-    localStorage.getItem(
-      TOKEN_KEY
-    );
-
+) {
 
   const headers = {
-
-    "Content-Type":
-      "application/json",
-
+    "Content-Type": "application/json",
     ...(options.headers || {})
-
   };
 
+  const token = getToken();
 
-  if(token){
+  if (token) {
 
     headers.Authorization =
       "Bearer " + token;
 
   }
-
 
   const response =
     await fetch(
@@ -523,965 +758,394 @@ async function api(
       }
     );
 
-
   let data = {};
 
-
-  try{
+  try {
 
     data =
       await response.json();
 
-  }catch{
+  } catch {}
 
-    data = {};
-
-  }
-
-
-  if(!response.ok){
-
-    if(
-      response.status === 401
-    ){
-
-      localStorage.removeItem(
-        TOKEN_KEY
-      );
-
-      localStorage.removeItem(
-        USER_KEY
-      );
-
-    }
-
+  if (!response.ok) {
 
     throw new Error(
       data.error ||
-      data.message ||
-      "Request failed (" +
-      response.status +
-      ")"
+      "Request failed"
     );
 
   }
-
 
   return data;
-
 }
 
 
-/* =====================================
-   GET USER
-===================================== */
 
-function getUser(){
-
-  try{
-
-    return JSON.parse(
-      localStorage.getItem(
-        USER_KEY
-      ) || "null"
-    );
-
-  }catch{
-
-    return null;
-
-  }
-
-}
-
-
-/* =====================================
-   SAVE AUTH
-===================================== */
-
-function saveAuth(data){
-
-  if(
-    !data ||
-    !data.token ||
-    !data.user
-  ){
-
-    throw new Error(
-      "Invalid server response."
-    );
-
-  }
-
-
-  localStorage.setItem(
-    TOKEN_KEY,
-    data.token
-  );
-
-
-  localStorage.setItem(
-    USER_KEY,
-    JSON.stringify(
-      data.user
-    )
-  );
-
-}
-
-
-/* =====================================
-   LOGOUT
-===================================== */
-
-function logout(){
-
-  localStorage.removeItem(
-    TOKEN_KEY
-  );
-
-  localStorage.removeItem(
-    USER_KEY
-  );
-
-
-  window.location.replace(
-    "index.html"
-  );
-
-}
-
-
-/* =====================================
+/* =========================
    SHOW MESSAGE
-===================================== */
+========================= */
 
 function showMessage(
-  element,
-  text,
-  type = ""
-){
+  message,
+  type = "success"
+) {
 
-  element.textContent =
-    text;
+  const box =
+    document.getElementById(
+      "productMessage"
+    );
 
-  element.className =
+  box.textContent = message;
+
+  box.className =
     "message " + type;
 
-  element.style.display =
+  box.style.display =
     "block";
 
 }
 
 
-/* =====================================
-   SHOW SELLER INFORMATION
-===================================== */
 
-function showSellerInfo(user){
+/* =========================
+   LOAD SELLER INFO
+========================= */
 
-  const info =
-    document.getElementById(
-      "sellerInfo"
-    );
+function loadSellerInfo() {
 
+  const user =
+    getUser();
 
-  info.innerHTML = `
+  document.getElementById(
+    "sellerName"
+  ).textContent =
+    user.name || "-";
 
-    <div class="info-box">
-      <strong>Name</strong>
-      <br>
-      ${escapeHtml(
-        user.name || ""
-      )}
-    </div>
+  document.getElementById(
+    "businessName"
+  ).textContent =
+    user.businessName ||
+    user.business_name ||
+    "-";
 
-    <div class="info-box">
-      <strong>Business</strong>
-      <br>
-      ${escapeHtml(
-        user.businessName || "Not provided"
-      )}
-    </div>
+  document.getElementById(
+    "gstNumber"
+  ).textContent =
+    user.gstNumber ||
+    user.gst_number ||
+    "-";
 
-    <div class="info-box">
-      <strong>GSTIN</strong>
-      <br>
-      ${escapeHtml(
-        user.gstNumber || "Not provided"
-      )}
-    </div>
+  document.getElementById(
+    "mobile"
+  ).textContent =
+    user.mobile || "-";
 
-    <div class="info-box">
-      <strong>Mobile</strong>
-      <br>
-      ${escapeHtml(
-        user.mobile || "Not provided"
-      )}
-    </div>
+  document.getElementById(
+    "email"
+  ).textContent =
+    user.email || "-";
 
-    <div class="info-box">
-      <strong>Email</strong>
-      <br>
-      ${escapeHtml(
-        user.email || ""
-      )}
-    </div>
-
-    <div class="info-box">
-      <strong>Address</strong>
-      <br>
-      ${escapeHtml(
-        user.address || "Not provided"
-      )}
-    </div>
-
-  `;
+  document.getElementById(
+    "address"
+  ).textContent =
+    user.address || "-";
 
 }
 
 
-/* =====================================
-   SHOW DASHBOARD
-===================================== */
 
-function showDashboard(){
-
-  const currentUser =
-    getUser();
-
-  const token =
-    localStorage.getItem(
-      TOKEN_KEY
-    );
-
-
-  if(
-    !token ||
-    !currentUser ||
-    String(
-      currentUser.role
-    ).toLowerCase()
-    !== "seller"
-  ){
-
-    authSection.style.display =
-      "block";
-
-    dashboardSection.style.display =
-      "none";
-
-    return;
-
-  }
-
-
-  authSection.style.display =
-    "none";
-
-  dashboardSection.style.display =
-    "block";
-
-
-  document
-    .getElementById(
-      "welcome"
-    )
-    .textContent =
-      "Welcome, " +
-      (
-        currentUser.name ||
-        "Seller"
-      ) +
-      "!";
-
-
-  showSellerInfo(
-    currentUser
-  );
-
-
-  loadProducts();
-
-}
-
-
-/* =====================================
-   SELLER LOGIN
-===================================== */
+/* =========================
+   IMAGE FILE SELECT
+========================= */
 
 document
-  .getElementById(
-    "loginForm"
-  )
+  .getElementById("imageFile")
   .addEventListener(
-    "submit",
-    async function(e){
+    "change",
+    function() {
 
-      e.preventDefault();
+      const file =
+        this.files[0];
 
-
-      const message =
-        document.getElementById(
-          "loginMessage"
-        );
-
-      const button =
-        document.getElementById(
-          "loginButton"
-        );
-
-
-      const email =
-        document
-          .getElementById(
-            "loginEmail"
-          )
-          .value
-          .trim()
-          .toLowerCase();
-
-
-      const password =
-        document
-          .getElementById(
-            "loginPassword"
-          )
-          .value;
-
-
-      button.disabled =
-        true;
-
-
-      showMessage(
-        message,
-        "Logging in...",
-        "info"
-      );
-
-
-      try{
-
-        const result =
-          await api(
-            "/api/auth/login",
-            {
-              method:"POST",
-
-              body:
-                JSON.stringify({
-
-                  email:email,
-
-                  password:password
-
-                })
-
-            }
-          );
-
-
-        if(
-          !result.user ||
-          String(
-            result.user.role
-          ).toLowerCase()
-          !== "seller"
-        ){
-
-          throw new Error(
-            "This account is not a seller account."
-          );
-
-        }
-
-
-        if(
-          !result.token
-        ){
-
-          throw new Error(
-            "Login token was not received."
-          );
-
-        }
-
-
-        saveAuth(
-          result
-        );
-
-
-        showMessage(
-          message,
-          "Seller login successful.",
-          "success"
-        );
-
-
-        setTimeout(
-          showDashboard,
-          300
-        );
-
-
-      }catch(error){
-
-        console.error(
-          "Seller login:",
-          error
-        );
-
-
-        showMessage(
-          message,
-          error.message ||
-          "Seller login failed.",
-          "error"
-        );
-
-
-        button.disabled =
-          false;
-
+      if (!file) {
+        return;
       }
+
+      if (!file.type.startsWith("image/")) {
+
+        alert(
+          "Please select an image file."
+        );
+
+        this.value = "";
+
+        return;
+      }
+
+      compressImage(file);
 
     }
   );
 
 
-/* =====================================
-   SELLER REGISTRATION
-===================================== */
 
-document
-  .getElementById(
-    "registerForm"
-  )
-  .addEventListener(
-    "submit",
-    async function(e){
+/* =========================
+   COMPRESS IMAGE
+========================= */
 
-      e.preventDefault();
+function compressImage(file) {
 
+  const reader =
+    new FileReader();
 
-      const message =
-        document.getElementById(
-          "registerMessage"
-        );
+  reader.onload =
+    function(event) {
 
-      const button =
-        document.getElementById(
-          "registerButton"
-        );
+      const img =
+        new Image();
 
+      img.onload =
+        function() {
 
-      const name =
-        document
-          .getElementById(
-            "registerName"
-          )
-          .value
-          .trim();
+          const maxWidth = 900;
+          const maxHeight = 900;
 
+          let width =
+            img.width;
 
-      const businessName =
-        document
-          .getElementById(
-            "registerBusinessName"
-          )
-          .value
-          .trim();
+          let height =
+            img.height;
 
 
-      const gstNumber =
-        document
-          .getElementById(
-            "registerGST"
-          )
-          .value
-          .trim()
-          .toUpperCase();
+          if (
+            width > maxWidth ||
+            height > maxHeight
+          ) {
 
+            const ratio =
+              Math.min(
+                maxWidth / width,
+                maxHeight / height
+              );
 
-      const mobile =
-        document
-          .getElementById(
-            "registerMobile"
-          )
-          .value
-          .trim();
+            width =
+              Math.round(
+                width * ratio
+              );
 
-
-      const address =
-        document
-          .getElementById(
-            "registerAddress"
-          )
-          .value
-          .trim();
-
-
-      const email =
-        document
-          .getElementById(
-            "registerEmail"
-          )
-          .value
-          .trim()
-          .toLowerCase();
-
-
-      const password =
-        document
-          .getElementById(
-            "registerPassword"
-          )
-          .value;
-
-
-      const confirm =
-        document
-          .getElementById(
-            "registerConfirm"
-          )
-          .value;
-
-
-      /* PASSWORD */
-
-      if(
-        password.length < 6
-      ){
-
-        showMessage(
-          message,
-          "Password must be at least 6 characters.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      /* CONFIRM PASSWORD */
-
-      if(
-        password !== confirm
-      ){
-
-        showMessage(
-          message,
-          "Passwords do not match.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      /* GST VALIDATION */
-
-      const gstRegex =
-        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
-
-
-      if(
-        !gstRegex.test(
-          gstNumber
-        )
-      ){
-
-        showMessage(
-          message,
-          "Please enter a valid 15-character GSTIN.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      /* MOBILE VALIDATION */
-
-      const mobileRegex =
-        /^[6-9][0-9]{9}$/;
-
-
-      if(
-        !mobileRegex.test(
-          mobile
-        )
-      ){
-
-        showMessage(
-          message,
-          "Please enter a valid 10-digit mobile number.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      /* REQUIRED FIELDS */
-
-      if(
-        !name ||
-        !businessName ||
-        !address
-      ){
-
-        showMessage(
-          message,
-          "Please fill all required seller details.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      button.disabled =
-        true;
-
-
-      showMessage(
-        message,
-        "Creating seller account...",
-        "info"
-      );
-
-
-      try{
-
-        const result =
-          await api(
-            "/api/auth/register",
-            {
-              method:"POST",
-
-              body:
-                JSON.stringify({
-
-                  name:name,
-
-                  email:email,
-
-                  password:password,
-
-                  role:"seller",
-
-                  businessName:
-                    businessName,
-
-                  gstNumber:
-                    gstNumber,
-
-                  mobile:
-                    mobile,
-
-                  address:
-                    address
-
-                })
-
-            }
-          );
-
-
-        if(
-          !result.user ||
-          String(
-            result.user.role
-          ).toLowerCase()
-          !== "seller"
-        ){
-
-          throw new Error(
-            "Server did not create a seller account."
-          );
-
-        }
-
-
-        if(
-          !result.token
-        ){
-
-          throw new Error(
-            "Registration token was not received."
-          );
-
-        }
-
-
-        saveAuth(
-          result
-        );
-
-
-        showMessage(
-          message,
-          "Seller account created successfully.",
-          "success"
-        );
-
-
-        setTimeout(
-          showDashboard,
-          500
-        );
-
-
-      }catch(error){
-
-        console.error(
-          "Seller registration:",
-          error
-        );
-
-
-        showMessage(
-          message,
-          error.message ||
-          "Seller registration failed.",
-          "error"
-        );
-
-
-        button.disabled =
-          false;
-
-      }
-
-    }
-  );
-
-
-/* =====================================
-   LOAD SELLER PRODUCTS
-===================================== */
-
-async function loadProducts(){
-
-  const list =
-    document.getElementById(
-      "productList"
-    );
-
-
-  const currentUser =
-    getUser();
-
-
-  if(
-    !currentUser ||
-    !currentUser.id
-  ){
-
-    list.innerHTML =
-      `
-      <div class="card">
-        <p>Seller information not found.</p>
-      </div>
-      `;
-
-    return;
-
-  }
-
-
-  list.innerHTML =
-    `
-    <div class="card">
-      Loading products...
-    </div>
-    `;
-
-
-  try{
-
-    const data =
-      await api(
-        "/api/products?seller=" +
-        encodeURIComponent(
-          currentUser.id
-        )
-      );
-
-
-    if(
-      !data.products ||
-      data.products.length === 0
-    ){
-
-      list.innerHTML =
-        `
-        <div class="card">
-
-          <p>
-            No products yet.
-          </p>
-
-          <p>
-            Use the Add Product form above
-            to add your first product.
-          </p>
-
-        </div>
-        `;
-
-      return;
-
-    }
-
-
-    list.innerHTML =
-      data.products
-        .map(
-          function(product){
-
-            const image =
-              product.image
-                ? `
-                  <img
-                    class="product-image"
-                    src="${escapeHtml(
-                      product.image
-                    )}"
-                    alt="${escapeHtml(
-                      product.name
-                    )}"
-                    onerror="this.style.display='none'">
-                `
-                : "";
-
-
-            return `
-
-              <div class="card product-card">
-
-                <div class="product-row">
-
-                  ${image}
-
-                  <div class="product-content">
-
-                    <h3>
-                      ${escapeHtml(
-                        product.name
-                      )}
-                    </h3>
-
-                    <p>
-                      ${escapeHtml(
-                        product.description || ""
-                      )}
-                    </p>
-
-                    <p>
-
-                      <b>
-                        ₹${escapeHtml(
-                          Number(
-                            product.price || 0
-                          ).toFixed(2)
-                        )}
-                      </b>
-
-                      &nbsp;·&nbsp;
-
-                      Stock:
-                      ${escapeHtml(
-                        String(
-                          product.stock ?? 0
-                        )
-                      )}
-
-                    </p>
-
-                  </div>
-
-
-                  <button
-                    class="danger"
-                    type="button"
-                    onclick="deleteProduct(${Number(
-                      product.id
-                    )})">
-
-                    Delete
-
-                  </button>
-
-                </div>
-
-              </div>
-
-            `;
+            height =
+              Math.round(
+                height * ratio
+              );
 
           }
-        )
-        .join("");
 
 
-  }catch(error){
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
 
-    console.error(
-      "Load products:",
-      error
-    );
+          canvas.width =
+            width;
+
+          canvas.height =
+            height;
 
 
-    list.innerHTML =
-      `
-      <div class="card">
+          const ctx =
+            canvas.getContext(
+              "2d"
+            );
 
-        <p class="error">
-          ${escapeHtml(
-            error.message
-          )}
-        </p>
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            width,
+            height
+          );
 
-      </div>
-      `;
 
-  }
+          /*
+            JPEG quality 0.75
+            keeps image small enough
+            for Render API.
+          */
+
+          selectedImageData =
+            canvas.toDataURL(
+              "image/jpeg",
+              0.75
+            );
+
+
+          document.getElementById(
+            "imageURL"
+          ).value = "";
+
+
+          showPreview(
+            selectedImageData
+          );
+
+        };
+
+      img.src =
+        event.target.result;
+
+    };
+
+
+  reader.readAsDataURL(file);
 
 }
 
 
-/* =====================================
-   ADD PRODUCT
-===================================== */
+
+/* =========================
+   IMAGE URL
+========================= */
 
 document
-  .getElementById(
-    "productForm"
-  )
+  .getElementById("imageURL")
+  .addEventListener(
+    "input",
+    function() {
+
+      const url =
+        this.value.trim();
+
+      if (!url) {
+
+        return;
+
+      }
+
+      selectedImageData =
+        url;
+
+      showPreview(url);
+
+    }
+  );
+
+
+
+function useImageURL() {
+
+  const input =
+    document.getElementById(
+      "imageURL"
+    );
+
+  input.focus();
+
+  input.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+}
+
+
+
+function showPreview(src) {
+
+  const box =
+    document.getElementById(
+      "previewBox"
+    );
+
+  box.innerHTML = `
+    <img
+      src="${escapeHTML(src)}"
+      alt="Product Preview"
+      onerror="imagePreviewError(this)"
+    >
+  `;
+
+  document.getElementById(
+    "removeImageBtn"
+  ).style.display =
+    "inline-block";
+
+}
+
+
+
+function imagePreviewError(img) {
+
+  img.style.display =
+    "none";
+
+  const box =
+    document.getElementById(
+      "previewBox"
+    );
+
+  box.insertAdjacentHTML(
+    "beforeend",
+    `<p style="color:#dc2626">
+      Image URL could not be loaded.
+    </p>`
+  );
+
+}
+
+
+
+/* =========================
+   REMOVE IMAGE
+========================= */
+
+function removeImage() {
+
+  selectedImageData = "";
+
+  document.getElementById(
+    "imageFile"
+  ).value = "";
+
+  document.getElementById(
+    "imageURL"
+  ).value = "";
+
+  document.getElementById(
+    "previewBox"
+  ).innerHTML = "";
+
+  document.getElementById(
+    "removeImageBtn"
+  ).style.display =
+    "none";
+
+}
+
+
+
+function resetImage() {
+
+  setTimeout(
+    removeImage,
+    50
+  );
+
+}
+
+
+
+/* =========================
+   ADD PRODUCT
+========================= */
+
+document
+  .getElementById("productForm")
   .addEventListener(
     "submit",
-    async function(e){
+    async function(e) {
 
       e.preventDefault();
-
-
-      const message =
-        document.getElementById(
-          "productMessage"
-        );
-
-      const button =
-        document.getElementById(
-          "productButton"
-        );
 
 
       const name =
@@ -1493,6 +1157,22 @@ document
           .trim();
 
 
+      const price =
+        Number(
+          document.getElementById(
+            "productPrice"
+          ).value
+        );
+
+
+      const stock =
+        Number(
+          document.getElementById(
+            "productStock"
+          ).value
+        );
+
+
       const description =
         document
           .getElementById(
@@ -1502,126 +1182,100 @@ document
           .trim();
 
 
-      const price =
+      const url =
         document
           .getElementById(
-            "productPrice"
-          )
-          .value;
-
-
-      const stock =
-        document
-          .getElementById(
-            "productStock"
-          )
-          .value;
-
-
-      const image =
-        document
-          .getElementById(
-            "productImage"
+            "imageURL"
           )
           .value
           .trim();
 
 
-      if(!name){
+      /*
+        If URL exists, use URL.
+        Otherwise use uploaded/compressed image.
+      */
 
-        showMessage(
-          message,
-          "Product name is required.",
-          "error"
+      const image =
+        url ||
+        selectedImageData ||
+        "";
+
+
+      if (!name) {
+
+        alert(
+          "Please enter product name."
         );
 
         return;
-
       }
 
 
-      if(
-        price === "" ||
-        Number(price) < 0 ||
-        !Number.isFinite(
-          Number(price)
-        )
-      ){
+      if (
+        Number.isNaN(price) ||
+        price < 0
+      ) {
 
-        showMessage(
-          message,
-          "Please enter a valid price.",
-          "error"
+        alert(
+          "Please enter a valid price."
         );
 
         return;
-
       }
 
 
-      if(
-        stock === "" ||
-        Number(stock) < 0 ||
-        !Number.isInteger(
-          Number(stock)
-        )
-      ){
+      if (
+        Number.isNaN(stock) ||
+        stock < 0
+      ) {
 
-        showMessage(
-          message,
-          "Please enter a valid stock quantity.",
-          "error"
+        alert(
+          "Please enter valid stock."
         );
 
         return;
-
       }
 
+
+      const button =
+        document.getElementById(
+          "addProductBtn"
+        );
 
       button.disabled =
         true;
 
-
-      showMessage(
-        message,
-        "Adding product...",
-        "info"
-      );
+      button.textContent =
+        "Adding...";
 
 
-      try{
+      try {
 
         await api(
           "/api/products",
           {
-            method:"POST",
+            method: "POST",
 
-            body:
-              JSON.stringify({
+            body: JSON.stringify({
 
-                name:name,
+              name,
 
-                description:
-                  description,
+              price,
 
-                price:
-                  Number(price),
+              stock,
 
-                stock:
-                  Number(stock),
+              image,
 
-                image:
-                  image
+              description
 
-              })
-
+            })
           }
         );
 
 
         showMessage(
-          message,
-          "Product added successfully.",
+          "Product added successfully!",
           "success"
         );
 
@@ -1633,76 +1287,254 @@ document
           .reset();
 
 
+        removeImage();
+
+
         await loadProducts();
 
 
-      }catch(error){
-
-        console.error(
-          "Add product:",
-          error
-        );
-
+      } catch (error) {
 
         showMessage(
-          message,
           error.message ||
-          "Could not add product.",
+          "Failed to add product.",
           "error"
         );
 
+      } finally {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          "➕ Add Product";
+
       }
-
-
-      button.disabled =
-        false;
 
     }
   );
 
 
-/* =====================================
+
+/* =========================
+   LOAD PRODUCTS
+========================= */
+
+async function loadProducts() {
+
+  const grid =
+    document.getElementById(
+      "productsGrid"
+    );
+
+  grid.innerHTML =
+    `<div class="loading">
+      Loading products...
+    </div>`;
+
+
+  try {
+
+    /*
+      Public endpoint is used here.
+      Seller's own active products
+      are filtered below.
+    */
+
+    const data =
+      await api(
+        "/api/products"
+      );
+
+
+    const products =
+      Array.isArray(data)
+        ? data
+        : (
+            data.products ||
+            []
+          );
+
+
+    const user =
+      getUser();
+
+
+    const sellerId =
+      user.id;
+
+
+    const myProducts =
+      products.filter(
+        product => {
+
+          const productSeller =
+            product.seller_id ??
+            product.sellerId;
+
+          return String(
+            productSeller
+          ) === String(
+            sellerId
+          );
+
+        }
+      );
+
+
+    if (!myProducts.length) {
+
+      grid.innerHTML =
+        `<div
+          class="loading"
+          style="grid-column:1/-1"
+        >
+          No products found.
+        </div>`;
+
+      return;
+
+    }
+
+
+    grid.innerHTML =
+      myProducts.map(
+        product => {
+
+          const image =
+            product.image || "";
+
+
+          const imageHTML =
+            image
+              ? `
+                <img
+                  class="product-image"
+                  src="${escapeHTML(image)}"
+                  alt="${escapeHTML(product.name)}"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                >
+
+                <div
+                  class="no-image"
+                  style="display:none"
+                >
+                  🖼️ Image unavailable
+                </div>
+              `
+              : `
+                <div class="no-image">
+                  🖼️ No Image
+                </div>
+              `;
+
+
+          return `
+
+            <div class="product-card">
+
+              ${imageHTML}
+
+              <div class="product-body">
+
+                <div class="product-name">
+                  ${escapeHTML(
+                    product.name
+                  )}
+                </div>
+
+                <div class="product-price">
+                  ₹${Number(
+                    product.price || 0
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
+                </div>
+
+                <div class="product-stock">
+                  Stock:
+                  ${escapeHTML(
+                    product.stock ?? 0
+                  )}
+                </div>
+
+                <button
+                  class="btn-danger"
+                  onclick="deleteProduct(${product.id})"
+                >
+                  🗑️ Delete
+                </button>
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      ).join("");
+
+
+  } catch (error) {
+
+    grid.innerHTML =
+      `<div
+        class="loading"
+        style="grid-column:1/-1;color:#dc2626"
+      >
+        ${escapeHTML(
+          error.message
+        )}
+      </div>`;
+
+  }
+
+}
+
+
+
+/* =========================
    DELETE PRODUCT
-===================================== */
+========================= */
 
-async function deleteProduct(id){
+async function deleteProduct(id) {
 
-  if(
+  if (
     !confirm(
-      "Delete this product?"
+      "Are you sure you want to delete this product?"
     )
-  ){
+  ) {
 
     return;
 
   }
 
 
-  try{
+  try {
 
-    await api(
-      "/api/products/" +
-      encodeURIComponent(id),
-      {
-        method:"DELETE"
-      }
+    const result =
+      await api(
+        "/api/products/" + id,
+        {
+          method: "DELETE"
+        }
+      );
+
+
+    alert(
+      result.message ||
+      "Product deleted successfully."
     );
 
 
     await loadProducts();
 
 
-  }catch(error){
-
-    console.error(
-      "Delete product:",
-      error
-    );
-
+  } catch (error) {
 
     alert(
       error.message ||
-      "Could not delete product."
+      "Unable to delete product."
     );
 
   }
@@ -1710,46 +1542,79 @@ async function deleteProduct(id){
 }
 
 
-/* =====================================
-   ESCAPE HTML
-===================================== */
 
-function escapeHtml(value){
+/* =========================
+   LOGOUT
+========================= */
 
-  return String(
-    value ?? ""
-  )
+function logout() {
 
-  .replace(
-    /&/g,
-    "&amp;"
-  )
-
-  .replace(
-    /</g,
-    "&lt;"
-  )
-
-  .replace(
-    />/g,
-    "&gt;"
-  )
-
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-
-  .replace(
-    /'/g,
-    "&#039;"
+  localStorage.removeItem(
+    TOKEN_KEY
   );
+
+  localStorage.removeItem(
+    USER_KEY
+  );
+
+  location.href =
+    "seller-login.html";
 
 }
 
 
-/* =====================================
-   START
-===================================== */
 
-show
+/* =========================
+   INIT
+========================= */
+
+function init() {
+
+  const token =
+    getToken();
+
+  const user =
+    getUser();
+
+
+  if (
+    !token ||
+    !user.id ||
+    user.role !== "seller"
+  ) {
+
+    document
+      .getElementById(
+        "loginRequired"
+      )
+      .classList.remove(
+        "hidden"
+      );
+
+    return;
+
+  }
+
+
+  document
+    .getElementById(
+      "dashboard"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+
+  loadSellerInfo();
+
+  loadProducts();
+
+}
+
+
+init();
+
+</script>
+
+</body>
+</html>
