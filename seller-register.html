@@ -4,160 +4,259 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Seller Registration - ShipNovaShop</title>
-  <style>
-    * { box-sizing: border-box; }body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #2563eb, #0f172a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
+  <title>Seller Registration - ShipNovaShop</title>  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-.card {
-  width: 100%;
-  max-width: 440px;
-  background: white;
-  border-radius: 18px;
-  padding: 30px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.25);
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2563eb, #0f172a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-.logo {
-  text-align: center;
-  font-size: 30px;
-  font-weight: 800;
-  color: #1d4ed8;
-}
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    }
 
-.subtitle {
-  text-align: center;
-  color: #6b7280;
-  margin: 7px 0 24px;
-}
+    .logo {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 800;
+      color: #1d4ed8;
+    }
 
-h2 {
-  text-align: center;
-  color: #111827;
-  margin-bottom: 20px;
-}
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin: 7px 0 24px;
+    }
 
-label {
-  display: block;
-  font-weight: 600;
-  margin: 13px 0 7px;
-  color: #374151;
-}
+    h2 {
+      text-align: center;
+      color: #111827;
+      margin-bottom: 20px;
+    }
 
-input {
-  width: 100%;
-  padding: 13px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  font-size: 16px;
-  outline: none;
-}
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 13px 0 7px;
+      color: #374151;
+    }
 
-input:focus {
-  border-color: #2563eb;
-}
+    input,
+    textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      font-family: inherit;
+    }
 
-button {
-  width: 100%;
-  margin-top: 22px;
-  padding: 14px;
-  border: 0;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
+    input:focus,
+    textarea:focus {
+      border-color: #2563eb;
+    }
 
-button:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
 
-.message {
-  display: none;
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 9px;
-  text-align: center;
-  font-size: 14px;
-}
+    .required {
+      color: #dc2626;
+    }
 
-.error {
-  display: block;
-  background: #fee2e2;
-  color: #991b1b;
-}
+    .hint {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 5px;
+    }
 
-.success {
-  display: block;
-  background: #dcfce7;
-  color: #166534;
-}
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-.links {
-  text-align: center;
-  margin-top: 20px;
-  line-height: 1.8;
-}
+    button:hover {
+      opacity: .92;
+    }
 
-a {
-  color: #2563eb;
-  text-decoration: none;
-}
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
 
-  </style>
-</head><body>
-  <div class="card">
-    <div class="logo">🚚 ShipNovaShop</div>
-    <div class="subtitle">Start selling on ShipNova</div><h2>Seller Registration</h2>
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 9px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.9;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+  </style></head><body>  <div class="card"><div class="logo">🚚 ShipNovaShop</div>
+<div class="subtitle">Start selling on ShipNova</div>
+
+<h2>Seller Registration</h2>
 
 <form id="registerForm">
 
-  <label for="name">Full Name / Business Name</label>
+  <label for="businessName">
+    Business Name <span class="required">*</span>
+  </label>
+
+  <input
+    id="businessName"
+    type="text"
+    required
+    minlength="2"
+    maxlength="150"
+    placeholder="Enter business name"
+    autocomplete="organization"
+  >
+
+  <label for="name">
+    Owner / Contact Name <span class="required">*</span>
+  </label>
+
   <input
     id="name"
     type="text"
     required
     minlength="2"
-    placeholder="Enter your name or business name"
+    maxlength="100"
+    placeholder="Enter owner name"
     autocomplete="name"
   >
 
-  <label for="email">Email</label>
+  <label for="gstNumber">
+    GST Number / GSTIN <span class="required">*</span>
+  </label>
+
+  <input
+    id="gstNumber"
+    type="text"
+    required
+    maxlength="15"
+    minlength="15"
+    placeholder="22AAAAA0000A1Z5"
+    autocomplete="off"
+    style="text-transform:uppercase"
+  >
+
+  <div class="hint">
+    Enter your 15-character GSTIN.
+  </div>
+
+  <label for="mobile">
+    Mobile Number <span class="required">*</span>
+  </label>
+
+  <input
+    id="mobile"
+    type="tel"
+    required
+    maxlength="10"
+    minlength="10"
+    inputmode="numeric"
+    placeholder="10 digit mobile number"
+    autocomplete="tel"
+  >
+
+  <label for="email">
+    Email <span class="required">*</span>
+  </label>
+
   <input
     id="email"
     type="email"
     required
+    maxlength="150"
     placeholder="seller@example.com"
     autocomplete="email"
   >
 
-  <label for="password">Password</label>
+  <label for="address">
+    Business Address <span class="required">*</span>
+  </label>
+
+  <textarea
+    id="address"
+    required
+    maxlength="500"
+    placeholder="Enter complete business address"
+    autocomplete="street-address"
+  ></textarea>
+
+  <label for="password">
+    Password <span class="required">*</span>
+  </label>
+
   <input
     id="password"
     type="password"
     required
     minlength="6"
+    maxlength="100"
     placeholder="Minimum 6 characters"
     autocomplete="new-password"
   >
 
-  <label for="confirmPassword">Confirm Password</label>
+  <label for="confirmPassword">
+    Confirm Password <span class="required">*</span>
+  </label>
+
   <input
     id="confirmPassword"
     type="password"
     required
     minlength="6"
+    maxlength="100"
     placeholder="Re-enter password"
     autocomplete="new-password"
   >
@@ -165,6 +264,7 @@ a {
   <button id="registerBtn" type="submit">
     Create Seller Account
   </button>
+
 </form>
 
 <div id="message" class="message"></div>
@@ -177,6 +277,7 @@ a {
 </div>
 
   </div><script>
+
 const API = "https://shipnovashop.onrender.com";
 
 const form = document.getElementById("registerForm");
@@ -189,20 +290,72 @@ function showMessage(text, type) {
 }
 
 form.addEventListener("submit", async function(e) {
+
   e.preventDefault();
 
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
+  const businessName =
+    document.getElementById("businessName").value.trim();
 
-  if (password !== confirmPassword) {
-    showMessage("Passwords do not match.", "error");
+  const name =
+    document.getElementById("name").value.trim();
+
+  const gstNumber =
+    document.getElementById("gstNumber").value
+      .trim()
+      .toUpperCase();
+
+  const mobile =
+    document.getElementById("mobile").value
+      .trim()
+      .replace(/\D/g, "");
+
+  const email =
+    document.getElementById("email").value.trim().toLowerCase();
+
+  const address =
+    document.getElementById("address").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const confirmPassword =
+    document.getElementById("confirmPassword").value;
+
+  /* GSTIN basic format validation */
+  const gstRegex =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+  if (!gstRegex.test(gstNumber)) {
+    showMessage(
+      "Please enter a valid 15-character GSTIN.",
+      "error"
+    );
     return;
   }
 
+  /* Mobile validation */
+  if (!/^[6-9][0-9]{9}$/.test(mobile)) {
+    showMessage(
+      "Please enter a valid 10-digit Indian mobile number.",
+      "error"
+    );
+    return;
+  }
+
+  /* Password validation */
   if (password.length < 6) {
-    showMessage("Password must be at least 6 characters.", "error");
+    showMessage(
+      "Password must be at least 6 characters.",
+      "error"
+    );
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showMessage(
+      "Passwords do not match.",
+      "error"
+    );
     return;
   }
 
@@ -211,52 +364,86 @@ form.addEventListener("submit", async function(e) {
   message.className = "message";
 
   try {
-    const response = await fetch(API + "/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-        role: "seller"
-      })
-    });
+
+    const response = await fetch(
+      API + "/api/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: "seller",
+          businessName,
+          gstNumber,
+          mobile,
+          address
+        })
+      }
+    );
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || data.message || "Registration failed");
+      throw new Error(
+        data.error ||
+        data.message ||
+        "Registration failed"
+      );
     }
 
     if (!data.user || data.user.role !== "seller") {
-      throw new Error("Seller account was not created correctly.");
+      throw new Error(
+        "Seller account was not created correctly."
+      );
     }
 
     if (!data.token) {
-      throw new Error("Registration succeeded but no authentication token was returned.");
+      throw new Error(
+        "Registration succeeded but no authentication token was returned."
+      );
     }
 
-    localStorage.setItem("shipnova_token", data.token);
-    localStorage.setItem("shipnova_user", JSON.stringify(data.user));
+    localStorage.setItem(
+      "shipnova_token",
+      data.token
+    );
+
+    localStorage.setItem(
+      "shipnova_user",
+      JSON.stringify(data.user)
+    );
 
     showMessage(
-      "Seller account created successfully. Opening seller dashboard...",
+      "Seller account created successfully. Opening dashboard...",
       "success"
     );
 
-    setTimeout(() => {
+    setTimeout(function() {
       window.location.href = "seller.html";
     }, 800);
 
   } catch (error) {
+
     console.error(error);
-    showMessage(error.message || "Unable to connect to server.", "error");
+
+    showMessage(
+      error.message ||
+      "Unable to connect to server.",
+      "error"
+    );
+
   } finally {
+
     button.disabled = false;
     button.textContent = "Create Seller Account";
+
   }
+
 });
+
 </script></body>
 </html>
