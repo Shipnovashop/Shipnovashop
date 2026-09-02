@@ -1,292 +1,774 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <title>Customer - ShipNova</title>
+
   <link rel="stylesheet" href="style.css">
-</head><body><nav>
-  <b>ShipNova Customer</b>  <span>
+
+  <style>
+    .customer-wrap {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .top-card {
+      margin-bottom: 20px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 15px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #f5f5f5;
+      margin-bottom: 10px;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2f2f2;
+      border-radius: 10px;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .stock {
+      font-size: 14px;
+    }
+
+    .cart-item {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .cart-item-image {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f5f5f5;
+    }
+
+    .cart-info {
+      flex: 1;
+    }
+
+    .qty-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 7px;
+    }
+
+    .qty-box button {
+      min-width: 35px;
+      min-height: 35px;
+      padding: 5px 10px;
+    }
+
+    .danger {
+      background: #dc3545 !important;
+      color: white !important;
+      border: none;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      text-transform: capitalize;
+      background: #eee;
+    }
+
+    .status.pending {
+      background: #fff3cd;
+    }
+
+    .status.confirmed,
+    .status.processing {
+      background: #cfe2ff;
+    }
+
+    .status.shipped {
+      background: #d1ecf1;
+    }
+
+    .status.delivered {
+      background: #d1e7dd;
+    }
+
+    .status.cancelled {
+      background: #f8d7da;
+    }
+
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: white;
+    }
+
+    .order-header {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .order-items {
+      margin-top: 12px;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+    .order-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .search-box {
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 15px;
+    }
+
+    .search-box input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .checkout-grid textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 25px;
+      color: #777;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #d00;
+      font-weight: bold;
+    }
+
+    @media (max-width: 700px) {
+
+      nav {
+        flex-wrap: wrap;
+      }
+
+      nav span {
+        width: 100%;
+        margin-top: 8px;
+      }
+
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-item {
+        align-items: flex-start;
+      }
+
+      .cart-item-image {
+        width: 55px;
+        height: 55px;
+      }
+
+      .cart-item {
+        flex-wrap: wrap;
+      }
+
+      .cart-info {
+        min-width: 180px;
+      }
+
+      .product-image,
+      .no-image {
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <b>🚚 ShipNova Customer</b>
+
+  <span>
     <a href="index.html">Home</a>
     <a href="product.html">Products</a>
     <button onclick="logout()">Logout</button>
   </span>
-</nav><main class="container">  <!-- LOGIN / REGISTER -->  <div id="authBox" class="grid"><div class="card">
-  <h2>Customer Login</h2>
+</nav>
 
-  <form id="loginForm">
+<main class="container customer-wrap">
 
-    <input
-      id="loginEmail"
-      type="email"
-      placeholder="Email"
-      required
-    >
+  <!-- =========================
+       AUTH
+  ========================== -->
 
-    <input
-      id="loginPassword"
-      type="password"
-      placeholder="Password"
-      required
-    >
+  <div id="authBox" class="grid">
 
-    <button type="submit">
-      Login
-    </button>
+    <!-- LOGIN -->
 
-  </form>
+    <div class="card">
 
-  <p id="loginMsg"></p>
-</div>
+      <h2>🔐 Customer Login</h2>
 
+      <form id="loginForm">
 
-<div class="card">
-  <h2>Customer Registration</h2>
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="Email"
+          required
+        >
 
-  <form id="registerForm">
+        <input
+          id="loginPassword"
+          type="password"
+          placeholder="Password"
+          required
+        >
 
-    <input
-      id="regName"
-      placeholder="Full Name"
-      required
-    >
+        <button type="submit">
+          Login
+        </button>
 
-    <input
-      id="regEmail"
-      type="email"
-      placeholder="Email"
-      required
-    >
+      </form>
 
-    <input
-      id="regPassword"
-      type="password"
-      placeholder="Password"
-      required
-      minlength="6"
-    >
+      <p id="loginMsg"></p>
 
-    <button type="submit">
-      Register
-    </button>
-
-  </form>
-
-  <p id="registerMsg"></p>
-</div>
-
-  </div>  <!-- CUSTOMER AREA -->  <div id="customerArea" style="display:none"><div class="card">
-  <h2>Welcome, <span id="customerName"></span> 👋</h2>
-  <p>Choose products and place your order.</p>
-</div>
+    </div>
 
 
-<!-- PRODUCTS -->
+    <!-- REGISTER -->
 
-<div class="card">
+    <div class="card">
 
-  <div class="row">
-    <h2 style="flex:1">Products</h2>
+      <h2>📝 Customer Registration</h2>
 
-    <button onclick="loadProducts()">
-      Refresh
-    </button>
+      <form id="registerForm">
+
+        <input
+          id="regName"
+          placeholder="Full Name"
+          required
+        >
+
+        <input
+          id="regEmail"
+          type="email"
+          placeholder="Email"
+          required
+        >
+
+        <input
+          id="regPassword"
+          type="password"
+          placeholder="Password"
+          minlength="6"
+          required
+        >
+
+        <input
+          id="regConfirmPassword"
+          type="password"
+          placeholder="Confirm Password"
+          minlength="6"
+          required
+        >
+
+        <button type="submit">
+          Register
+        </button>
+
+      </form>
+
+      <p id="registerMsg"></p>
+
+    </div>
+
   </div>
 
-  <div id="products">
-    Loading products...
+
+  <!-- =========================
+       CUSTOMER AREA
+  ========================== -->
+
+  <div id="customerArea" style="display:none">
+
+
+    <!-- WELCOME -->
+
+    <div class="card top-card">
+
+      <h2>
+        Welcome,
+        <span id="customerName"></span>
+        👋
+      </h2>
+
+      <p>
+        Shop products, add them to your cart and place your order.
+      </p>
+
+    </div>
+
+
+    <!-- =========================
+         PRODUCTS
+    ========================== -->
+
+    <div class="card">
+
+      <div class="row">
+
+        <h2 style="flex:1">
+          🛍️ Products
+        </h2>
+
+        <button onclick="loadProducts()">
+          🔄 Refresh
+        </button>
+
+      </div>
+
+      <div class="search-box">
+
+        <input
+          id="searchProducts"
+          type="search"
+          placeholder="🔎 Search products..."
+          oninput="filterProducts()"
+        >
+
+      </div>
+
+      <div id="products">
+        Loading products...
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         CART
+    ========================== -->
+
+    <div class="card">
+
+      <h2>
+        🛒 My Cart
+      </h2>
+
+      <div id="cart">
+        <div class="empty">
+          Cart is empty.
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>
+        Cart Total:
+        ₹<span id="cartTotal">0.00</span>
+      </h3>
+
+    </div>
+
+
+    <!-- =========================
+         CHECKOUT
+    ========================== -->
+
+    <div class="card">
+
+      <h2>
+        📍 Delivery Details
+      </h2>
+
+      <div class="checkout-grid">
+
+        <div>
+          <label>Full Name</label>
+
+          <input
+            id="deliveryName"
+            placeholder="Receiver Name"
+            required
+          >
+        </div>
+
+
+        <div>
+          <label>Mobile Number</label>
+
+          <input
+            id="deliveryMobile"
+            type="tel"
+            maxlength="10"
+            placeholder="10 digit mobile number"
+          >
+        </div>
+
+
+        <div class="full-width">
+
+          <label>Delivery Address</label>
+
+          <textarea
+            id="deliveryAddress"
+            placeholder="House / Flat, Street, Area, City, State, PIN"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+      <br>
+
+      <button
+        id="orderButton"
+        onclick="placeOrder()"
+        disabled
+      >
+        🛍️ Place Order
+      </button>
+
+      <p id="orderMsg"></p>
+
+    </div>
+
+
+    <!-- =========================
+         MY ORDERS
+    ========================== -->
+
+    <div class="card">
+
+      <div class="row">
+
+        <h2 style="flex:1">
+          📦 My Orders
+        </h2>
+
+        <button onclick="loadOrders()">
+          🔄 Refresh
+        </button>
+
+      </div>
+
+      <div id="orders">
+        Loading orders...
+      </div>
+
+    </div>
+
   </div>
 
-</div>
+</main>
 
 
-<!-- CART -->
+<script src="api-config.js"></script>
+<script src="app.js"></script>
 
-<div class="card">
-
-  <h2>🛒 My Cart</h2>
-
-  <div id="cart">
-    Cart is empty.
-  </div>
-
-  <hr>
-
-  <h3>
-    Total:
-    ₹<span id="cartTotal">0.00</span>
-  </h3>
-
-  <button
-    id="orderButton"
-    onclick="placeOrder()"
-    disabled
-  >
-    Place Order
-  </button>
-
-  <p id="orderMsg"></p>
-
-</div>
-
-
-<!-- MY ORDERS -->
-
-<div class="card">
-
-  <div class="row">
-    <h2 style="flex:1">📦 My Orders</h2>
-
-    <button onclick="loadOrders()">
-      Refresh
-    </button>
-  </div>
-
-  <div id="orders">
-    No orders yet.
-  </div>
-
-</div>
-
-  </div></main><script src="api-config.js"></script><script src="app.js"></script><script>
+<script>
 
 let cart = [];
+let allProducts = [];
 
 
-/* =========================
+/* =====================================
    START
-========================= */
+===================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener(
+  'DOMContentLoaded',
+  function() {
 
-  const u = user();
+    const u = user();
 
-  if (u && u.role === 'customer') {
+    if (
+      u &&
+      u.role === 'customer'
+    ) {
 
-    showCustomer();
+      showCustomer();
+
+    } else {
+
+      document.getElementById(
+        'authBox'
+      ).style.display = 'grid';
+
+      document.getElementById(
+        'customerArea'
+      ).style.display = 'none';
+
+    }
 
   }
+);
 
-});
 
-
-/* =========================
-   AUTH UI
-========================= */
+/* =====================================
+   SHOW CUSTOMER
+===================================== */
 
 function showCustomer() {
 
   const u = user();
 
-  if (!u || u.role !== 'customer') {
+  if (
+    !u ||
+    u.role !== 'customer'
+  ) {
 
-    document.getElementById('authBox').style.display = 'grid';
-    document.getElementById('customerArea').style.display = 'none';
+    document.getElementById(
+      'authBox'
+    ).style.display = 'grid';
+
+    document.getElementById(
+      'customerArea'
+    ).style.display = 'none';
 
     return;
 
   }
 
-  document.getElementById('authBox').style.display = 'none';
-  document.getElementById('customerArea').style.display = 'block';
+  document.getElementById(
+    'authBox'
+  ).style.display = 'none';
 
-  document.getElementById('customerName').textContent =
+  document.getElementById(
+    'customerArea'
+  ).style.display = 'block';
+
+  document.getElementById(
+    'customerName'
+  ).textContent =
     u.name || 'Customer';
+
+
+  /* Delivery defaults */
+
+  document.getElementById(
+    'deliveryName'
+  ).value =
+    u.name || '';
+
 
   loadProducts();
   loadOrders();
+  renderCart();
 
 }
 
 
-/* =========================
-   CUSTOMER REGISTER
-========================= */
+/* =====================================
+   REGISTER
+===================================== */
 
-document.getElementById('registerForm').onsubmit =
-async function(e) {
+document.getElementById(
+  'registerForm'
+).onsubmit = async function(e) {
 
   e.preventDefault();
 
   const msg =
-    document.getElementById('registerMsg');
+    document.getElementById(
+      'registerMsg'
+    );
+
+  const password =
+    document.getElementById(
+      'regPassword'
+    ).value;
+
+  const confirmPassword =
+    document.getElementById(
+      'regConfirmPassword'
+    ).value;
+
+  if (
+    password !==
+    confirmPassword
+  ) {
+
+    msg.className = 'error';
+
+    msg.textContent =
+      'Passwords do not match.';
+
+    return;
+
+  }
 
   msg.className = '';
-  msg.textContent = 'Registering...';
+
+  msg.textContent =
+    'Registering...';
+
 
   try {
 
-    const data = await api(
-      '/api/auth/register',
-      {
-        method: 'POST',
+    const data =
+      await api(
+        '/api/auth/register',
+        {
+          method: 'POST',
 
-        body: JSON.stringify({
-          name:
-            document.getElementById('regName').value.trim(),
+          body: JSON.stringify({
 
-          email:
-            document.getElementById('regEmail').value.trim(),
+            name:
+              document.getElementById(
+                'regName'
+              ).value.trim(),
 
-          password:
-            document.getElementById('regPassword').value,
+            email:
+              document.getElementById(
+                'regEmail'
+              ).value.trim(),
 
-          role: 'customer'
-        })
-      }
-    );
+            password:
+              password,
+
+            role:
+              'customer'
+
+          })
+
+        }
+      );
+
 
     saveAuth(data);
 
-    msg.className = 'success';
-    msg.textContent = 'Registration successful!';
+    msg.className =
+      'success';
+
+    msg.textContent =
+      'Registration successful!';
 
     showCustomer();
 
-  } catch (e) {
 
-    msg.className = 'error';
-    msg.textContent = e.message;
+  } catch(e) {
+
+    msg.className =
+      'error';
+
+    msg.textContent =
+      e.message;
 
   }
 
 };
 
 
-/* =========================
-   CUSTOMER LOGIN
-========================= */
+/* =====================================
+   LOGIN
+===================================== */
 
-document.getElementById('loginForm').onsubmit =
-async function(e) {
+document.getElementById(
+  'loginForm'
+).onsubmit = async function(e) {
 
   e.preventDefault();
 
   const msg =
-    document.getElementById('loginMsg');
+    document.getElementById(
+      'loginMsg'
+    );
 
   msg.className = '';
-  msg.textContent = 'Logging in...';
+
+  msg.textContent =
+    'Logging in...';
+
 
   try {
 
-    const data = await api(
-      '/api/auth/login',
-      {
-        method: 'POST',
+    const data =
+      await api(
+        '/api/auth/login',
+        {
+          method: 'POST',
 
-        body: JSON.stringify({
-          email:
-            document.getElementById('loginEmail').value.trim(),
+          body: JSON.stringify({
 
-          password:
-            document.getElementById('loginPassword').value
-        })
-      }
-    );
+            email:
+              document.getElementById(
+                'loginEmail'
+              ).value.trim(),
 
-    if (data.user.role !== 'customer') {
+            password:
+              document.getElementById(
+                'loginPassword'
+              ).value
+
+          })
+
+        }
+      );
+
+
+    if (
+      !data.user ||
+      data.user.role !== 'customer'
+    ) {
 
       throw new Error(
         'This page is only for Customer login.'
@@ -294,141 +776,307 @@ async function(e) {
 
     }
 
+
     saveAuth(data);
 
-    msg.className = 'success';
-    msg.textContent = 'Login successful!';
+    msg.className =
+      'success';
+
+    msg.textContent =
+      'Login successful!';
 
     showCustomer();
 
-  } catch (e) {
 
-    msg.className = 'error';
-    msg.textContent = e.message;
+  } catch(e) {
+
+    msg.className =
+      'error';
+
+    msg.textContent =
+      e.message;
 
   }
 
 };
 
 
-/* =========================
+/* =====================================
    LOAD PRODUCTS
-========================= */
+===================================== */
 
 async function loadProducts() {
 
   const box =
-    document.getElementById('products');
+    document.getElementById(
+      'products'
+    );
 
   box.innerHTML =
     '<p>Loading products...</p>';
 
+
   try {
 
     const data =
-      await api('/api/products');
+      await api(
+        '/api/products'
+      );
 
-    if (!data.products || !data.products.length) {
 
-      box.innerHTML =
-        '<p>No products available.</p>';
+    allProducts =
+      Array.isArray(
+        data.products
+      )
+        ? data.products
+        : [];
 
-      return;
 
-    }
+    renderProducts(
+      allProducts
+    );
 
-    box.innerHTML =
-      data.products.map(p => {
 
-        const image =
-          p.image
-            ? `<img
-                 src="${escapeHtml(p.image)}"
-                 alt="${escapeHtml(p.name)}"
-                 style="max-width:160px;max-height:160px;object-fit:contain">
-               <br>`
-            : '';
-
-        const disabled =
-          Number(p.stock) <= 0
-            ? 'disabled'
-            : '';
-
-        return `
-          <div class="card">
-
-            ${image}
-
-            <h3>${escapeHtml(p.name)}</h3>
-
-            <p>
-              ${escapeHtml(p.description || '')}
-            </p>
-
-            <p>
-              <b>₹${Number(p.price).toFixed(2)}</b>
-            </p>
-
-            <p>
-              Seller:
-              ${escapeHtml(p.seller_name || 'Seller')}
-            </p>
-
-            <p>
-              Stock:
-              ${Number(p.stock)}
-            </p>
-
-            <button
-              ${disabled}
-              onclick="addToCart(
-                ${Number(p.id)},
-                '${escapeJs(p.name)}',
-                ${Number(p.price)},
-                ${Number(p.stock)}
-              )"
-            >
-              ${
-                Number(p.stock) > 0
-                  ? 'Add to Cart'
-                  : 'Out of Stock'
-              }
-            </button>
-
-          </div>
-        `;
-
-      }).join('');
-
-  } catch (e) {
+  } catch(e) {
 
     box.innerHTML =
-      `<p class="error">${escapeHtml(e.message)}</p>`;
+      `<p class="error">
+        ${escapeHtml(e.message)}
+      </p>`;
 
   }
 
 }
 
 
-/* =========================
+/* =====================================
+   RENDER PRODUCTS
+===================================== */
+
+function renderProducts(products) {
+
+  const box =
+    document.getElementById(
+      'products'
+    );
+
+
+  if (!products.length) {
+
+    box.innerHTML =
+      '<div class="empty">No products available.</div>';
+
+    return;
+
+  }
+
+
+  box.innerHTML = `
+    <div class="product-grid">
+
+      ${
+        products.map(
+          p => {
+
+            const stock =
+              Number(p.stock || 0);
+
+            const price =
+              Number(p.price || 0);
+
+
+            const image =
+              p.image
+                ? `
+                  <img
+                    class="product-image"
+                    src="${escapeHtml(p.image)}"
+                    alt="${escapeHtml(p.name)}"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                  >
+
+                  <div
+                    class="no-image"
+                    style="display:none"
+                  >
+                    No Image
+                  </div>
+                `
+                : `
+                  <div class="no-image">
+                    No Image
+                  </div>
+                `;
+
+
+            return `
+
+              <div class="product-card">
+
+                ${image}
+
+                <h3>
+                  ${escapeHtml(p.name)}
+                </h3>
+
+                <p>
+                  ${escapeHtml(
+                    p.description || ''
+                  )}
+                </p>
+
+                <p class="price">
+                  ₹${price.toFixed(2)}
+                </p>
+
+                <p>
+                  Seller:
+                  <b>
+                    ${escapeHtml(
+                      p.seller_name ||
+                      'Seller'
+                    )}
+                  </b>
+                </p>
+
+                <p class="stock">
+
+                  ${
+                    stock > 0
+                      ? `Stock: ${stock}`
+                      : '<b>Out of Stock</b>'
+                  }
+
+                </p>
+
+                <button
+                  ${
+                    stock <= 0
+                      ? 'disabled'
+                      : ''
+                  }
+
+                  onclick="addToCart(
+                    ${Number(p.id)},
+                    '${escapeJs(p.name)}',
+                    ${price},
+                    ${stock},
+                    '${escapeJs(p.image || '')}'
+                  )"
+                >
+
+                  ${
+                    stock > 0
+                      ? '🛒 Add to Cart'
+                      : 'Out of Stock'
+                  }
+
+                </button>
+
+              </div>
+
+            `;
+
+          }
+        ).join('')
+      }
+
+    </div>
+  `;
+
+}
+
+
+/* =====================================
+   SEARCH
+===================================== */
+
+function filterProducts() {
+
+  const keyword =
+    document.getElementById(
+      'searchProducts'
+    ).value
+      .trim()
+      .toLowerCase();
+
+
+  if (!keyword) {
+
+    renderProducts(
+      allProducts
+    );
+
+    return;
+
+  }
+
+
+  const filtered =
+    allProducts.filter(
+      p => {
+
+        const name =
+          String(
+            p.name || ''
+          ).toLowerCase();
+
+        const description =
+          String(
+            p.description || ''
+          ).toLowerCase();
+
+        const seller =
+          String(
+            p.seller_name || ''
+          ).toLowerCase();
+
+
+        return (
+          name.includes(keyword) ||
+          description.includes(keyword) ||
+          seller.includes(keyword)
+        );
+
+      }
+    );
+
+
+  renderProducts(
+    filtered
+  );
+
+}
+
+
+/* =====================================
    ADD TO CART
-========================= */
+===================================== */
 
 function addToCart(
   id,
   name,
   price,
-  stock
+  stock,
+  image
 ) {
 
   const existing =
-    cart.find(x => x.product_id === id);
+    cart.find(
+      x => x.product_id === id
+    );
+
 
   if (existing) {
 
-    if (existing.quantity >= stock) {
+    if (
+      existing.quantity >=
+      existing.stock
+    ) {
 
-      alert('Maximum available stock reached.');
+      alert(
+        'Maximum available stock reached.'
+      );
 
       return;
 
@@ -439,86 +1087,133 @@ function addToCart(
   } else {
 
     cart.push({
-      product_id: id,
-      name: name,
-      price: Number(price),
-      stock: Number(stock),
-      quantity: 1
+
+      product_id:
+        Number(id),
+
+      name:
+        name,
+
+      price:
+        Number(price),
+
+      stock:
+        Number(stock),
+
+      image:
+        image || '',
+
+      quantity:
+        1
+
     });
 
   }
 
+
   renderCart();
 
 }
 
 
-/* =========================
+/* =====================================
    CHANGE QUANTITY
-========================= */
+===================================== */
 
-function changeQty(id, amount) {
+function changeQty(
+  id,
+  amount
+) {
 
   const item =
-    cart.find(x => x.product_id === id);
+    cart.find(
+      x => x.product_id === id
+    );
+
 
   if (!item) return;
 
-  item.quantity += amount;
 
-  if (item.quantity <= 0) {
+  item.quantity +=
+    amount;
+
+
+  if (
+    item.quantity <= 0
+  ) {
 
     cart =
-      cart.filter(x => x.product_id !== id);
+      cart.filter(
+        x =>
+          x.product_id !== id
+      );
 
   }
 
-  if (item.quantity > item.stock) {
 
-    item.quantity = item.stock;
+  if (
+    item.quantity >
+    item.stock
+  ) {
 
-    alert('Maximum available stock reached.');
+    item.quantity =
+      item.stock;
+
+    alert(
+      'Maximum available stock reached.'
+    );
 
   }
+
 
   renderCart();
 
 }
 
 
-/* =========================
-   REMOVE ITEM
-========================= */
+/* =====================================
+   REMOVE FROM CART
+===================================== */
 
 function removeFromCart(id) {
 
   cart =
-    cart.filter(x => x.product_id !== id);
+    cart.filter(
+      x =>
+        x.product_id !== id
+    );
 
   renderCart();
 
 }
 
 
-/* =========================
+/* =====================================
    RENDER CART
-========================= */
+===================================== */
 
 function renderCart() {
 
   const box =
-    document.getElementById('cart');
+    document.getElementById(
+      'cart'
+    );
 
   const totalBox =
-    document.getElementById('cartTotal');
+    document.getElementById(
+      'cartTotal'
+    );
 
   const orderButton =
-    document.getElementById('orderButton');
+    document.getElementById(
+      'orderButton'
+    );
+
 
   if (!cart.length) {
 
     box.innerHTML =
-      '<p>Cart is empty.</p>';
+      '<div class="empty">🛒 Cart is empty.</div>';
 
     totalBox.textContent =
       '0.00';
@@ -530,81 +1225,111 @@ function renderCart() {
 
   }
 
-  let total = 0;
+
+  let total =
+    0;
+
 
   box.innerHTML =
-    cart.map(item => {
+    cart.map(
+      item => {
 
-      const subtotal =
-        item.price * item.quantity;
+        const subtotal =
+          item.price *
+          item.quantity;
 
-      total += subtotal;
 
-      return `
-        <div class="card">
+        total +=
+          subtotal;
 
-          <div class="row">
 
-            <div style="flex:1">
+        const image =
+          item.image
+            ? `
+              <img
+                class="cart-item-image"
+                src="${escapeHtml(item.image)}"
+                alt="${escapeHtml(item.name)}"
+              >
+            `
+            : `
+              <div class="cart-item-image"
+                   style="display:flex;align-items:center;justify-content:center">
+                🛍️
+              </div>
+            `;
+
+
+        return `
+
+          <div class="cart-item">
+
+            ${image}
+
+            <div class="cart-info">
 
               <b>
                 ${escapeHtml(item.name)}
               </b>
 
-              <p>
+              <div>
                 ₹${item.price.toFixed(2)}
-                ×
-                ${item.quantity}
-                =
-                ₹${subtotal.toFixed(2)}
-              </p>
+              </div>
+
+              <div class="qty-box">
+
+                <button
+                  onclick="changeQty(
+                    ${item.product_id},
+                    -1
+                  )"
+                >
+                  −
+                </button>
+
+                <b>
+                  ${item.quantity}
+                </b>
+
+                <button
+                  onclick="changeQty(
+                    ${item.product_id},
+                    1
+                  )"
+                >
+                  +
+                </button>
+
+                <button
+                  class="danger"
+                  onclick="removeFromCart(
+                    ${item.product_id}
+                  )"
+                >
+                  Remove
+                </button>
+
+              </div>
 
             </div>
 
             <div>
-
-              <button
-                onclick="changeQty(
-                  ${item.product_id},
-                  -1
-                )"
-              >
-                −
-              </button>
-
-              <b style="margin:0 10px">
-                ${item.quantity}
+              <b>
+                ₹${subtotal.toFixed(2)}
               </b>
-
-              <button
-                onclick="changeQty(
-                  ${item.product_id},
-                  1
-                )"
-              >
-                +
-              </button>
-
-              <button
-                class="danger"
-                onclick="removeFromCart(
-                  ${item.product_id}
-                )"
-              >
-                Remove
-              </button>
-
             </div>
 
           </div>
 
-        </div>
-      `;
+        `;
 
-    }).join('');
+      }
+    ).join('');
+
 
   totalBox.textContent =
     total.toFixed(2);
+
 
   orderButton.disabled =
     false;
@@ -612,19 +1337,86 @@ function renderCart() {
 }
 
 
-/* =========================
+/* =====================================
    PLACE ORDER
-========================= */
+===================================== */
 
 async function placeOrder() {
 
   if (!cart.length) {
 
-    alert('Cart is empty.');
+    alert(
+      'Cart is empty.'
+    );
 
     return;
 
   }
+
+
+  const name =
+    document.getElementById(
+      'deliveryName'
+    ).value.trim();
+
+  const mobile =
+    document.getElementById(
+      'deliveryMobile'
+    ).value.trim();
+
+  const address =
+    document.getElementById(
+      'deliveryAddress'
+    ).value.trim();
+
+
+  if (!name) {
+
+    alert(
+      'Please enter delivery name.'
+    );
+
+    return;
+
+  }
+
+
+  if (!mobile) {
+
+    alert(
+      'Please enter mobile number.'
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !/^[6-9][0-9]{9}$/.test(
+      mobile
+    )
+  ) {
+
+    alert(
+      'Please enter a valid 10 digit mobile number.'
+    );
+
+    return;
+
+  }
+
+
+  if (!address) {
+
+    alert(
+      'Please enter delivery address.'
+    );
+
+    return;
+
+  }
+
 
   if (
     !confirm(
@@ -636,12 +1428,26 @@ async function placeOrder() {
 
   }
 
+
   const msg =
-    document.getElementById('orderMsg');
+    document.getElementById(
+      'orderMsg'
+    );
+
+  const button =
+    document.getElementById(
+      'orderButton'
+    );
+
 
   msg.className = '';
+
   msg.textContent =
     'Placing order...';
+
+  button.disabled =
+    true;
+
 
   try {
 
@@ -651,18 +1457,27 @@ async function placeOrder() {
         {
           method: 'POST',
 
-          body: JSON.stringify({
-            items:
-              cart.map(x => ({
-                product_id:
-                  x.product_id,
+          body:
+            JSON.stringify({
 
-                quantity:
-                  x.quantity
-              }))
-          })
+              items:
+                cart.map(
+                  x => ({
+
+                    product_id:
+                      x.product_id,
+
+                    quantity:
+                      x.quantity
+
+                  })
+                )
+
+            })
+
         }
       );
+
 
     msg.className =
       'success';
@@ -672,15 +1487,39 @@ async function placeOrder() {
       data.order.id +
       ' placed successfully!';
 
+
     cart = [];
 
     renderCart();
 
-    loadProducts();
 
-    loadOrders();
+    /* Refresh products so stock updates */
 
-  } catch (e) {
+    await loadProducts();
+
+
+    /* Refresh orders */
+
+    await loadOrders();
+
+
+    /* Scroll to orders */
+
+    setTimeout(
+      () => {
+
+        document.getElementById(
+          'orders'
+        ).scrollIntoView({
+          behavior: 'smooth'
+        });
+
+      },
+      300
+    );
+
+
+  } catch(e) {
 
     msg.className =
       'error';
@@ -688,131 +1527,254 @@ async function placeOrder() {
     msg.textContent =
       e.message;
 
+    button.disabled =
+      false;
+
   }
 
 }
 
 
-/* =========================
+/* =====================================
    LOAD MY ORDERS
-========================= */
+===================================== */
 
 async function loadOrders() {
 
   const box =
-    document.getElementById('orders');
+    document.getElementById(
+      'orders'
+    );
+
 
   box.innerHTML =
     '<p>Loading orders...</p>';
 
+
   try {
 
     const data =
-      await api('/api/orders');
+      await api(
+        '/api/orders'
+      );
 
-    if (!data.orders || !data.orders.length) {
+
+    if (
+      !data.orders ||
+      !data.orders.length
+    ) {
 
       box.innerHTML =
-        '<p>No orders yet.</p>';
+        '<div class="empty">📦 No orders yet.</div>';
 
       return;
 
     }
 
-    box.innerHTML =
-      data.orders.map(order => {
-
-        const items =
-          Array.isArray(order.items)
-            ? order.items
-            : [];
-
-        return `
-          <div class="card">
-
-            <h3>
-              Order #${order.id}
-            </h3>
-
-            <p>
-              Date:
-              ${formatDate(order.created_at)}
-            </p>
-
-            <p>
-              Status:
-              <b>${escapeHtml(order.status)}</b>
-            </p>
-
-            <p>
-              Total:
-              <b>
-                ₹${Number(order.total).toFixed(2)}
-              </b>
-            </p>
-
-            <h4>Items</h4>
-
-            ${
-              items.length
-                ? items.map(item => `
-                    <div>
-                      ${escapeHtml(item.product_name)}
-                      × ${item.quantity}
-                      — ₹${Number(item.subtotal).toFixed(2)}
-                    </div>
-                  `).join('')
-                : '<p>No items</p>'
-            }
-
-          </div>
-        `;
-
-      }).join('');
-
-  } catch (e) {
 
     box.innerHTML =
-      `<p class="error">${escapeHtml(e.message)}</p>`;
+      data.orders.map(
+        order => {
+
+          const items =
+            Array.isArray(
+              order.items
+            )
+              ? order.items
+              : [];
+
+
+          const status =
+            String(
+              order.status ||
+              'pending'
+            ).toLowerCase();
+
+
+          return `
+
+            <div class="order-card">
+
+              <div class="order-header">
+
+                <h3 style="margin:0">
+                  Order #${order.id}
+                </h3>
+
+                <span
+                  class="status ${escapeHtml(status)}"
+                >
+                  ${escapeHtml(
+                    order.status ||
+                    'pending'
+                  )}
+                </span>
+
+              </div>
+
+
+              <p>
+                <b>Date:</b>
+                ${formatDate(
+                  order.created_at
+                )}
+              </p>
+
+
+              <p>
+                <b>Total:</b>
+                ₹${Number(
+                  order.total || 0
+                ).toFixed(2)}
+              </p>
+
+
+              <div class="order-items">
+
+                <h4>
+                  Order Items
+                </h4>
+
+                ${
+                  items.length
+                    ? items.map(
+                        item => `
+
+                          <div class="order-item">
+
+                            <b>
+                              ${escapeHtml(
+                                item.product_name ||
+                                item.name ||
+                                'Product'
+                              )}
+                            </b>
+
+                            <br>
+
+                            Quantity:
+                            ${Number(
+                              item.quantity || 0
+                            )}
+
+                            <br>
+
+                            Price:
+                            ₹${Number(
+                              item.price || 0
+                            ).toFixed(2)}
+
+                            <br>
+
+                            Subtotal:
+                            <b>
+                              ₹${Number(
+                                item.subtotal || 0
+                              ).toFixed(2)}
+                            </b>
+
+                          </div>
+
+                        `
+                      ).join('')
+                    : '<p>No item details available.</p>'
+                }
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      ).join('');
+
+
+  } catch(e) {
+
+    box.innerHTML =
+      `<p class="error">
+        ${escapeHtml(
+          e.message
+        )}
+      </p>`;
 
   }
 
 }
 
 
-/* =========================
+/* =====================================
    HELPERS
-========================= */
+===================================== */
 
 function escapeHtml(value) {
 
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+  return String(
+    value ?? ''
+  )
+  .replaceAll(
+    '&',
+    '&amp;'
+  )
+  .replaceAll(
+    '<',
+    '&lt;'
+  )
+  .replaceAll(
+    '>',
+    '&gt;'
+  )
+  .replaceAll(
+    '"',
+    '&quot;'
+  )
+  .replaceAll(
+    "'",
+    '&#039;'
+  );
 
 }
 
 
 function escapeJs(value) {
 
-  return String(value ?? '')
-    .replaceAll('\\', '\\\\')
-    .replaceAll("'", "\\'")
-    .replaceAll('\n', '\\n')
-    .replaceAll('\r', '\\r');
+  return String(
+    value ?? ''
+  )
+  .replaceAll(
+    '\\',
+    '\\\\'
+  )
+  .replaceAll(
+    "'",
+    "\\'"
+  )
+  .replaceAll(
+    '\n',
+    '\\n'
+  )
+  .replaceAll(
+    '\r',
+    '\\r'
+  );
 
 }
 
 
 function formatDate(value) {
 
+  if (!value) {
+    return '-';
+  }
+
   try {
 
-    return new Date(value)
-      .toLocaleString('en-IN');
+    return new Date(
+      value
+    ).toLocaleString(
+      'en-IN'
+    );
 
   } catch {
 
@@ -822,5 +1784,7 @@ function formatDate(value) {
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>
