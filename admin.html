@@ -1,26 +1,76 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Admin - ShipNovaShop</title>
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1">
+
+<title>Admin Panel - ShipNovaShop</title>
 
 <link rel="stylesheet" href="style.css">
 
 <style>
-.admin-login{
-  max-width:500px;
-  margin:40px auto;
+
+.admin-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
 }
 
-.admin-card{
-  margin-bottom:20px;
+.stat-card{
+  text-align:center;
+  padding:20px;
 }
 
-#loginMessage,
-#productMessage{
+.stat-number{
+  font-size:32px;
+  font-weight:bold;
+  margin-top:8px;
+}
+
+.admin-section{
+  margin-top:25px;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:700px;
+}
+
+th,
+td{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+
+th{
+  font-weight:bold;
+}
+
+.status-select{
+  padding:7px;
+  border-radius:6px;
+}
+
+.danger{
+  background:#dc2626;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.message{
   margin-top:12px;
   padding:10px;
   border-radius:7px;
@@ -36,34 +86,43 @@
   color:#166534;
 }
 
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
-  margin:20px 0;
+.info{
+  background:#e0f2fe;
+  color:#075985;
 }
 
-.stat-card{
-  text-align:center;
+.loading{
   padding:20px;
+  text-align:center;
 }
 
-.stat{
-  font-size:30px;
-  font-weight:800;
-  margin-bottom:5px;
+@media(max-width:900px){
+
+  .admin-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
 }
 
-@media(max-width:700px){
-  .stats{
+@media(max-width:600px){
+
+  .admin-grid{
     grid-template-columns:1fr;
   }
+
 }
+
 </style>
 
 </head>
 
+
 <body>
+
+
+<!-- =====================================
+     NAVIGATION
+===================================== -->
 
 <nav>
 
@@ -75,14 +134,12 @@
       Home
     </a>
 
-    <a href="product.html">
-      Store
-    </a>
-
     <button
       type="button"
       onclick="logout()">
+
       Logout
+
     </button>
 
   </span>
@@ -93,19 +150,24 @@
 <main class="container">
 
 
-<!-- =========================
+<!-- =====================================
      ADMIN LOGIN
-========================= -->
+===================================== -->
 
-<section id="loginSection">
+<section
+  id="loginSection"
+  style="display:none">
 
-  <div class="card admin-login">
+  <div
+    class="card"
+    style="max-width:500px;margin:40px auto">
 
     <h1>Admin Login</h1>
 
     <p>
-      Sign in to ShipNova administration.
+      Login to ShipNovaShop administration.
     </p>
+
 
     <form id="loginForm">
 
@@ -113,173 +175,251 @@
         id="email"
         type="email"
         placeholder="Admin Email"
-        value="admin@shipnova.local"
         autocomplete="username"
-        required
-      >
+        required>
+
 
       <input
         id="password"
         type="password"
         placeholder="Admin Password"
         autocomplete="current-password"
-        required
-      >
+        required>
+
 
       <button
         id="loginButton"
         type="submit">
+
         Admin Login
+
       </button>
 
     </form>
 
-    <p id="loginMessage"></p>
+
+    <p
+      id="loginMessage"
+      class="message"
+      style="display:none">
+    </p>
 
   </div>
 
 </section>
 
 
-<!-- =========================
+<!-- =====================================
      ADMIN DASHBOARD
-========================= -->
+===================================== -->
 
 <section
   id="dashboardSection"
-  style="display:none"
->
+  style="display:none">
 
 
-<div class="card admin-card">
+  <div class="card">
 
-  <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard</h1>
 
-  <p id="welcome"></p>
+    <p id="welcome"></p>
 
-</div>
-
-
-<!-- STATS -->
-
-<div id="stats" class="stats"></div>
-
-
-<!-- =========================
-     ADD PRODUCT
-========================= -->
-
-<div class="card admin-card">
-
-  <h2>Add Product</h2>
-
-  <form id="productForm">
-
-    <select id="seller" required>
-
-      <option value="">
-        Select Seller
-      </option>
-
-    </select>
-
-
-    <input
-      id="productName"
-      type="text"
-      placeholder="Product name"
-      required
-    >
-
-
-    <textarea
-      id="description"
-      placeholder="Description"
-    ></textarea>
-
-
-    <input
-      id="price"
-      type="number"
-      step="0.01"
-      min="0"
-      placeholder="Price"
-      required
-    >
-
-
-    <input
-      id="stock"
-      type="number"
-      min="0"
-      placeholder="Stock"
-      required
-    >
-
-
-    <input
-      id="image"
-      type="url"
-      placeholder="Image URL (optional)"
-    >
-
-
-    <button
-      id="productButton"
-      type="submit">
-      Add Product
-    </button>
-
-  </form>
-
-  <p id="productMessage"></p>
-
-</div>
-
-
-<!-- =========================
-     USERS
-========================= -->
-
-<div class="card admin-card">
-
-  <h2>Users</h2>
-
-  <div id="users">
-    Loading...
   </div>
 
-</div>
+
+  <!-- =================================
+       STATISTICS
+  ================================== -->
+
+  <div class="admin-grid">
 
 
-<!-- =========================
-     PRODUCTS
-========================= -->
+    <div class="card stat-card">
 
-<div class="card admin-card">
+      <div>
+        Users
+      </div>
 
-  <h2>All Products</h2>
+      <div
+        id="totalUsers"
+        class="stat-number">
 
-  <div id="products">
-    Loading...
+        0
+
+      </div>
+
+    </div>
+
+
+    <div class="card stat-card">
+
+      <div>
+        Sellers
+      </div>
+
+      <div
+        id="totalSellers"
+        class="stat-number">
+
+        0
+
+      </div>
+
+    </div>
+
+
+    <div class="card stat-card">
+
+      <div>
+        Products
+      </div>
+
+      <div
+        id="totalProducts"
+        class="stat-number">
+
+        0
+
+      </div>
+
+    </div>
+
+
+    <div class="card stat-card">
+
+      <div>
+        Orders
+      </div>
+
+      <div
+        id="totalOrders"
+        class="stat-number">
+
+        0
+
+      </div>
+
+    </div>
+
+
   </div>
 
-</div>
+
+  <!-- =================================
+       SELLERS
+  ================================== -->
+
+  <section class="admin-section">
+
+    <div class="card">
+
+      <h2>All Sellers</h2>
+
+      <div
+        id="sellerList"
+        class="table-wrap">
+
+        <div class="loading">
+          Loading sellers...
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =================================
+       CUSTOMERS
+  ================================== -->
+
+  <section class="admin-section">
+
+    <div class="card">
+
+      <h2>All Customers</h2>
+
+      <div
+        id="customerList"
+        class="table-wrap">
+
+        <div class="loading">
+          Loading customers...
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =================================
+       PRODUCTS
+  ================================== -->
+
+  <section class="admin-section">
+
+    <div class="card">
+
+      <h2>All Products</h2>
+
+      <div
+        id="productList"
+        class="table-wrap">
+
+        <div class="loading">
+          Loading products...
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =================================
+       ORDERS
+  ================================== -->
+
+  <section class="admin-section">
+
+    <div class="card">
+
+      <h2>All Orders</h2>
+
+      <div
+        id="orderList"
+        class="table-wrap">
+
+        <div class="loading">
+          Loading orders...
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
 
 
 </section>
+
 
 </main>
 
 
 <script>
 
+
 /* =====================================
-   SHIPNOVA RENDER API
+   API
 ===================================== */
 
 const API =
-  "https://shipnovashop-1.onrender.com";
+  "https://shipnovashop.onrender.com";
 
 
 /* =====================================
@@ -307,26 +447,6 @@ const dashboardSection =
     "dashboardSection"
   );
 
-const loginMessage =
-  document.getElementById(
-    "loginMessage"
-  );
-
-const productMessage =
-  document.getElementById(
-    "productMessage"
-  );
-
-const loginButton =
-  document.getElementById(
-    "loginButton"
-  );
-
-const productButton =
-  document.getElementById(
-    "productButton"
-  );
-
 
 /* =====================================
    API HELPER
@@ -344,10 +464,12 @@ async function api(
 
 
   const headers = {
+
     "Content-Type":
       "application/json",
 
     ...(options.headers || {})
+
   };
 
 
@@ -361,8 +483,7 @@ async function api(
 
   const response =
     await fetch(
-      API +
-      path,
+      API + path,
       {
         ...options,
         headers
@@ -371,6 +492,7 @@ async function api(
 
 
   let data = {};
+
 
   try{
 
@@ -387,7 +509,8 @@ async function api(
   if(!response.ok){
 
     if(
-      response.status === 401
+      response.status === 401 ||
+      response.status === 403
     ){
 
       localStorage.removeItem(
@@ -418,7 +541,7 @@ async function api(
 
 
 /* =====================================
-   CURRENT USER
+   USER
 ===================================== */
 
 function getUser(){
@@ -489,19 +612,60 @@ function logout(){
     USER_KEY
   );
 
+
   window.location.replace(
-    "login.html"
+    "index.html"
   );
 
 }
 
 
 /* =====================================
-   ADMIN LOGIN
+   ESCAPE HTML
+===================================== */
+
+function escapeHtml(value){
+
+  return String(
+    value ?? ""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+/* =====================================
+   LOGIN
 ===================================== */
 
 document
-  .getElementById("loginForm")
+  .getElementById(
+    "loginForm"
+  )
   .addEventListener(
     "submit",
     async function(e){
@@ -509,23 +673,11 @@ document
       e.preventDefault();
 
 
-      loginMessage.className =
-        "";
-
-      loginMessage.textContent =
-        "Logging in...";
-
-
-      loginButton.disabled =
-        true;
-
-      loginButton.textContent =
-        "Checking...";
-
-
       const email =
         document
-          .getElementById("email")
+          .getElementById(
+            "email"
+          )
           .value
           .trim()
           .toLowerCase();
@@ -533,8 +685,36 @@ document
 
       const password =
         document
-          .getElementById("password")
+          .getElementById(
+            "password"
+          )
           .value;
+
+
+      const button =
+        document.getElementById(
+          "loginButton"
+        );
+
+
+      const message =
+        document.getElementById(
+          "loginMessage"
+        );
+
+
+      button.disabled =
+        true;
+
+
+      message.style.display =
+        "block";
+
+      message.className =
+        "message info";
+
+      message.textContent =
+        "Logging in...";
 
 
       try{
@@ -547,9 +727,13 @@ document
 
               body:
                 JSON.stringify({
-                  email,
-                  password
+
+                  email:email,
+
+                  password:password
+
                 })
+
             }
           );
 
@@ -574,10 +758,10 @@ document
         );
 
 
-        loginMessage.className =
-          "success";
+        message.className =
+          "message success";
 
-        loginMessage.textContent =
+        message.textContent =
           "Admin login successful.";
 
 
@@ -595,19 +779,16 @@ document
         );
 
 
-        loginMessage.className =
-          "error";
+        message.className =
+          "message error";
 
-        loginMessage.textContent =
+        message.textContent =
           error.message ||
           "Admin login failed.";
 
 
-        loginButton.disabled =
+        button.disabled =
           false;
-
-        loginButton.textContent =
-          "Admin Login";
 
       }
 
@@ -621,7 +802,7 @@ document
 
 function showDashboard(){
 
-  const currentUser =
+  const user =
     getUser();
 
   const token =
@@ -632,9 +813,9 @@ function showDashboard(){
 
   if(
     !token ||
-    !currentUser ||
+    !user ||
     String(
-      currentUser.role
+      user.role
     ).toLowerCase()
     !== "admin"
   ){
@@ -658,12 +839,14 @@ function showDashboard(){
 
 
   document
-    .getElementById("welcome")
+    .getElementById(
+      "welcome"
+    )
     .textContent =
       "Welcome, " +
       (
-        currentUser.name ||
-        "Administrator"
+        user.name ||
+        "Admin"
       ) +
       "!";
 
@@ -679,201 +862,88 @@ function showDashboard(){
 
 async function loadDashboard(){
 
+  await Promise.allSettled([
+
+    loadStats(),
+
+    loadSellers(),
+
+    loadCustomers(),
+
+    loadProducts(),
+
+    loadOrders()
+
+  ]);
+
+}
+
+
+/* =====================================
+   STATISTICS
+===================================== */
+
+async function loadStats(){
+
   try{
 
-    const results =
-      await Promise.all([
-
-        api("/api/stats"),
-
-        api("/api/sellers"),
-
-        api("/api/users")
-
-      ]);
+    const data =
+      await api(
+        "/api/stats"
+      );
 
 
     const stats =
-      results[0];
+      data.stats ||
+      data;
 
-    const sellers =
-      results[1];
-
-    const users =
-      results[2];
-
-
-    /* STATS */
 
     document
-      .getElementById("stats")
-      .innerHTML = `
-
-        <div class="card stat-card">
-
-          <div class="stat">
-            ${Number(
-              stats.customers || 0
-            )}
-          </div>
-
-          Customers
-
-        </div>
+      .getElementById(
+        "totalUsers"
+      )
+      .textContent =
+        stats.users ??
+        stats.totalUsers ??
+        0;
 
 
-        <div class="card stat-card">
-
-          <div class="stat">
-            ${Number(
-              stats.sellers || 0
-            )}
-          </div>
-
-          Sellers
-
-        </div>
+    document
+      .getElementById(
+        "totalSellers"
+      )
+      .textContent =
+        stats.sellers ??
+        stats.totalSellers ??
+        0;
 
 
-        <div class="card stat-card">
-
-          <div class="stat">
-            ${Number(
-              stats.products || 0
-            )}
-          </div>
-
-          Products
-
-        </div>
-
-      `;
+    document
+      .getElementById(
+        "totalProducts"
+      )
+      .textContent =
+        stats.products ??
+        stats.totalProducts ??
+        0;
 
 
-    /* SELLERS */
-
-    const sellerSelect =
-      document.getElementById(
-        "seller"
-      );
-
-
-    sellerSelect.innerHTML =
-      `
-      <option value="">
-        Select Seller
-      </option>
-      `;
-
-
-    (
-      sellers.sellers || []
-    ).forEach(
-      function(s){
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-        option.value =
-          s.id;
-
-        option.textContent =
-          s.name +
-          " (" +
-          s.email +
-          ")";
-
-        sellerSelect.appendChild(
-          option
-        );
-
-      }
-    );
-
-
-    /* USERS */
-
-    const usersBox =
-      document.getElementById(
-        "users"
-      );
-
-
-    if(
-      !users.users ||
-      !users.users.length
-    ){
-
-      usersBox.innerHTML =
-        "<p>No users found.</p>";
-
-    }else{
-
-      usersBox.innerHTML =
-        users.users
-          .map(
-            function(u){
-
-              return `
-
-                <div
-                  style="
-                    padding:10px 0;
-                    border-bottom:
-                    1px solid #ddd;
-                  "
-                >
-
-                  <b>
-                    ${escapeHtml(
-                      u.name
-                    )}
-                  </b>
-
-                  <br>
-
-                  ${escapeHtml(
-                    u.email
-                  )}
-
-                  <br>
-
-                  <small>
-                    Role:
-                    ${escapeHtml(
-                      u.role
-                    )}
-                  </small>
-
-                </div>
-
-              `;
-
-            }
-          )
-          .join("");
-
-    }
-
-
-    await loadProducts();
+    document
+      .getElementById(
+        "totalOrders"
+      )
+      .textContent =
+        stats.orders ??
+        stats.totalOrders ??
+        0;
 
 
   }catch(error){
 
     console.error(
-      "Dashboard error:",
+      "Stats:",
       error
     );
-
-
-    productMessage.className =
-      "error";
-
-    productMessage.textContent =
-      error.message;
 
   }
 
@@ -881,14 +951,14 @@ async function loadDashboard(){
 
 
 /* =====================================
-   LOAD PRODUCTS
+   SELLERS
 ===================================== */
 
-async function loadProducts(){
+async function loadSellers(){
 
   const box =
     document.getElementById(
-      "products"
+      "sellerList"
     );
 
 
@@ -896,82 +966,110 @@ async function loadProducts(){
 
     const data =
       await api(
-        "/api/products"
+        "/api/sellers"
       );
 
 
+    const sellers =
+      data.sellers ||
+      [];
+
+
     if(
-      !data.products ||
-      !data.products.length
+      sellers.length === 0
     ){
 
       box.innerHTML =
-        "<p>No products.</p>";
+        "<p>No sellers found.</p>";
 
       return;
 
     }
 
 
-    box.innerHTML =
-      data.products
-        .map(
-          function(p){
+    box.innerHTML = `
 
-            return `
+      <table>
 
-              <div
-                style="
-                  padding:12px 0;
-                  border-bottom:
-                  1px solid #ddd;
-                "
-              >
+        <thead>
 
-                <b>
+          <tr>
+
+            <th>ID</th>
+            <th>Name</th>
+            <th>Business</th>
+            <th>GSTIN</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Address</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${sellers.map(
+            seller => `
+
+              <tr>
+
+                <td>
                   ${escapeHtml(
-                    p.name
+                    seller.id
                   )}
-                </b>
+                </td>
 
-                <p>
-                  ₹${escapeHtml(
-                    String(
-                      p.price
-                    )
-                  )}
-
-                  · Stock
+                <td>
                   ${escapeHtml(
-                    String(
-                      p.stock
-                    )
+                    seller.name
                   )}
+                </td>
 
-                  · Seller
+                <td>
                   ${escapeHtml(
-                    p.seller_name ||
+                    seller.businessName ||
                     ""
                   )}
-                </p>
+                </td>
 
+                <td>
+                  ${escapeHtml(
+                    seller.gstNumber ||
+                    ""
+                  )}
+                </td>
 
-                <button
-                  class="danger"
-                  type="button"
-                  onclick=
-                    "deleteProduct(${p.id})"
-                >
-                  Delete
-                </button>
+                <td>
+                  ${escapeHtml(
+                    seller.mobile ||
+                    ""
+                  )}
+                </td>
 
-              </div>
+                <td>
+                  ${escapeHtml(
+                    seller.email
+                  )}
+                </td>
 
-            `;
+                <td>
+                  ${escapeHtml(
+                    seller.address ||
+                    ""
+                  )}
+                </td>
 
-          }
-        )
-        .join("");
+              </tr>
+
+            `
+          ).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
 
 
   }catch(error){
@@ -991,219 +1089,123 @@ async function loadProducts(){
 
 
 /* =====================================
-   ADD PRODUCT
+   CUSTOMERS
 ===================================== */
 
-document
-  .getElementById("productForm")
-  .addEventListener(
-    "submit",
-    async function(e){
-
-      e.preventDefault();
-
-
-      productMessage.className =
-        "";
-
-      productMessage.textContent =
-        "Adding product...";
-
-
-      productButton.disabled =
-        true;
-
-
-      const sellerId =
-        document
-          .getElementById("seller")
-          .value;
-
-
-      const name =
-        document
-          .getElementById("productName")
-          .value
-          .trim();
-
-
-      const price =
-        document
-          .getElementById("price")
-          .value;
-
-
-      const stock =
-        document
-          .getElementById("stock")
-          .value;
-
-
-      if(!sellerId){
-
-        productMessage.className =
-          "error";
-
-        productMessage.textContent =
-          "Please select a seller.";
-
-        productButton.disabled =
-          false;
-
-        return;
-
-      }
-
-
-      if(!name){
-
-        productMessage.className =
-          "error";
-
-        productMessage.textContent =
-          "Product name is required.";
-
-        productButton.disabled =
-          false;
-
-        return;
-
-      }
-
-
-      if(price === ""){
-
-        productMessage.className =
-          "error";
-
-        productMessage.textContent =
-          "Price is required.";
-
-        productButton.disabled =
-          false;
-
-        return;
-
-      }
-
-
-      try{
-
-        await api(
-          "/api/products",
-          {
-            method:"POST",
-
-            body:
-              JSON.stringify({
-
-                seller_id:
-                  Number(
-                    sellerId
-                  ),
-
-                name:name,
-
-                description:
-                  document
-                    .getElementById(
-                      "description"
-                    )
-                    .value
-                    .trim(),
-
-                price:
-                  Number(price),
-
-                stock:
-                  Number(
-                    stock || 0
-                  ),
-
-                image:
-                  document
-                    .getElementById(
-                      "image"
-                    )
-                    .value
-                    .trim()
-
-              })
-          }
-        );
-
-
-        productMessage.className =
-          "success";
-
-        productMessage.textContent =
-          "Product added successfully.";
-
-
-        document
-          .getElementById(
-            "productForm"
-          )
-          .reset();
-
-
-        await loadDashboard();
-
-
-      }catch(error){
-
-        productMessage.className =
-          "error";
-
-        productMessage.textContent =
-          error.message;
-
-      }
-
-
-      productButton.disabled =
-        false;
-
-    }
-  );
-
-
-/* =====================================
-   DELETE PRODUCT
-===================================== */
-
-async function deleteProduct(id){
-
-  if(
-    !confirm(
-      "Delete this product?"
-    )
-  ){
-
-    return;
-
-  }
+async function loadCustomers(){
+
+  const box =
+    document.getElementById(
+      "customerList"
+    );
 
 
   try{
 
-    await api(
-      "/api/products/" +
-      id,
-      {
-        method:"DELETE"
-      }
-    );
+    const data =
+      await api(
+        "/api/users"
+      );
 
 
-    await loadDashboard();
+    const users =
+      data.users ||
+      [];
+
+
+    const customers =
+      users.filter(
+        user =>
+          String(
+            user.role
+          ).toLowerCase()
+          === "customer"
+      );
+
+
+    if(
+      customers.length === 0
+    ){
+
+      box.innerHTML =
+        "<p>No customers found.</p>";
+
+      return;
+
+    }
+
+
+    box.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${customers.map(
+            user => `
+
+              <tr>
+
+                <td>
+                  ${escapeHtml(
+                    user.id
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    user.name
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    user.email
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    user.created_at ||
+                    ""
+                  )}
+                </td>
+
+              </tr>
+
+            `
+          ).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
 
 
   }catch(error){
 
-    alert(
-      error.message
-    );
+    box.innerHTML =
+      `
+      <p class="error">
+        ${escapeHtml(
+          error.message
+        )}
+      </p>
+      `;
 
   }
 
@@ -1211,34 +1213,346 @@ async function deleteProduct(id){
 
 
 /* =====================================
-   ESCAPE HTML
+   PRODUCTS
 ===================================== */
 
-function escapeHtml(value){
+async function loadProducts(){
 
-  return String(
-    value ?? ""
-  )
-  .replace(
-    /&/g,
-    "&amp;"
-  )
-  .replace(
-    /</g,
-    "&lt;"
-  )
-  .replace(
-    />/g,
-    "&gt;"
-  )
-  .replace(
-    /"/g,
-    "&quot;"
-  )
-  .replace(
-    /'/g,
-    "&#039;"
-  );
+  const box =
+    document.getElementById(
+      "productList"
+    );
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/products"
+      );
+
+
+    const products =
+      data.products ||
+      [];
+
+
+    if(
+      products.length === 0
+    ){
+
+      box.innerHTML =
+        "<p>No products found.</p>";
+
+      return;
+
+    }
+
+
+    box.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>ID</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Seller ID</th>
+            <th>Active</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${products.map(
+            product => `
+
+              <tr>
+
+                <td>
+                  ${escapeHtml(
+                    product.id
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    product.name
+                  )}
+                </td>
+
+                <td>
+                  ₹${escapeHtml(
+                    String(
+                      product.price
+                    )
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    String(
+                      product.stock
+                    )
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    String(
+                      product.seller_id ||
+                      ""
+                    )
+                  )}
+                </td>
+
+                <td>
+                  ${product.active
+                    ? "Yes"
+                    : "No"}
+                </td>
+
+              </tr>
+
+            `
+          ).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+
+  }catch(error){
+
+    box.innerHTML =
+      `
+      <p class="error">
+        ${escapeHtml(
+          error.message
+        )}
+      </p>
+      `;
+
+  }
+
+}
+
+
+/* =====================================
+   ORDERS
+===================================== */
+
+async function loadOrders(){
+
+  const box =
+    document.getElementById(
+      "orderList"
+    );
+
+
+  try{
+
+    const data =
+      await api(
+        "/api/admin/orders"
+      );
+
+
+    const orders =
+      data.orders ||
+      [];
+
+
+    if(
+      orders.length === 0
+    ){
+
+      box.innerHTML =
+        "<p>No orders found.</p>";
+
+      return;
+
+    }
+
+
+    box.innerHTML = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Date</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${orders.map(
+            order => `
+
+              <tr>
+
+                <td>
+                  #${escapeHtml(
+                    order.id
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    order.customer_name ||
+                    order.customer_email ||
+                    ""
+                  )}
+                </td>
+
+                <td>
+                  ₹${escapeHtml(
+                    String(
+                      order.total ||
+                      order.total_amount ||
+                      0
+                    )
+                  )}
+                </td>
+
+                <td>
+
+                  <select
+                    class="status-select"
+                    onchange="updateOrderStatus(
+                      ${Number(order.id)},
+                      this.value
+                    )">
+
+                    ${[
+                      "pending",
+                      "confirmed",
+                      "shipped",
+                      "delivered",
+                      "cancelled"
+                    ].map(
+                      status => `
+
+                        <option
+                          value="${status}"
+                          ${
+                            String(
+                              order.status
+                            ).toLowerCase()
+                            === status
+                              ? "selected"
+                              : ""
+                          }>
+
+                          ${status}
+
+                        </option>
+
+                      `
+                    ).join("")}
+
+                  </select>
+
+                </td>
+
+                <td>
+                  ${escapeHtml(
+                    order.created_at ||
+                    ""
+                  )}
+                </td>
+
+              </tr>
+
+            `
+          ).join("")}
+
+        </tbody>
+
+      </table>
+
+    `;
+
+
+  }catch(error){
+
+    box.innerHTML =
+      `
+      <p class="error">
+        ${escapeHtml(
+          error.message
+        )}
+      </p>
+      `;
+
+  }
+
+}
+
+
+/* =====================================
+   UPDATE ORDER STATUS
+===================================== */
+
+async function updateOrderStatus(
+  id,
+  status
+){
+
+  try{
+
+    await api(
+      "/api/admin/orders/" +
+      encodeURIComponent(id) +
+      "/status",
+      {
+        method:"PUT",
+
+        body:
+          JSON.stringify({
+            status:status
+          })
+
+      }
+    );
+
+
+    alert(
+      "Order status updated successfully."
+    );
+
+
+    await loadOrders();
+
+
+  }catch(error){
+
+    alert(
+      error.message ||
+      "Could not update order status."
+    );
+
+
+    await loadOrders();
+
+  }
 
 }
 
@@ -1248,6 +1562,7 @@ function escapeHtml(value){
 ===================================== */
 
 showDashboard();
+
 
 </script>
 
