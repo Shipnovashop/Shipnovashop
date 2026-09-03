@@ -9,21 +9,20 @@ const { Pool } = pg;
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-
-const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET =
   process.env.JWT_SECRET || "change-this-secret-in-render";
 
-const ADMIN_EMAIL =
-  process.env.ADMIN_EMAIL || "admin@shipnova.local";
+const DATABASE_URL = process.env.DATABASE_URL;
 
-const ADMIN_PASSWORD =
-  process.env.ADMIN_PASSWORD || "";
+if (!DATABASE_URL) {
+  console.error("❌ DATABASE_URL is not set.");
+}
 
-
-/* =========================================================
-   MIDDLEWARE
-========================================================= */
+/*
+  Image data can be sent as base64 from seller.html.
+  5mb gives enough room for compressed product images.
+*/
+app.use(express.json({ limit: "5mb" }));
 
 app.use(
   cors({
@@ -32,39 +31,16 @@ app.use(
   })
 );
 
-app.use(
-  express.json({
-    limit: "10mb"
-  })
-);
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "10mb"
-  })
-);
-
 
 /* =========================================================
    DATABASE
 ========================================================= */
 
-if (!DATABASE_URL) {
-  console.error("DATABASE_URL is not set.");
-}
-
 const pool = new Pool({
   connectionString: DATABASE_URL,
-
-  ssl:
-    DATABASE_URL &&
-    !DATABASE_URL.includes("localhost") &&
-    !DATABASE_URL.includes("127.0.0.1")
-      ? {
-          rejectUnauthorized: false
-        }
-      : false
+  ssl: DATABASE_URL && DATABASE_URL.includes("localhost")
+    ? false
+    : { rejectUnauthorized: false }
 });
 
 
@@ -74,15 +50,15 @@ async function q(text, params = []) {
 
 
 /* =========================================================
-   HELPERS
+   JWT
 ========================================================= */
 
 function tokenFor(user) {
   return jwt.sign(
     {
       id: user.id,
-      email: user.email,
-      role: user.role
+      role: user.role,
+      email: user.email
     },
     JWT_SECRET,
     {
@@ -92,7 +68,88 @@ function tokenFor(user) {
 }
 
 
+/* =========================================================
+   AUTH MIDDLEWARE
+========================================================= */
+
+function auth(req, res, next) {
+  try {
+    const header = req.headers.authorization || "";
+
+    if (!header.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: "Authentication required"
+      });
+    }
+
+    const token = header.slice(7);
+
+    const decoded = jwt.verify(
+      token,
+      JWT_SECRET
+    );
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({
+      error: "Invalid or expired token"
+    });
+
+  }
+}
+
+
+/* =========================================================
+   ROLE MIDDLEWARE
+========================================================= */
+
+function role(...roles) {
+
+  return function(req, res, next) {
+
+    if (!req.user) {
+      return res.status(401).json({
+        error: "Authentication required"
+      });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        error: "Access denied"
+      });
+    }
+
+    next();
+
+  };
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function clean(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return String(value).trim();
+
+}
+
+
 function formatUser(row) {
+
   if (!row) {
     return null;
   }
@@ -102,7 +159,6 @@ function formatUser(row) {
     name: row.name,
     email: row.email,
     role: row.role,
-    created_at: row.created_at,
 
     businessName:
       row.business_name || "",
@@ -117,82 +173,81 @@ function formatUser(row) {
       row.address || "",
 
     active:
-      row.active !== false
+      row.active !== false,
+
+    createdAt:
+      row.created_at
   };
+
 }
 
 
-function auth(req, res, next) {
+function isValidGST(gst) {
+
+  if (!gst) {
+    return false;
+  }
+
+  return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(
+    gst.toUpperCase()
+  );
+
+}
+
+
+function isValidMobile(mobile) {
+
+  if (!mobile) {
+    return false;
+  }
+
+  return /^[6-9][0-9]{9}$/.test(
+    mobile
+  );
+
+}
+
+
+function normalizeCategory(category) {
+
+  const value =
+    clean(category) || "Other";
+
+  return value.slice(0, 100);
+
+}
+
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+app.get("/api/health", async (req, res) => {
+
   try {
-    const header =
-      req.headers.authorization || "";
 
-    if (!header.startsWith("Bearer ")) {
-      return res.status(401).json({
-        error: "Authentication required"
-      });
-    }
+    await q("SELECT 1");
 
-    const token =
-      header.substring(7);
-
-    const decoded =
-      jwt.verify(token, JWT_SECRET);
-
-    req.user = decoded;
-
-    next();
+    res.json({
+      ok: true,
+      database: "connected"
+    });
 
   } catch (error) {
-    return res.status(401).json({
-      error: "Invalid or expired token"
+
+    console.error(
+      "Health check error:",
+      error
+    );
+
+    res.status(500).json({
+      ok: false,
+      database: "disconnected"
     });
-  }
-}
 
-
-function role(...roles) {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        error: "Authentication required"
-      });
-    }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        error: "Access denied"
-      });
-    }
-
-    next();
-  };
-}
-
-
-function cleanText(value, fallback = "") {
-  return String(value ?? fallback).trim();
-}
-
-
-function numberValue(value, fallback = 0) {
-  const n = Number(value);
-
-  return Number.isFinite(n)
-    ? n
-    : fallback;
-}
-
-
-function positiveInteger(value) {
-  const n = Number(value);
-
-  if (!Number.isInteger(n) || n < 0) {
-    return null;
   }
 
-  return n;
-}
+});
 
 
 /* =========================================================
@@ -204,21 +259,33 @@ async function init() {
   console.log("Initializing database...");
 
 
-  /* USERS */
+  /* =========================
+     USERS
+  ========================= */
 
   await q(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
+
       name TEXT NOT NULL,
+
       email TEXT NOT NULL UNIQUE,
+
       password TEXT NOT NULL,
+
       role TEXT NOT NULL DEFAULT 'customer'
-        CHECK (role IN ('customer','seller','admin')),
+        CHECK (
+          role IN ('customer', 'seller', 'admin')
+        ),
+
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
       business_name TEXT,
+
       gst_number TEXT,
+
       mobile TEXT,
+
       address TEXT,
 
       active BOOLEAN NOT NULL DEFAULT TRUE
@@ -226,7 +293,9 @@ async function init() {
   `);
 
 
-  /* Existing database migration */
+  /* =========================
+     USERS MIGRATION
+  ========================= */
 
   await q(`
     ALTER TABLE users
@@ -254,18 +323,22 @@ async function init() {
   `);
 
 
-  /* GST unique index */
+  /*
+    Unique GST only when GST is actually provided.
+  */
 
   await q(`
     CREATE UNIQUE INDEX IF NOT EXISTS
-    users_gst_number_unique
-    ON users (gst_number)
+    idx_users_gst_unique
+    ON users(gst_number)
     WHERE gst_number IS NOT NULL
       AND gst_number <> ''
   `);
 
 
-  /* PRODUCTS */
+  /* =========================
+     PRODUCTS
+  ========================= */
 
   await q(`
     CREATE TABLE IF NOT EXISTS products (
@@ -277,8 +350,6 @@ async function init() {
 
       name TEXT NOT NULL,
 
-      category TEXT NOT NULL DEFAULT 'Other',
-
       description TEXT,
 
       price NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -287,6 +358,8 @@ async function init() {
 
       image TEXT,
 
+      category TEXT NOT NULL DEFAULT 'Other',
+
       active BOOLEAN NOT NULL DEFAULT TRUE,
 
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -294,70 +367,67 @@ async function init() {
   `);
 
 
-  /* Product migrations */
+  /*
+    IMPORTANT:
+    Existing ShipNovaShop databases may already
+    have the products table without category.
+
+    This safely adds category without deleting data.
+  */
 
   await q(`
     ALTER TABLE products
     ADD COLUMN IF NOT EXISTS category TEXT
-    NOT NULL DEFAULT 'Other'
   `);
+
+
+  await q(`
+    UPDATE products
+    SET category = 'Other'
+    WHERE category IS NULL
+       OR TRIM(category) = ''
+  `);
+
 
   await q(`
     ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS description TEXT
+    ALTER COLUMN category
+    SET DEFAULT 'Other'
   `);
+
 
   await q(`
     ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS price NUMERIC(12,2)
-    NOT NULL DEFAULT 0
-  `);
-
-  await q(`
-    ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS stock INTEGER
-    NOT NULL DEFAULT 0
-  `);
-
-  await q(`
-    ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS image TEXT
-  `);
-
-  await q(`
-    ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS active BOOLEAN
-    NOT NULL DEFAULT TRUE
-  `);
-
-  await q(`
-    ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ
-    NOT NULL DEFAULT NOW()
+    ALTER COLUMN category
+    SET NOT NULL
   `);
 
 
   await q(`
     CREATE INDEX IF NOT EXISTS
-    products_seller_id_idx
+    idx_products_seller
     ON products(seller_id)
   `);
 
+
   await q(`
     CREATE INDEX IF NOT EXISTS
-    products_category_idx
+    idx_products_category
     ON products(category)
   `);
 
 
-  /* ORDERS */
+  /* =========================
+     ORDERS
+  ========================= */
 
   await q(`
     CREATE TABLE IF NOT EXISTS orders (
       id SERIAL PRIMARY KEY,
 
       customer_id INTEGER NOT NULL
-        REFERENCES users(id),
+        REFERENCES users(id)
+        ON DELETE CASCADE,
 
       total NUMERIC(12,2) NOT NULL DEFAULT 0,
 
@@ -377,7 +447,9 @@ async function init() {
   `);
 
 
-  /* ORDER ITEMS */
+  /* =========================
+     ORDER ITEMS
+  ========================= */
 
   await q(`
     CREATE TABLE IF NOT EXISTS order_items (
@@ -387,13 +459,11 @@ async function init() {
         REFERENCES orders(id)
         ON DELETE CASCADE,
 
-      product_id INTEGER
-        REFERENCES products(id)
-        ON DELETE SET NULL,
+      product_id INTEGER NOT NULL,
 
-      seller_id INTEGER
+      seller_id INTEGER NOT NULL
         REFERENCES users(id)
-        ON DELETE SET NULL,
+        ON DELETE CASCADE,
 
       product_name TEXT NOT NULL,
 
@@ -406,56 +476,90 @@ async function init() {
   `);
 
 
-  /* ADMIN ACCOUNT */
+  /* =========================
+     ADMIN ACCOUNT
+  ========================= */
 
-  if (ADMIN_PASSWORD) {
+  await createOrUpdateAdmin();
 
-    const hashedPassword =
-      await bcrypt.hash(
-        ADMIN_PASSWORD,
-        10
-      );
 
-    const existing =
-      await q(
-        `
+  console.log("✅ Database initialization completed.");
+
+}
+
+
+/* =========================================================
+   ADMIN SEED
+========================================================= */
+
+async function createOrUpdateAdmin() {
+
+  const email =
+    clean(
+      process.env.ADMIN_EMAIL
+    ).toLowerCase();
+
+  const password =
+    process.env.ADMIN_PASSWORD;
+
+
+  if (!email || !password) {
+
+    console.warn(
+      "⚠️ ADMIN_EMAIL or ADMIN_PASSWORD is not set. Admin account was not created/updated."
+    );
+
+    return;
+
+  }
+
+
+  const hash =
+    await bcrypt.hash(
+      password,
+      12
+    );
+
+
+  const existing =
+    await q(
+      `
         SELECT id
         FROM users
-        WHERE LOWER(email) = LOWER($1)
-          AND role = 'admin'
+        WHERE email = $1
         LIMIT 1
-        `,
-        [ADMIN_EMAIL]
-      );
+      `,
+      [email]
+    );
 
 
-    if (existing.rows.length) {
+  if (existing.rows.length) {
 
-      await q(
-        `
+    await q(
+      `
         UPDATE users
         SET
-          name = $1,
+          name = 'ShipNova Admin',
           password = $2,
+          role = 'admin',
           active = TRUE
-        WHERE id = $3
-        `,
-        [
-          "ShipNova Administrator",
-          hashedPassword,
-          existing.rows[0].id
-        ]
-      );
+        WHERE email = $1
+      `,
+      [
+        email,
+        hash
+      ]
+    );
 
-      console.log(
-        "Admin account updated:",
-        ADMIN_EMAIL
-      );
+    console.log(
+      "✅ Admin account updated:",
+      email
+    );
 
-    } else {
+  } else {
 
-      await q(
-        `
+    await q(
+      `
         INSERT INTO users
         (
           name,
@@ -465,70 +569,32 @@ async function init() {
           active
         )
         VALUES
-        ($1,$2,$3,'admin',TRUE)
-        `,
-        [
-          "ShipNova Administrator",
-          ADMIN_EMAIL,
-          hashedPassword
-        ]
-      );
-
-      console.log(
-        "Admin account created:",
-        ADMIN_EMAIL
-      );
-    }
-
-  } else {
-
-    console.warn(
-      "ADMIN_PASSWORD is not set. Admin account was not created/updated."
+        (
+          'ShipNova Admin',
+          $1,
+          $2,
+          'admin',
+          TRUE
+        )
+      `,
+      [
+        email,
+        hash
+      ]
     );
+
+    console.log(
+      "✅ Admin account created:",
+      email
+    );
+
   }
 
-
-  console.log(
-    "Database initialization complete."
-  );
 }
 
 
 /* =========================================================
-   HEALTH
-========================================================= */
-
-app.get(
-  "/api/health",
-  async (req, res) => {
-
-    try {
-
-      await q("SELECT 1");
-
-      res.json({
-        ok: true,
-        database: "connected"
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Health check failed:",
-        error
-      );
-
-      res.status(500).json({
-        ok: false,
-        database: "disconnected"
-      });
-    }
-  }
-);
-
-
-/* =========================================================
-   AUTH - REGISTER
+   AUTH REGISTER
 ========================================================= */
 
 app.post(
@@ -540,56 +606,60 @@ app.post(
       const body =
         req.body || {};
 
+
       const name =
-        cleanText(body.name);
+        clean(body.name);
 
       const email =
-        cleanText(body.email).toLowerCase();
+        clean(body.email).toLowerCase();
 
       const password =
         String(body.password || "");
 
-      const roleName =
-        cleanText(
-          body.role,
-          "customer"
-        ).toLowerCase();
+      const roleValue =
+        clean(body.role || "customer").toLowerCase();
 
 
       if (!name) {
+
         return res.status(400).json({
           error: "Name is required"
         });
+
       }
 
 
       if (!email) {
+
         return res.status(400).json({
           error: "Email is required"
         });
+
       }
 
 
       if (!password || password.length < 6) {
+
         return res.status(400).json({
           error:
             "Password must be at least 6 characters"
         });
+
       }
 
 
       if (
         !["customer", "seller"].includes(
-          roleName
+          roleValue
         )
       ) {
+
         return res.status(400).json({
           error: "Invalid registration role"
         });
+
       }
 
-
-      /* Seller fields */
 
       let businessName = null;
       let gstNumber = null;
@@ -597,172 +667,173 @@ app.post(
       let address = null;
 
 
-      if (roleName === "seller") {
+      if (roleValue === "seller") {
 
         businessName =
-          cleanText(
-            body.businessName ||
-            body.business_name
-          );
+          clean(body.businessName);
 
         gstNumber =
-          cleanText(
-            body.gstNumber ||
-            body.gst_number
-          ).toUpperCase();
+          clean(body.gstNumber)
+            .toUpperCase();
 
         mobile =
-          cleanText(body.mobile);
+          clean(body.mobile);
 
         address =
-          cleanText(body.address);
+          clean(body.address);
 
 
         if (!businessName) {
+
           return res.status(400).json({
             error:
-              "Business name is required"
+              "Business Name is required"
           });
+
         }
 
 
         if (!gstNumber) {
+
           return res.status(400).json({
             error:
-              "GST number is required"
+              "GST Number is required"
           });
+
         }
 
 
-        const gstRegex =
-          /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+        if (!isValidGST(gstNumber)) {
 
-
-        if (!gstRegex.test(gstNumber)) {
           return res.status(400).json({
             error:
               "Invalid GSTIN format"
           });
+
         }
 
 
         if (!mobile) {
+
           return res.status(400).json({
             error:
               "Mobile number is required"
           });
+
         }
 
 
-        const mobileRegex =
-          /^[6-9][0-9]{9}$/;
+        if (!isValidMobile(mobile)) {
 
-
-        if (!mobileRegex.test(mobile)) {
           return res.status(400).json({
             error:
               "Invalid mobile number"
           });
+
         }
 
 
         if (!address) {
+
           return res.status(400).json({
             error:
               "Address is required"
           });
+
         }
+
       }
 
 
-      /* Existing email */
-
-      const existingEmail =
+      const existing =
         await q(
           `
-          SELECT id
-          FROM users
-          WHERE LOWER(email) = LOWER($1)
-          LIMIT 1
+            SELECT id
+            FROM users
+            WHERE LOWER(email) = LOWER($1)
+            LIMIT 1
           `,
           [email]
         );
 
 
-      if (existingEmail.rows.length) {
+      if (existing.rows.length) {
+
         return res.status(409).json({
           error:
             "Email already registered"
         });
+
       }
 
 
-      /* Existing GST */
-
-      if (gstNumber) {
+      if (roleValue === "seller") {
 
         const existingGST =
           await q(
             `
-            SELECT id
-            FROM users
-            WHERE gst_number = $1
-            LIMIT 1
+              SELECT id
+              FROM users
+              WHERE gst_number = $1
+              LIMIT 1
             `,
             [gstNumber]
           );
 
 
         if (existingGST.rows.length) {
+
           return res.status(409).json({
             error:
-              "GST number already registered"
+              "GSTIN is already registered"
           });
+
         }
+
       }
 
 
-      const hashedPassword =
+      const passwordHash =
         await bcrypt.hash(
           password,
-          10
+          12
         );
 
 
       const result =
         await q(
           `
-          INSERT INTO users
-          (
-            name,
-            email,
-            password,
-            role,
-            business_name,
-            gst_number,
-            mobile,
-            address,
-            active
-          )
-          VALUES
-          ($1,$2,$3,$4,$5,$6,$7,$8,TRUE)
-          RETURNING
-            id,
-            name,
-            email,
-            role,
-            created_at,
-            business_name,
-            gst_number,
-            mobile,
-            address,
-            active
+            INSERT INTO users
+            (
+              name,
+              email,
+              password,
+              role,
+              business_name,
+              gst_number,
+              mobile,
+              address,
+              active
+            )
+            VALUES
+            (
+              $1,
+              $2,
+              $3,
+              $4,
+              $5,
+              $6,
+              $7,
+              $8,
+              TRUE
+            )
+            RETURNING *
           `,
           [
             name,
             email,
-            hashedPassword,
-            roleName,
+            passwordHash,
+            roleValue,
             businessName,
             gstNumber,
             mobile,
@@ -783,7 +854,7 @@ app.post(
         );
 
 
-      res.status(201).json({
+      return res.status(201).json({
         message:
           "Registration successful",
         token,
@@ -798,17 +869,32 @@ app.post(
         error
       );
 
-      res.status(500).json({
+
+      if (
+        error.code === "23505"
+      ) {
+
+        return res.status(409).json({
+          error:
+            "Email or GSTIN already registered"
+        });
+
+      }
+
+
+      return res.status(500).json({
         error:
           "Registration failed"
       });
+
     }
+
   }
 );
 
 
 /* =========================================================
-   AUTH - LOGIN
+   AUTH LOGIN
 ========================================================= */
 
 app.post(
@@ -818,7 +904,7 @@ app.post(
     try {
 
       const email =
-        cleanText(
+        clean(
           req.body?.email
         ).toLowerCase();
 
@@ -829,30 +915,34 @@ app.post(
 
 
       if (!email || !password) {
+
         return res.status(400).json({
           error:
             "Email and password are required"
         });
+
       }
 
 
       const result =
         await q(
           `
-          SELECT *
-          FROM users
-          WHERE LOWER(email) = LOWER($1)
-          LIMIT 1
+            SELECT *
+            FROM users
+            WHERE LOWER(email) = LOWER($1)
+            LIMIT 1
           `,
           [email]
         );
 
 
       if (!result.rows.length) {
+
         return res.status(401).json({
           error:
             "Invalid email or password"
         });
+
       }
 
 
@@ -860,26 +950,30 @@ app.post(
         result.rows[0];
 
 
-      const passwordOK =
+      if (userRow.active === false) {
+
+        return res.status(403).json({
+          error:
+            "Your account is inactive"
+        });
+
+      }
+
+
+      const valid =
         await bcrypt.compare(
           password,
           userRow.password
         );
 
 
-      if (!passwordOK) {
+      if (!valid) {
+
         return res.status(401).json({
           error:
             "Invalid email or password"
         });
-      }
 
-
-      if (userRow.active === false) {
-        return res.status(403).json({
-          error:
-            "Your account is inactive. Please contact admin."
-        });
       }
 
 
@@ -889,12 +983,14 @@ app.post(
         );
 
 
-      res.json({
+      return res.json({
         message:
           "Login successful",
         token,
         user:
-          formatUser(userRow)
+          formatUser(
+            userRow
+          )
       });
 
 
@@ -905,17 +1001,20 @@ app.post(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Login failed"
       });
+
     }
+
   }
 );
 
 
 /* =========================================================
-   AUTH - CURRENT USER
+   AUTH ME
 ========================================================= */
 
 app.get(
@@ -928,34 +1027,38 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            id,
-            name,
-            email,
-            role,
-            created_at,
-            business_name,
-            gst_number,
-            mobile,
-            address,
-            active
-          FROM users
-          WHERE id = $1
-          LIMIT 1
+            SELECT *
+            FROM users
+            WHERE id = $1
+            LIMIT 1
           `,
           [req.user.id]
         );
 
 
       if (!result.rows.length) {
+
         return res.status(404).json({
           error:
             "User not found"
         });
+
       }
 
 
-      res.json({
+      if (
+        result.rows[0].active === false
+      ) {
+
+        return res.status(403).json({
+          error:
+            "Your account is inactive"
+        });
+
+      }
+
+
+      return res.json({
         user:
           formatUser(
             result.rows[0]
@@ -970,17 +1073,20 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load user"
       });
+
     }
+
   }
 );
 
 
 /* =========================================================
-   PUBLIC PRODUCTS
+   GET PRODUCTS - PUBLIC
 ========================================================= */
 
 app.get(
@@ -993,36 +1099,16 @@ app.get(
         req.query.seller;
 
       const search =
-        cleanText(
-          req.query.q
-        );
+        clean(req.query.q);
 
       const category =
-        cleanText(
-          req.query.category
-        );
+        clean(req.query.category);
 
 
-      let sql = `
-        SELECT
-          p.*,
-
-          u.name AS seller_name,
-
-          u.business_name
-            AS seller_business_name
-
-        FROM products p
-
-        JOIN users u
-          ON u.id = p.seller_id
-
-        WHERE
-          p.active = TRUE
-
-          AND u.active = TRUE
-      `;
-
+      const conditions = [
+        "p.active = TRUE",
+        "u.active = TRUE"
+      ];
 
       const params = [];
 
@@ -1030,12 +1116,13 @@ app.get(
       if (seller) {
 
         params.push(
-          seller
+          Number(seller)
         );
 
-        sql += `
-          AND p.seller_id = $${params.length}
-        `;
+        conditions.push(
+          `p.seller_id = $${params.length}`
+        );
+
       }
 
 
@@ -1045,12 +1132,13 @@ app.get(
           `%${search}%`
         );
 
-        sql += `
-          AND (
+        conditions.push(
+          `(
             p.name ILIKE $${params.length}
             OR p.description ILIKE $${params.length}
-          )
-        `;
+          )`
+        );
+
       }
 
 
@@ -1060,28 +1148,38 @@ app.get(
           category
         );
 
-        sql += `
-          AND LOWER(p.category)
-            = LOWER($${params.length})
-        `;
+        conditions.push(
+          `LOWER(p.category) = LOWER($${params.length})`
+        );
+
       }
-
-
-      sql += `
-        ORDER BY
-          p.created_at DESC,
-          p.id DESC
-      `;
 
 
       const result =
         await q(
-          sql,
+          `
+            SELECT
+              p.*,
+
+              u.name AS seller_name,
+
+              u.business_name
+                AS seller_business_name
+
+            FROM products p
+
+            JOIN users u
+              ON u.id = p.seller_id
+
+            WHERE ${conditions.join(" AND ")}
+
+            ORDER BY p.created_at DESC
+          `,
           params
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -1093,17 +1191,20 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load products"
       });
+
     }
+
   }
 );
 
 
 /* =========================================================
-   SINGLE PRODUCT
+   GET SINGLE PRODUCT
 ========================================================= */
 
 app.get(
@@ -1112,44 +1213,58 @@ app.get(
 
     try {
 
+      const id =
+        Number(req.params.id);
+
+
+      if (!Number.isInteger(id)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid product ID"
+        });
+
+      }
+
+
       const result =
         await q(
           `
-          SELECT
-            p.*,
+            SELECT
+              p.*,
 
-            u.name AS seller_name,
+              u.name AS seller_name,
 
-            u.business_name
-              AS seller_business_name
+              u.business_name
+                AS seller_business_name
 
-          FROM products p
+            FROM products p
 
-          JOIN users u
-            ON u.id = p.seller_id
+            JOIN users u
+              ON u.id = p.seller_id
 
-          WHERE
-            p.id = $1
+            WHERE
+              p.id = $1
+              AND p.active = TRUE
+              AND u.active = TRUE
 
-            AND p.active = TRUE
-
-            AND u.active = TRUE
-
-          LIMIT 1
+            LIMIT 1
           `,
-          [req.params.id]
+          [id]
         );
 
 
       if (!result.rows.length) {
+
         return res.status(404).json({
           error:
             "Product not found"
         });
+
       }
 
 
-      res.json(
+      return res.json(
         result.rows[0]
       );
 
@@ -1157,15 +1272,18 @@ app.get(
     } catch (error) {
 
       console.error(
-        "Product detail error:",
+        "Single product error:",
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load product"
       });
+
     }
+
   }
 );
 
@@ -1185,60 +1303,61 @@ app.post(
       const body =
         req.body || {};
 
-      const name =
-        cleanText(
-          body.name
-        );
 
-      const category =
-        cleanText(
-          body.category,
-          "Other"
-        ) || "Other";
+      const name =
+        clean(body.name);
 
       const description =
-        cleanText(
-          body.description
+        clean(body.description);
+
+      const image =
+        clean(body.image);
+
+      const category =
+        normalizeCategory(
+          body.category
         );
 
       const price =
-        numberValue(
-          body.price,
-          NaN
-        );
+        Number(body.price);
 
       const stock =
-        positiveInteger(
-          body.stock
-        );
-
-      const image =
-        cleanText(
-          body.image
-        );
+        Number(body.stock);
 
 
       if (!name) {
+
         return res.status(400).json({
           error:
             "Product name is required"
         });
+
       }
 
 
-      if (!Number.isFinite(price) || price < 0) {
+      if (
+        !Number.isFinite(price) ||
+        price < 0
+      ) {
+
         return res.status(400).json({
           error:
             "Invalid product price"
         });
+
       }
 
 
-      if (stock === null) {
+      if (
+        !Number.isInteger(stock) ||
+        stock < 0
+      ) {
+
         return res.status(400).json({
           error:
-            "Invalid stock quantity"
+            "Invalid product stock"
         });
+
       }
 
 
@@ -1246,38 +1365,47 @@ app.post(
         req.user.id;
 
 
-      /* Admin can optionally supply seller_id */
+      if (req.user.role === "admin") {
 
-      if (
-        req.user.role === "admin" &&
-        body.seller_id
-      ) {
-
-        sellerId =
+        const requestedSeller =
           Number(body.seller_id);
+
+        if (
+          Number.isInteger(
+            requestedSeller
+          )
+        ) {
+
+          sellerId =
+            requestedSeller;
+
+        }
+
       }
 
 
       const sellerResult =
         await q(
           `
-          SELECT
-            id,
-            role,
-            active
-          FROM users
-          WHERE id = $1
-          LIMIT 1
+            SELECT
+              id,
+              role,
+              active
+            FROM users
+            WHERE id = $1
+            LIMIT 1
           `,
           [sellerId]
         );
 
 
       if (!sellerResult.rows.length) {
-        return res.status(400).json({
+
+        return res.status(404).json({
           error:
             "Seller not found"
         });
+
       }
 
 
@@ -1289,53 +1417,65 @@ app.post(
         seller.role !== "seller" &&
         seller.role !== "admin"
       ) {
+
         return res.status(400).json({
           error:
             "Invalid seller"
         });
+
       }
 
 
       if (seller.active === false) {
+
         return res.status(403).json({
           error:
             "Seller account is inactive"
         });
+
       }
 
 
       const result =
         await q(
           `
-          INSERT INTO products
-          (
-            seller_id,
-            name,
-            category,
-            description,
-            price,
-            stock,
-            image,
-            active
-          )
-          VALUES
-          ($1,$2,$3,$4,$5,$6,$7,TRUE)
-
-          RETURNING *
+            INSERT INTO products
+            (
+              seller_id,
+              name,
+              description,
+              price,
+              stock,
+              image,
+              category,
+              active
+            )
+            VALUES
+            (
+              $1,
+              $2,
+              $3,
+              $4,
+              $5,
+              $6,
+              $7,
+              TRUE
+            )
+            RETURNING *
           `,
           [
             sellerId,
             name,
-            category,
             description,
             price,
             stock,
-            image
+            image,
+            category
           ]
         );
 
 
-      res.status(201).json({
+      return res.status(201).json({
         message:
           "Product added successfully",
         product:
@@ -1350,11 +1490,14 @@ app.post(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
-          "Unable to add product"
+          "Failed to add product"
       });
+
     }
+
   }
 );
 
@@ -1371,37 +1514,39 @@ app.put(
 
     try {
 
-      const productId =
-        Number(
-          req.params.id
-        );
+      const id =
+        Number(req.params.id);
 
 
-      if (!Number.isInteger(productId)) {
+      if (!Number.isInteger(id)) {
+
         return res.status(400).json({
           error:
             "Invalid product ID"
         });
+
       }
 
 
       const existing =
         await q(
           `
-          SELECT *
-          FROM products
-          WHERE id = $1
-          LIMIT 1
+            SELECT *
+            FROM products
+            WHERE id = $1
+            LIMIT 1
           `,
-          [productId]
+          [id]
         );
 
 
       if (!existing.rows.length) {
+
         return res.status(404).json({
           error:
             "Product not found"
         });
+
       }
 
 
@@ -1411,13 +1556,15 @@ app.put(
 
       if (
         req.user.role === "seller" &&
-        String(product.seller_id) !==
-          String(req.user.id)
+        Number(product.seller_id) !==
+          Number(req.user.id)
       ) {
+
         return res.status(403).json({
           error:
             "You can only edit your own products"
         });
+
       }
 
 
@@ -1426,41 +1573,41 @@ app.put(
 
 
       const name =
-        cleanText(
-          body.name,
+        clean(
+          body.name ??
           product.name
         );
 
+      const description =
+        clean(
+          body.description ??
+          product.description
+        );
+
+      const image =
+        clean(
+          body.image ??
+          product.image
+        );
 
       const category =
-        cleanText(
-          body.category,
-          product.category || "Other"
-        ) || "Other";
-
-
-      const description =
-        body.description !== undefined
-          ? cleanText(body.description)
-          : product.description || "";
+        normalizeCategory(
+          body.category ??
+          product.category
+        );
 
 
       const price =
-        body.price !== undefined
-          ? numberValue(body.price, NaN)
-          : Number(product.price);
-
+        Number(
+          body.price ??
+          product.price
+        );
 
       const stock =
-        body.stock !== undefined
-          ? positiveInteger(body.stock)
-          : Number(product.stock);
-
-
-      const image =
-        body.image !== undefined
-          ? cleanText(body.image)
-          : product.image || "";
+        Number(
+          body.stock ??
+          product.stock
+        );
 
 
       let active =
@@ -1472,68 +1619,79 @@ app.put(
       ) {
 
         active =
-          Boolean(
-            body.active
-          );
+          Boolean(body.active);
+
       }
 
 
       if (!name) {
+
         return res.status(400).json({
           error:
             "Product name is required"
         });
+
       }
 
 
-      if (!Number.isFinite(price) || price < 0) {
+      if (
+        !Number.isFinite(price) ||
+        price < 0
+      ) {
+
         return res.status(400).json({
           error:
             "Invalid product price"
         });
+
       }
 
 
-      if (stock === null) {
+      if (
+        !Number.isInteger(stock) ||
+        stock < 0
+      ) {
+
         return res.status(400).json({
           error:
-            "Invalid stock quantity"
+            "Invalid product stock"
         });
+
       }
 
 
       const result =
         await q(
           `
-          UPDATE products
+            UPDATE products
 
-          SET
-            name = $1,
-            category = $2,
-            description = $3,
-            price = $4,
-            stock = $5,
-            image = $6,
-            active = $7
+            SET
+              name = $1,
+              description = $2,
+              price = $3,
+              stock = $4,
+              image = $5,
+              category = $6,
+              active = $7
 
-          WHERE id = $8
+            WHERE id = $8
 
-          RETURNING *
+            RETURNING *
           `,
           [
             name,
-            category,
             description,
             price,
             stock,
             image,
+            category,
             active,
-            productId
+            id
           ]
         );
 
 
-      res.json({
+      return res.json({
         message:
           "Product updated successfully",
         product:
@@ -1548,11 +1706,14 @@ app.put(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
-          "Unable to update product"
+          "Failed to update product"
       });
+
     }
+
   }
 );
 
@@ -1569,29 +1730,39 @@ app.delete(
 
     try {
 
-      const productId =
-        Number(
-          req.params.id
-        );
+      const id =
+        Number(req.params.id);
+
+
+      if (!Number.isInteger(id)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid product ID"
+        });
+
+      }
 
 
       const existing =
         await q(
           `
-          SELECT *
-          FROM products
-          WHERE id = $1
-          LIMIT 1
+            SELECT *
+            FROM products
+            WHERE id = $1
+            LIMIT 1
           `,
-          [productId]
+          [id]
         );
 
 
       if (!existing.rows.length) {
+
         return res.status(404).json({
           error:
             "Product not found"
         });
+
       }
 
 
@@ -1601,62 +1772,60 @@ app.delete(
 
       if (
         req.user.role === "seller" &&
-        String(product.seller_id) !==
-          String(req.user.id)
+        Number(product.seller_id) !==
+          Number(req.user.id)
       ) {
+
         return res.status(403).json({
           error:
             "You can only delete your own products"
         });
+
       }
 
 
-      /*
-        If product has order history,
-        deactivate instead of deleting.
-      */
-
-      const orderCheck =
+      const orderItem =
         await q(
           `
-          SELECT id
-          FROM order_items
-          WHERE product_id = $1
-          LIMIT 1
+            SELECT id
+            FROM order_items
+            WHERE product_id = $1
+            LIMIT 1
           `,
-          [productId]
+          [id]
         );
 
 
-      if (orderCheck.rows.length) {
+      if (orderItem.rows.length) {
 
         await q(
           `
-          UPDATE products
-          SET active = FALSE
-          WHERE id = $1
+            UPDATE products
+            SET active = FALSE
+            WHERE id = $1
           `,
-          [productId]
+          [id]
         );
 
 
         return res.json({
           message:
-            "Product deactivated because it has order history."
+            "Product has existing orders, so it was deactivated instead of permanently deleted."
         });
+
       }
 
 
       await q(
         `
-        DELETE FROM products
-        WHERE id = $1
+          DELETE FROM products
+          WHERE id = $1
         `,
-        [productId]
+        [id]
       );
 
 
-      res.json({
+      return res.json({
         message:
           "Product deleted successfully."
       });
@@ -1669,11 +1838,14 @@ app.delete(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
-          "Unable to delete product"
+          "Failed to delete product"
       });
+
     }
+
   }
 );
 
@@ -1703,10 +1875,12 @@ app.post(
 
 
       if (!items.length) {
+
         return res.status(400).json({
           error:
             "Order must contain at least one product"
         });
+
       }
 
 
@@ -1717,7 +1891,7 @@ app.post(
 
       let total = 0;
 
-      const preparedItems = [];
+      const orderItems = [];
 
 
       for (const item of items) {
@@ -1736,72 +1910,61 @@ app.post(
 
         if (
           !Number.isInteger(productId) ||
-          productId <= 0
-        ) {
-
-          throw new Error(
-            "Invalid product ID"
-          );
-        }
-
-
-        if (
           !Number.isInteger(quantity) ||
           quantity <= 0
         ) {
 
           throw new Error(
-            "Invalid product quantity"
+            "Invalid order item"
           );
+
         }
 
 
-        const result =
+        const productResult =
           await client.query(
             `
-            SELECT
-              p.*,
+              SELECT
+                p.*,
 
-              u.active AS seller_active
+                u.active AS seller_active
 
-            FROM products p
+              FROM products p
 
-            JOIN users u
-              ON u.id = p.seller_id
+              JOIN users u
+                ON u.id = p.seller_id
 
-            WHERE p.id = $1
+              WHERE p.id = $1
 
-            FOR UPDATE
+              FOR UPDATE
             `,
             [productId]
           );
 
 
-        if (!result.rows.length) {
+        if (!productResult.rows.length) {
 
           throw new Error(
-            "Product not found"
+            "Product not found: " +
+            productId
           );
+
         }
 
 
         const product =
-          result.rows[0];
+          productResult.rows[0];
 
 
-        if (!product.active) {
-
-          throw new Error(
-            `${product.name} is not available`
-          );
-        }
-
-
-        if (!product.seller_active) {
+        if (
+          !product.active ||
+          !product.seller_active
+        ) {
 
           throw new Error(
-            `${product.name} seller is inactive`
+            `Product "${product.name}" is not available`
           );
+
         }
 
 
@@ -1811,8 +1974,9 @@ app.post(
         ) {
 
           throw new Error(
-            `Insufficient stock for ${product.name}`
+            `Insufficient stock for "${product.name}"`
           );
+
         }
 
 
@@ -1826,32 +1990,35 @@ app.post(
           price * quantity;
 
 
-        total +=
-          subtotal;
+        total += subtotal;
 
 
-        preparedItems.push({
+        orderItems.push({
           product,
           quantity,
           price,
           subtotal
         });
+
       }
 
 
       const orderResult =
         await client.query(
           `
-          INSERT INTO orders
-          (
-            customer_id,
-            total,
-            status
-          )
-          VALUES
-          ($1,$2,'pending')
-
-          RETURNING *
+            INSERT INTO orders
+            (
+              customer_id,
+              total,
+              status
+            )
+            VALUES
+            (
+              $1,
+              $2,
+              'pending'
+            )
+            RETURNING *
           `,
           [
             req.user.id,
@@ -1865,38 +2032,39 @@ app.post(
 
 
       for (
-        const item
-        of preparedItems
+        const item of orderItems
       ) {
 
         await client.query(
           `
-          INSERT INTO order_items
-          (
-            order_id,
-            product_id,
-            seller_id,
-            product_name,
-            price,
-            quantity,
-            subtotal
-          )
-          VALUES
-          ($1,$2,$3,$4,$5,$6,$7)
+            INSERT INTO order_items
+            (
+              order_id,
+              product_id,
+              seller_id,
+              product_name,
+              price,
+              quantity,
+              subtotal
+            )
+            VALUES
+            (
+              $1,
+              $2,
+              $3,
+              $4,
+              $5,
+              $6,
+              $7
+            )
           `,
           [
             order.id,
-
             item.product.id,
-
             item.product.seller_id,
-
             item.product.name,
-
             item.price,
-
             item.quantity,
-
             item.subtotal
           ]
         );
@@ -1904,15 +2072,16 @@ app.post(
 
         await client.query(
           `
-          UPDATE products
-          SET stock = stock - $1
-          WHERE id = $2
+            UPDATE products
+            SET stock = stock - $1
+            WHERE id = $2
           `,
           [
             item.quantity,
             item.product.id
           ]
         );
+
       }
 
 
@@ -1921,10 +2090,9 @@ app.post(
       );
 
 
-      res.status(201).json({
+      return res.status(201).json({
         message:
           "Order placed successfully",
-
         order
       });
 
@@ -1942,17 +2110,19 @@ app.post(
       );
 
 
-      res.status(400).json({
+      return res.status(400).json({
         error:
           error.message ||
-          "Unable to place order"
+          "Failed to create order"
       });
 
 
     } finally {
 
       client.release();
+
     }
+
   }
 );
 
@@ -1972,49 +2142,49 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            o.id,
-            o.total,
-            o.status,
-            o.created_at,
+            SELECT
+              o.id,
+              o.total,
+              o.status,
+              o.created_at,
 
-            COALESCE(
-              JSON_AGG(
-                JSON_BUILD_OBJECT(
-                  'id', oi.id,
-                  'product_id', oi.product_id,
-                  'seller_id', oi.seller_id,
-                  'product_name', oi.product_name,
-                  'price', oi.price,
-                  'quantity', oi.quantity,
-                  'subtotal', oi.subtotal
+              COALESCE(
+                JSON_AGG(
+                  JSON_BUILD_OBJECT(
+                    'id', oi.id,
+                    'product_id', oi.product_id,
+                    'seller_id', oi.seller_id,
+                    'product_name', oi.product_name,
+                    'price', oi.price,
+                    'quantity', oi.quantity,
+                    'subtotal', oi.subtotal
+                  )
                 )
-              )
-              FILTER (
-                WHERE oi.id IS NOT NULL
-              ),
-              '[]'
-            ) AS items
+                FILTER (
+                  WHERE oi.id IS NOT NULL
+                ),
+                '[]'
+              ) AS items
 
-          FROM orders o
+            FROM orders o
 
-          LEFT JOIN order_items oi
-            ON oi.order_id = o.id
+            LEFT JOIN order_items oi
+              ON oi.order_id = o.id
 
-          WHERE
-            o.customer_id = $1
+            WHERE
+              o.customer_id = $1
 
-          GROUP BY
-            o.id
+            GROUP BY
+              o.id
 
-          ORDER BY
-            o.created_at DESC
+            ORDER BY
+              o.created_at DESC
           `,
           [req.user.id]
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -2026,11 +2196,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load orders"
       });
+
     }
+
   }
 );
 
@@ -2050,62 +2223,56 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            o.id AS order_id,
+            SELECT
+              o.id,
+              o.customer_id,
+              o.total,
+              o.status,
+              o.created_at,
 
-            o.customer_id,
+              c.name AS customer_name,
+              c.email AS customer_email,
+              c.mobile AS customer_mobile,
+              c.address AS customer_address,
 
-            o.total,
+              COALESCE(
+                JSON_AGG(
+                  JSON_BUILD_OBJECT(
+                    'id', oi.id,
+                    'product_id', oi.product_id,
+                    'product_name', oi.product_name,
+                    'price', oi.price,
+                    'quantity', oi.quantity,
+                    'subtotal', oi.subtotal
+                  )
+                )
+                FILTER (
+                  WHERE oi.id IS NOT NULL
+                ),
+                '[]'
+              ) AS items
 
-            o.status,
+            FROM orders o
 
-            o.created_at,
+            JOIN order_items oi
+              ON oi.order_id = o.id
+             AND oi.seller_id = $1
 
-            u.name
-              AS customer_name,
+            JOIN users c
+              ON c.id = o.customer_id
 
-            u.email
-              AS customer_email,
+            GROUP BY
+              o.id,
+              c.id
 
-            u.mobile
-              AS customer_mobile,
-
-            u.address
-              AS customer_address,
-
-            oi.id
-              AS item_id,
-
-            oi.product_id,
-
-            oi.product_name,
-
-            oi.price,
-
-            oi.quantity,
-
-            oi.subtotal
-
-          FROM orders o
-
-          JOIN order_items oi
-            ON oi.order_id = o.id
-
-          JOIN users u
-            ON u.id = o.customer_id
-
-          WHERE
-            oi.seller_id = $1
-
-          ORDER BY
-            o.created_at DESC,
-            o.id DESC
+            ORDER BY
+              o.created_at DESC
           `,
           [req.user.id]
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -2117,11 +2284,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load seller orders"
       });
+
     }
+
   }
 );
 
@@ -2141,35 +2311,39 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            o.id,
-            o.customer_id,
-            o.total,
-            o.status,
-            o.created_at,
+            SELECT
+              o.id,
+              o.customer_id,
+              o.total,
+              o.status,
+              o.created_at,
 
-            u.name
-              AS customer_name,
+              u.name AS customer_name,
+              u.email AS customer_email,
+              u.mobile AS customer_mobile,
 
-            u.email
-              AS customer_email,
+              COUNT(oi.id)::INTEGER
+                AS item_count
 
-            u.mobile
-              AS customer_mobile
+            FROM orders o
 
-          FROM orders o
+            JOIN users u
+              ON u.id = o.customer_id
 
-          JOIN users u
-            ON u.id = o.customer_id
+            LEFT JOIN order_items oi
+              ON oi.order_id = o.id
 
-          ORDER BY
-            o.created_at DESC,
-            o.id DESC
+            GROUP BY
+              o.id,
+              u.id
+
+            ORDER BY
+              o.created_at DESC
           `
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -2181,11 +2355,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load admin orders"
       });
+
     }
+
   }
 );
 
@@ -2203,78 +2380,80 @@ app.get(
     try {
 
       const orderId =
-        Number(
-          req.params.id
-        );
+        Number(req.params.id);
+
+
+      if (!Number.isInteger(orderId)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid order ID"
+        });
+
+      }
 
 
       const orderResult =
         await q(
           `
-          SELECT
-            o.*,
+            SELECT
+              o.*,
 
-            u.name
-              AS customer_name,
+              u.name AS customer_name,
+              u.email AS customer_email,
+              u.mobile AS customer_mobile,
+              u.address AS customer_address
 
-            u.email
-              AS customer_email,
+            FROM orders o
 
-            u.mobile
-              AS customer_mobile,
+            JOIN users u
+              ON u.id = o.customer_id
 
-            u.address
-              AS customer_address
+            WHERE o.id = $1
 
-          FROM orders o
-
-          JOIN users u
-            ON u.id = o.customer_id
-
-          WHERE o.id = $1
-
-          LIMIT 1
+            LIMIT 1
           `,
           [orderId]
         );
 
 
       if (!orderResult.rows.length) {
+
         return res.status(404).json({
           error:
             "Order not found"
         });
+
       }
 
 
       const itemsResult =
         await q(
           `
-          SELECT
-            oi.*,
+            SELECT
+              oi.*,
 
-            s.name
-              AS seller_name,
+              u.name AS seller_name,
 
-            s.business_name
-              AS seller_business_name
+              u.business_name
+                AS seller_business_name
 
-          FROM order_items oi
+            FROM order_items oi
 
-          LEFT JOIN users s
-            ON s.id = oi.seller_id
+            LEFT JOIN users u
+              ON u.id = oi.seller_id
 
-          WHERE
-            oi.order_id = $1
+            WHERE
+              oi.order_id = $1
 
-          ORDER BY
-            oi.id ASC
+            ORDER BY
+              oi.id ASC
           `,
           [orderId]
         );
 
 
-      res.json({
+      return res.json({
         order:
           orderResult.rows[0],
 
@@ -2286,15 +2465,18 @@ app.get(
     } catch (error) {
 
       console.error(
-        "Admin order detail error:",
+        "Admin order details error:",
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load order details"
       });
+
     }
+
   }
 );
 
@@ -2312,17 +2494,15 @@ app.put(
     try {
 
       const orderId =
-        Number(
-          req.params.id
-        );
+        Number(req.params.id);
 
       const status =
-        cleanText(
+        clean(
           req.body?.status
         ).toLowerCase();
 
 
-      const validStatuses = [
+      const allowed = [
         "pending",
         "confirmed",
         "shipped",
@@ -2331,28 +2511,36 @@ app.put(
       ];
 
 
-      if (
-        !validStatuses.includes(
-          status
-        )
-      ) {
+      if (!Number.isInteger(orderId)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid order ID"
+        });
+
+      }
+
+
+      if (!allowed.includes(status)) {
+
         return res.status(400).json({
           error:
             "Invalid order status"
         });
+
       }
 
 
       const result =
         await q(
           `
-          UPDATE orders
+            UPDATE orders
 
-          SET status = $1
+            SET status = $1
 
-          WHERE id = $2
+            WHERE id = $2
 
-          RETURNING *
+            RETURNING *
           `,
           [
             status,
@@ -2362,14 +2550,16 @@ app.put(
 
 
       if (!result.rows.length) {
+
         return res.status(404).json({
           error:
             "Order not found"
         });
+
       }
 
 
-      res.json({
+      return res.json({
         message:
           "Order status updated",
         order:
@@ -2384,11 +2574,14 @@ app.put(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to update order status"
       });
+
     }
+
   }
 );
 
@@ -2408,28 +2601,27 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            id,
-            name,
-            email,
-            role,
-            created_at,
-            business_name,
-            gst_number,
-            mobile,
-            address,
-            active
+            SELECT
+              id,
+              name,
+              email,
+              role,
+              business_name,
+              gst_number,
+              mobile,
+              address,
+              active,
+              created_at
 
-          FROM users
+            FROM users
 
-          ORDER BY
-            created_at DESC,
-            id DESC
+            ORDER BY
+              created_at DESC
           `
         );
 
 
-      res.json(
+      return res.json(
         result.rows.map(
           formatUser
         )
@@ -2443,17 +2635,20 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load users"
       });
+
     }
+
   }
 );
 
 
 /* =========================================================
-   ADMIN - STATS
+   ADMIN - DASHBOARD STATS
 ========================================================= */
 
 app.get(
@@ -2465,80 +2660,66 @@ app.get(
     try {
 
       const result =
-        await q(`
-          SELECT
+        await q(
+          `
+            SELECT
 
-            (
-              SELECT COUNT(*)
-              FROM users
-            ) AS users,
+              (
+                SELECT COUNT(*)
+                FROM users
+              )::INTEGER
+              AS users,
 
-            (
-              SELECT COUNT(*)
-              FROM users
-              WHERE role = 'customer'
-            ) AS customers,
+              (
+                SELECT COUNT(*)
+                FROM users
+                WHERE role = 'customer'
+              )::INTEGER
+              AS customers,
 
-            (
-              SELECT COUNT(*)
-              FROM users
-              WHERE role = 'seller'
-            ) AS sellers,
+              (
+                SELECT COUNT(*)
+                FROM users
+                WHERE role = 'seller'
+              )::INTEGER
+              AS sellers,
 
-            (
-              SELECT COUNT(*)
-              FROM users
-              WHERE role = 'seller'
-                AND active = TRUE
-            ) AS active_sellers,
+              (
+                SELECT COUNT(*)
+                FROM users
+                WHERE role = 'seller'
+                  AND active = TRUE
+              )::INTEGER
+              AS active_sellers,
 
-            (
-              SELECT COUNT(*)
-              FROM products
-            ) AS products,
+              (
+                SELECT COUNT(*)
+                FROM products
+              )::INTEGER
+              AS products,
 
-            (
-              SELECT COUNT(*)
-              FROM orders
-            ) AS orders,
+              (
+                SELECT COUNT(*)
+                FROM orders
+              )::INTEGER
+              AS orders,
 
-            (
-              SELECT COALESCE(
-                SUM(total),
+              COALESCE(
+                (
+                  SELECT SUM(total)
+                  FROM orders
+                  WHERE status <> 'cancelled'
+                ),
                 0
-              )
-              FROM orders
-              WHERE status <> 'cancelled'
-            ) AS revenue
-        `);
+              )::NUMERIC(12,2)
+              AS revenue
+          `
+        );
 
 
-      const row =
-        result.rows[0];
-
-
-      res.json({
-        users:
-          Number(row.users || 0),
-
-        customers:
-          Number(row.customers || 0),
-
-        sellers:
-          Number(row.sellers || 0),
-
-        active_sellers:
-          Number(row.active_sellers || 0),
-
-        products:
-          Number(row.products || 0),
-
-        orders:
-          Number(row.orders || 0),
-
-        revenue:
-          Number(row.revenue || 0)
-      });
+      return res.json(
+        result.rows[0]
+      );
 
 
     } catch (error) {
@@ -2548,11 +2729,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
-          "Unable to load statistics"
+          "Unable to load dashboard stats"
       });
+
     }
+
   }
 );
 
@@ -2572,31 +2756,28 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            p.*,
+            SELECT
+              p.*,
 
-            u.name
-              AS seller_name,
+              u.name AS seller_name,
 
-            u.email
-              AS seller_email,
+              u.email AS seller_email,
 
-            u.business_name
-              AS seller_business_name
+              u.business_name
+                AS seller_business_name
 
-          FROM products p
+            FROM products p
 
-          LEFT JOIN users u
-            ON u.id = p.seller_id
+            JOIN users u
+              ON u.id = p.seller_id
 
-          ORDER BY
-            p.created_at DESC,
-            p.id DESC
+            ORDER BY
+              p.created_at DESC
           `
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -2608,11 +2789,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
-          "Unable to load products"
+          "Unable to load admin products"
       });
+
     }
+
   }
 );
 
@@ -2632,39 +2816,31 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            u.id,
-            u.name,
-            u.email,
-            u.business_name,
-            u.gst_number,
-            u.mobile,
-            u.address,
-            u.active,
-            u.created_at,
+            SELECT
+              id,
+              name,
+              email,
+              business_name,
+              gst_number,
+              mobile,
+              address,
+              active,
+              created_at
 
-            COUNT(p.id)
-              AS product_count
+            FROM users
 
-          FROM users u
+            WHERE role = 'seller'
 
-          LEFT JOIN products p
-            ON p.seller_id = u.id
-
-          WHERE
-            u.role = 'seller'
-
-          GROUP BY
-            u.id
-
-          ORDER BY
-            u.created_at DESC
+            ORDER BY
+              created_at DESC
           `
         );
 
 
-      res.json(
-        result.rows
+      return res.json(
+        result.rows.map(
+          formatUser
+        )
       );
 
 
@@ -2675,11 +2851,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load sellers"
       });
+
     }
+
   }
 );
 
@@ -2697,9 +2876,41 @@ app.put(
     try {
 
       const sellerId =
-        Number(
-          req.params.id
+        Number(req.params.id);
+
+
+      if (!Number.isInteger(sellerId)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid seller ID"
+        });
+
+      }
+
+
+      const seller =
+        await q(
+          `
+            SELECT *
+            FROM users
+            WHERE
+              id = $1
+              AND role = 'seller'
+            LIMIT 1
+          `,
+          [sellerId]
         );
+
+
+      if (!seller.rows.length) {
+
+        return res.status(404).json({
+          error:
+            "Seller not found"
+        });
+
+      }
 
 
       const body =
@@ -2707,109 +2918,119 @@ app.put(
 
 
       const name =
-        cleanText(
-          body.name
+        clean(
+          body.name ??
+          seller.rows[0].name
         );
 
-      const email =
-        cleanText(
-          body.email
-        ).toLowerCase();
-
       const businessName =
-        cleanText(
-          body.businessName ||
-          body.business_name
+        clean(
+          body.businessName ??
+          seller.rows[0].business_name
         );
 
       const gstNumber =
-        cleanText(
-          body.gstNumber ||
-          body.gst_number
+        clean(
+          body.gstNumber ??
+          seller.rows[0].gst_number
         ).toUpperCase();
 
       const mobile =
-        cleanText(
-          body.mobile
+        clean(
+          body.mobile ??
+          seller.rows[0].mobile
         );
 
       const address =
-        cleanText(
-          body.address
+        clean(
+          body.address ??
+          seller.rows[0].address
         );
 
 
-      if (!name || !email) {
+      if (!name) {
+
         return res.status(400).json({
           error:
-            "Name and email are required"
+            "Name is required"
         });
+
       }
 
 
-      if (gstNumber) {
+      if (
+        gstNumber &&
+        !isValidGST(gstNumber)
+      ) {
 
-        const gstRegex =
-          /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+        return res.status(400).json({
+          error:
+            "Invalid GSTIN format"
+        });
 
-
-        if (!gstRegex.test(gstNumber)) {
-          return res.status(400).json({
-            error:
-              "Invalid GSTIN format"
-          });
-        }
       }
 
 
-      if (mobile) {
+      if (
+        mobile &&
+        !isValidMobile(mobile)
+      ) {
 
-        const mobileRegex =
-          /^[6-9][0-9]{9}$/;
+        return res.status(400).json({
+          error:
+            "Invalid mobile number"
+        });
+
+      }
 
 
-        if (!mobileRegex.test(mobile)) {
-          return res.status(400).json({
-            error:
-              "Invalid mobile number"
-          });
-        }
+      const duplicate =
+        await q(
+          `
+            SELECT id
+            FROM users
+            WHERE
+              gst_number = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+          [
+            gstNumber || null,
+            sellerId
+          ]
+        );
+
+
+      if (duplicate.rows.length) {
+
+        return res.status(409).json({
+          error:
+            "GSTIN is already used by another seller"
+        });
+
       }
 
 
       const result =
         await q(
           `
-          UPDATE users
+            UPDATE users
 
-          SET
-            name = $1,
-            email = $2,
-            business_name = $3,
-            gst_number = $4,
-            mobile = $5,
-            address = $6
+            SET
+              name = $1,
+              business_name = $2,
+              gst_number = $3,
+              mobile = $4,
+              address = $5
 
-          WHERE
-            id = $7
+            WHERE
+              id = $6
+              AND role = 'seller'
 
-            AND role = 'seller'
-
-          RETURNING
-            id,
-            name,
-            email,
-            role,
-            created_at,
-            business_name,
-            gst_number,
-            mobile,
-            address,
-            active
+            RETURNING *
           `,
           [
             name,
-            email,
             businessName || null,
             gstNumber || null,
             mobile || null,
@@ -2819,19 +3040,10 @@ app.put(
         );
 
 
-      if (!result.rows.length) {
-        return res.status(404).json({
-          error:
-            "Seller not found"
-        });
-      }
-
-
-      res.json({
+      return res.json({
         message:
           "Seller updated successfully",
-
-        seller:
+        user:
           formatUser(
             result.rows[0]
           )
@@ -2846,21 +3058,13 @@ app.put(
       );
 
 
-      if (
-        error.code === "23505"
-      ) {
-        return res.status(409).json({
-          error:
-            "Email or GST number already exists"
-        });
-      }
-
-
-      res.status(500).json({
+      return res.status(500).json({
         error:
           "Unable to update seller"
       });
+
     }
+
   }
 );
 
@@ -2878,9 +3082,17 @@ app.put(
     try {
 
       const sellerId =
-        Number(
-          req.params.id
-        );
+        Number(req.params.id);
+
+
+      if (!Number.isInteger(sellerId)) {
+
+        return res.status(400).json({
+          error:
+            "Invalid seller ID"
+        });
+
+      }
 
 
       const active =
@@ -2892,21 +3104,15 @@ app.put(
       const result =
         await q(
           `
-          UPDATE users
+            UPDATE users
 
-          SET active = $1
+            SET active = $1
 
-          WHERE
-            id = $2
+            WHERE
+              id = $2
+              AND role = 'seller'
 
-            AND role = 'seller'
-
-          RETURNING
-            id,
-            name,
-            email,
-            role,
-            active
+            RETURNING *
           `,
           [
             active,
@@ -2916,29 +3122,25 @@ app.put(
 
 
       if (!result.rows.length) {
+
         return res.status(404).json({
           error:
             "Seller not found"
         });
+
       }
 
 
-      /*
-        When seller is deactivated,
-        their products are hidden from
-        public marketplace.
-
-        We don't permanently delete them.
-      */
-
-      res.json({
+      return res.json({
         message:
           active
             ? "Seller activated successfully"
             : "Seller deactivated successfully",
 
-        seller:
-          result.rows[0]
+        user:
+          formatUser(
+            result.rows[0]
+          )
       });
 
 
@@ -2949,11 +3151,14 @@ app.put(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to update seller status"
       });
+
     }
+
   }
 );
 
@@ -2971,28 +3176,27 @@ app.get(
       const result =
         await q(
           `
-          SELECT
-            id,
-            name,
-            business_name,
-            mobile,
-            address,
-            created_at
+            SELECT
+              id,
+              name,
+              business_name,
+              mobile,
+              address,
+              created_at
 
-          FROM users
+            FROM users
 
-          WHERE
-            role = 'seller'
+            WHERE
+              role = 'seller'
+              AND active = TRUE
 
-            AND active = TRUE
-
-          ORDER BY
-            created_at DESC
+            ORDER BY
+              created_at DESC
           `
         );
 
 
-      res.json(
+      return res.json(
         result.rows
       );
 
@@ -3004,11 +3208,14 @@ app.get(
         error
       );
 
-      res.status(500).json({
+
+      return res.status(500).json({
         error:
           "Unable to load sellers"
       });
+
     }
+
   }
 );
 
@@ -3022,31 +3229,45 @@ app.use(
 
     res.status(404).json({
       error:
-        "API endpoint not found",
-      path:
-        req.originalUrl
+        "API endpoint not found"
     });
+
   }
 );
 
 
 /* =========================================================
-   ERROR HANDLER
+   GLOBAL ERROR HANDLER
 ========================================================= */
 
 app.use(
-  (err, req, res, next) => {
+  (error, req, res, next) => {
 
     console.error(
-      "Unhandled server error:",
-      err
+      "Unhandled error:",
+      error
     );
 
 
-    res.status(500).json({
+    if (
+      error instanceof SyntaxError &&
+      error.status === 400 &&
+      error.body
+    ) {
+
+      return res.status(400).json({
+        error:
+          "Invalid JSON"
+      });
+
+    }
+
+
+    return res.status(500).json({
       error:
         "Internal server error"
     });
+
   }
 );
 
@@ -3068,12 +3289,9 @@ async function start() {
       () => {
 
         console.log(
-          `ShipNova API listening on port ${PORT}`
+          `🚀 ShipNova API listening on port ${PORT}`
         );
 
-        console.log(
-          `Health: /api/health`
-        );
       }
     );
 
@@ -3081,12 +3299,14 @@ async function start() {
   } catch (error) {
 
     console.error(
-      "Server startup failed:",
+      "❌ Server startup failed:",
       error
     );
 
     process.exit(1);
+
   }
+
 }
 
 
