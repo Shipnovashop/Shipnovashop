@@ -2,239 +2,204 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <title>Customer - ShipNova</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>ShipNovaShop - Customer</title>
 
   <link rel="stylesheet" href="style.css">
 
   <style>
-    .customer-wrap {
+    .customer-page {
       max-width: 1200px;
       margin: auto;
+      padding: 20px;
     }
 
-    .top-card {
+    .customer-header {
       margin-bottom: 20px;
     }
 
-    .product-grid {
+    .customer-header h1 {
+      margin-bottom: 5px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
+      grid-template-columns:
+        repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
     }
 
     .product-card {
-      border: 1px solid #ddd;
-      border-radius: 14px;
-      padding: 15px;
       background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 14px;
       box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
     .product-image {
       width: 100%;
-      height: 180px;
+      height: 200px;
       object-fit: contain;
-      border-radius: 10px;
       background: #f5f5f5;
-      margin-bottom: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
     }
 
-    .no-image {
-      width: 100%;
-      height: 180px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f2f2f2;
-      border-radius: 10px;
-      color: #777;
-      margin-bottom: 10px;
+    .product-card h3 {
+      margin: 5px 0 10px;
+    }
+
+    .product-card p {
+      margin: 5px 0;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      background: #eef3ff;
+      border-radius: 20px;
+      font-size: 13px;
+      margin-bottom: 8px;
     }
 
     .price {
       font-size: 20px;
       font-weight: bold;
+      margin: 8px 0;
     }
 
     .stock {
       font-size: 14px;
     }
 
+    .btn {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #111827;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111;
+    }
+
+    .cart-box,
+    .orders-box,
+    .delivery-box {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 25px;
+    }
+
     .cart-item {
       display: flex;
-      gap: 15px;
       align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       padding: 12px 0;
       border-bottom: 1px solid #eee;
     }
 
-    .cart-item-image {
-      width: 70px;
-      height: 70px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #f5f5f5;
-    }
-
-    .cart-info {
-      flex: 1;
-    }
-
-    .qty-box {
+    .cart-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 7px;
+      gap: 7px;
     }
 
-    .qty-box button {
-      min-width: 35px;
-      min-height: 35px;
-      padding: 5px 10px;
+    .qty-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
-    .danger {
-      background: #dc3545 !important;
-      color: white !important;
-      border: none;
+    .form-group {
+      margin-bottom: 14px;
     }
 
-    .status {
-      display: inline-block;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: bold;
-      text-transform: capitalize;
-      background: #eee;
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
     }
 
-    .status.pending {
-      background: #fff3cd;
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      box-sizing: border-box;
     }
 
-    .status.confirmed,
-    .status.processing {
-      background: #cfe2ff;
-    }
-
-    .status.shipped {
-      background: #d1ecf1;
-    }
-
-    .status.delivered {
-      background: #d1e7dd;
-    }
-
-    .status.cancelled {
-      background: #f8d7da;
+    .form-group textarea {
+      min-height: 90px;
+      resize: vertical;
     }
 
     .order-card {
       border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      background: white;
-    }
-
-    .order-header {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .order-items {
-      margin-top: 12px;
-      border-top: 1px solid #eee;
-      padding-top: 10px;
-    }
-
-    .order-item {
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f1f1;
-    }
-
-    .search-box {
-      width: 100%;
-      max-width: 500px;
-      margin-bottom: 15px;
-    }
-
-    .search-box input {
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .checkout-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-
-    .checkout-grid textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
+      border-radius: 9px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
 
     .empty {
       text-align: center;
       padding: 25px;
-      color: #777;
+      color: #666;
     }
 
-    .success {
-      color: green;
-      font-weight: bold;
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .error {
-      color: #d00;
-      font-weight: bold;
-    }
-
-    @media (max-width: 700px) {
-
-      nav {
-        flex-wrap: wrap;
-      }
-
-      nav span {
-        width: 100%;
-        margin-top: 8px;
-      }
-
-      .checkout-grid {
-        grid-template-columns: 1fr;
+    @media (max-width: 600px) {
+      .customer-page {
+        padding: 12px;
       }
 
       .cart-item {
+        flex-direction: column;
         align-items: flex-start;
       }
 
-      .cart-item-image {
-        width: 55px;
-        height: 55px;
-      }
-
-      .cart-item {
-        flex-wrap: wrap;
-      }
-
-      .cart-info {
-        min-width: 180px;
-      }
-
-      .product-image,
-      .no-image {
-        height: 150px;
+      .product-image {
+        height: 180px;
       }
     }
   </style>
@@ -242,1069 +207,811 @@
 
 <body>
 
-<nav>
-  <b>🚚 ShipNova Customer</b>
+  <nav class="navbar">
+    <div class="nav-container">
 
-  <span>
-    <a href="index.html">Home</a>
-    <a href="product.html">Products</a>
-    <button onclick="logout()">Logout</button>
-  </span>
-</nav>
+      <a href="index.html">
+        ShipNovaShop
+      </a>
 
-<main class="container customer-wrap">
-
-  <!-- =========================
-       AUTH
-  ========================== -->
-
-  <div id="authBox" class="grid">
-
-    <!-- LOGIN -->
-
-    <div class="card">
-
-      <h2>🔐 Customer Login</h2>
-
-      <form id="loginForm">
-
-        <input
-          id="loginEmail"
-          type="email"
-          placeholder="Email"
-          required
+      <div class="nav-actions">
+        <a href="index.html">Home</a>
+        <a href="customer.html">Products</a>
+        <button
+          class="btn btn-danger"
+          onclick="logoutUser()"
         >
-
-        <input
-          id="loginPassword"
-          type="password"
-          placeholder="Password"
-          required
-        >
-
-        <button type="submit">
-          Login
+          Logout
         </button>
-
-      </form>
-
-      <p id="loginMsg"></p>
+      </div>
 
     </div>
+  </nav>
 
 
-    <!-- REGISTER -->
+  <main class="customer-page">
 
-    <div class="card">
+    <section class="customer-header">
 
-      <h2>📝 Customer Registration</h2>
+      <h1>Customer Marketplace</h1>
 
-      <form id="registerForm">
-
-        <input
-          id="regName"
-          placeholder="Full Name"
-          required
-        >
-
-        <input
-          id="regEmail"
-          type="email"
-          placeholder="Email"
-          required
-        >
-
-        <input
-          id="regPassword"
-          type="password"
-          placeholder="Password"
-          minlength="6"
-          required
-        >
-
-        <input
-          id="regConfirmPassword"
-          type="password"
-          placeholder="Confirm Password"
-          minlength="6"
-          required
-        >
-
-        <button type="submit">
-          Register
-        </button>
-
-      </form>
-
-      <p id="registerMsg"></p>
-
-    </div>
-
-  </div>
-
-
-  <!-- =========================
-       CUSTOMER AREA
-  ========================== -->
-
-  <div id="customerArea" style="display:none">
-
-
-    <!-- WELCOME -->
-
-    <div class="card top-card">
-
-      <h2>
-        Welcome,
-        <span id="customerName"></span>
-        👋
-      </h2>
-
-      <p>
-        Shop products, add them to your cart and place your order.
+      <p id="welcomeText">
+        Welcome to ShipNovaShop
       </p>
 
-    </div>
+      <input
+        id="searchInput"
+        class="search-box"
+        type="search"
+        placeholder="Search products, seller or category..."
+        oninput="filterProducts()"
+      >
+
+    </section>
 
 
-    <!-- =========================
-         PRODUCTS
-    ========================== -->
+    <!-- PRODUCTS -->
 
-    <div class="card">
+    <section>
 
-      <div class="row">
+      <h2>Products</h2>
 
-        <h2 style="flex:1">
-          🛍️ Products
-        </h2>
-
-        <button onclick="loadProducts()">
-          🔄 Refresh
-        </button>
-
-      </div>
-
-      <div class="search-box">
-
-        <input
-          id="searchProducts"
-          type="search"
-          placeholder="🔎 Search products..."
-          oninput="filterProducts()"
-        >
-
-      </div>
-
-      <div id="products">
-        Loading products...
-      </div>
-
-    </div>
-
-
-    <!-- =========================
-         CART
-    ========================== -->
-
-    <div class="card">
-
-      <h2>
-        🛒 My Cart
-      </h2>
-
-      <div id="cart">
+      <div
+        id="productsGrid"
+        class="products-grid"
+      >
         <div class="empty">
-          Cart is empty.
+          Loading products...
         </div>
       </div>
 
-      <hr>
+    </section>
+
+
+    <!-- CART -->
+
+    <section class="cart-box">
+
+      <h2>🛒 My Cart</h2>
+
+      <div id="cartItems">
+        <div class="empty">
+          Your cart is empty.
+        </div>
+      </div>
 
       <h3>
-        Cart Total:
+        Total:
         ₹<span id="cartTotal">0.00</span>
       </h3>
 
-    </div>
+    </section>
 
 
-    <!-- =========================
-         CHECKOUT
-    ========================== -->
+    <!-- DELIVERY -->
 
-    <div class="card">
+    <section class="delivery-box">
 
-      <h2>
-        📍 Delivery Details
-      </h2>
+      <h2>Delivery Details</h2>
 
-      <div class="checkout-grid">
+      <div class="form-group">
 
-        <div>
-          <label>Full Name</label>
+        <label for="deliveryName">
+          Full Name
+        </label>
 
-          <input
-            id="deliveryName"
-            placeholder="Receiver Name"
-            required
-          >
-        </div>
-
-
-        <div>
-          <label>Mobile Number</label>
-
-          <input
-            id="deliveryMobile"
-            type="tel"
-            maxlength="10"
-            placeholder="10 digit mobile number"
-          >
-        </div>
-
-
-        <div class="full-width">
-
-          <label>Delivery Address</label>
-
-          <textarea
-            id="deliveryAddress"
-            placeholder="House / Flat, Street, Area, City, State, PIN"
-          ></textarea>
-
-        </div>
+        <input
+          id="deliveryName"
+          type="text"
+          placeholder="Enter your full name"
+        >
 
       </div>
 
-      <br>
+
+      <div class="form-group">
+
+        <label for="deliveryMobile">
+          Mobile Number
+        </label>
+
+        <input
+          id="deliveryMobile"
+          type="tel"
+          maxlength="10"
+          placeholder="10 digit mobile number"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="deliveryAddress">
+          Delivery Address
+        </label>
+
+        <textarea
+          id="deliveryAddress"
+          placeholder="Enter complete delivery address"
+        ></textarea>
+
+      </div>
+
 
       <button
-        id="orderButton"
+        class="btn btn-primary"
         onclick="placeOrder()"
-        disabled
       >
-        🛍️ Place Order
+        Place Order
       </button>
 
-      <p id="orderMsg"></p>
-
-    </div>
+    </section>
 
 
-    <!-- =========================
-         MY ORDERS
-    ========================== -->
+    <!-- ORDERS -->
 
-    <div class="card">
+    <section class="orders-box">
 
-      <div class="row">
+      <h2>📦 My Orders</h2>
 
-        <h2 style="flex:1">
-          📦 My Orders
-        </h2>
-
-        <button onclick="loadOrders()">
-          🔄 Refresh
-        </button>
-
+      <div id="ordersList">
+        <div class="empty">
+          Loading orders...
+        </div>
       </div>
 
-      <div id="orders">
-        Loading orders...
-      </div>
+    </section>
 
-    </div>
+  </main>
 
-  </div>
 
-</main>
+  <script src="api-config.js"></script>
+  <script src="app.js"></script>
 
+  <script>
 
-<script src="api-config.js"></script>
-<script src="app.js"></script>
+    let products = [];
+    let cart = [];
 
-<script>
+    const API =
+      window.SHIPNOVA_API ||
+      localStorage.getItem("SHIPNOVA_API") ||
+      "/api";
 
-let cart = [];
-let allProducts = [];
 
+    /* =========================
+       ESCAPE HELPERS
+    ========================= */
 
-/* =====================================
-   START
-===================================== */
-
-document.addEventListener(
-  'DOMContentLoaded',
-  function() {
-
-    const u = user();
-
-    if (
-      u &&
-      u.role === 'customer'
-    ) {
-
-      showCustomer();
-
-    } else {
-
-      document.getElementById(
-        'authBox'
-      ).style.display = 'grid';
-
-      document.getElementById(
-        'customerArea'
-      ).style.display = 'none';
-
-    }
-
-  }
-);
-
-
-/* =====================================
-   SHOW CUSTOMER
-===================================== */
-
-function showCustomer() {
-
-  const u = user();
-
-  if (
-    !u ||
-    u.role !== 'customer'
-  ) {
-
-    document.getElementById(
-      'authBox'
-    ).style.display = 'grid';
-
-    document.getElementById(
-      'customerArea'
-    ).style.display = 'none';
-
-    return;
-
-  }
-
-  document.getElementById(
-    'authBox'
-  ).style.display = 'none';
-
-  document.getElementById(
-    'customerArea'
-  ).style.display = 'block';
-
-  document.getElementById(
-    'customerName'
-  ).textContent =
-    u.name || 'Customer';
-
-
-  /* Delivery defaults */
-
-  document.getElementById(
-    'deliveryName'
-  ).value =
-    u.name || '';
-
-
-  loadProducts();
-  loadOrders();
-  renderCart();
-
-}
-
-
-/* =====================================
-   REGISTER
-===================================== */
-
-document.getElementById(
-  'registerForm'
-).onsubmit = async function(e) {
-
-  e.preventDefault();
-
-  const msg =
-    document.getElementById(
-      'registerMsg'
-    );
-
-  const password =
-    document.getElementById(
-      'regPassword'
-    ).value;
-
-  const confirmPassword =
-    document.getElementById(
-      'regConfirmPassword'
-    ).value;
-
-  if (
-    password !==
-    confirmPassword
-  ) {
-
-    msg.className = 'error';
-
-    msg.textContent =
-      'Passwords do not match.';
-
-    return;
-
-  }
-
-  msg.className = '';
-
-  msg.textContent =
-    'Registering...';
-
-
-  try {
-
-    const data =
-      await api(
-        '/api/auth/register',
-        {
-          method: 'POST',
-
-          body: JSON.stringify({
-
-            name:
-              document.getElementById(
-                'regName'
-              ).value.trim(),
-
-            email:
-              document.getElementById(
-                'regEmail'
-              ).value.trim(),
-
-            password:
-              password,
-
-            role:
-              'customer'
-
-          })
-
-        }
-      );
-
-
-    saveAuth(data);
-
-    msg.className =
-      'success';
-
-    msg.textContent =
-      'Registration successful!';
-
-    showCustomer();
-
-
-  } catch(e) {
-
-    msg.className =
-      'error';
-
-    msg.textContent =
-      e.message;
-
-  }
-
-};
-
-
-/* =====================================
-   LOGIN
-===================================== */
-
-document.getElementById(
-  'loginForm'
-).onsubmit = async function(e) {
-
-  e.preventDefault();
-
-  const msg =
-    document.getElementById(
-      'loginMsg'
-    );
-
-  msg.className = '';
-
-  msg.textContent =
-    'Logging in...';
-
-
-  try {
-
-    const data =
-      await api(
-        '/api/auth/login',
-        {
-          method: 'POST',
-
-          body: JSON.stringify({
-
-            email:
-              document.getElementById(
-                'loginEmail'
-              ).value.trim(),
-
-            password:
-              document.getElementById(
-                'loginPassword'
-              ).value
-
-          })
-
-        }
-      );
-
-
-    if (
-      !data.user ||
-      data.user.role !== 'customer'
-    ) {
-
-      throw new Error(
-        'This page is only for Customer login.'
-      );
-
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
 
-    saveAuth(data);
-
-    msg.className =
-      'success';
-
-    msg.textContent =
-      'Login successful!';
-
-    showCustomer();
+    function escapeJs(value) {
+      return String(value ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'");
+    }
 
 
-  } catch(e) {
+    function formatDate(value) {
+      if (!value) return "";
 
-    msg.className =
-      'error';
-
-    msg.textContent =
-      e.message;
-
-  }
-
-};
-
-
-/* =====================================
-   LOAD PRODUCTS
-===================================== */
-
-async function loadProducts() {
-
-  const box =
-    document.getElementById(
-      'products'
-    );
-
-  box.innerHTML =
-    '<p>Loading products...</p>';
+      try {
+        return new Date(value).toLocaleString(
+          "en-IN"
+        );
+      } catch {
+        return value;
+      }
+    }
 
 
-  try {
+    /* =========================
+       USER
+    ========================= */
 
-    const data =
-      await api(
-        '/api/products'
-      );
-
-
-    allProducts =
-      Array.isArray(
-        data.products
-      )
-        ? data.products
-        : [];
-
-
-    renderProducts(
-      allProducts
-    );
+    function currentUser() {
+      try {
+        return user();
+      } catch {
+        try {
+          return JSON.parse(
+            localStorage.getItem("shipnova_user") || "null"
+          );
+        } catch {
+          return null;
+        }
+      }
+    }
 
 
-  } catch(e) {
+    function logoutUser() {
 
-    box.innerHTML =
-      `<p class="error">
-        ${escapeHtml(e.message)}
-      </p>`;
+      localStorage.removeItem("shipnova_token");
+      localStorage.removeItem("shipnova_user");
 
-  }
-
-}
+      window.location.href = "login.html";
+    }
 
 
-/* =====================================
-   RENDER PRODUCTS
-===================================== */
+    /* =========================
+       LOGIN CHECK
+    ========================= */
 
-function renderProducts(products) {
+    function checkCustomerLogin() {
 
-  const box =
-    document.getElementById(
-      'products'
-    );
+      const u = currentUser();
 
-
-  if (!products.length) {
-
-    box.innerHTML =
-      '<div class="empty">No products available.</div>';
-
-    return;
-
-  }
-
-
-  box.innerHTML = `
-    <div class="product-grid">
-
-      ${
-        products.map(
-          p => {
-
-            const stock =
-              Number(p.stock || 0);
-
-            const price =
-              Number(p.price || 0);
-
-
-            const image =
-              p.image
-                ? `
-                  <img
-                    class="product-image"
-                    src="${escapeHtml(p.image)}"
-                    alt="${escapeHtml(p.name)}"
-                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-                  >
-
-                  <div
-                    class="no-image"
-                    style="display:none"
-                  >
-                    No Image
-                  </div>
-                `
-                : `
-                  <div class="no-image">
-                    No Image
-                  </div>
-                `;
-
-
-            return `
-
-              <div class="product-card">
-
-                ${image}
-
-                <h3>
-                  ${escapeHtml(p.name)}
-                </h3>
-
-                <p>
-                  ${escapeHtml(
-                    p.description || ''
-                  )}
-                </p>
-
-                <p class="price">
-                  ₹${price.toFixed(2)}
-                </p>
-
-                <p>
-                  Seller:
-                  <b>
-                    ${escapeHtml(
-                      p.seller_name ||
-                      'Seller'
-                    )}
-                  </b>
-                </p>
-
-                <p class="stock">
-
-                  ${
-                    stock > 0
-                      ? `Stock: ${stock}`
-                      : '<b>Out of Stock</b>'
-                  }
-
-                </p>
-
-                <button
-                  ${
-                    stock <= 0
-                      ? 'disabled'
-                      : ''
-                  }
-
-                  onclick="addToCart(
-                    ${Number(p.id)},
-                    '${escapeJs(p.name)}',
-                    ${price},
-                    ${stock},
-                    '${escapeJs(p.image || '')}'
-                  )"
-                >
-
-                  ${
-                    stock > 0
-                      ? '🛒 Add to Cart'
-                      : 'Out of Stock'
-                  }
-
-                </button>
-
-              </div>
-
-            `;
-
-          }
-        ).join('')
+      if (!u) {
+        window.location.href = "login.html";
+        return false;
       }
 
-    </div>
-  `;
-
-}
-
-
-/* =====================================
-   SEARCH
-===================================== */
-
-function filterProducts() {
-
-  const keyword =
-    document.getElementById(
-      'searchProducts'
-    ).value
-      .trim()
-      .toLowerCase();
-
-
-  if (!keyword) {
-
-    renderProducts(
-      allProducts
-    );
-
-    return;
-
-  }
-
-
-  const filtered =
-    allProducts.filter(
-      p => {
-
-        const name =
-          String(
-            p.name || ''
-          ).toLowerCase();
-
-        const description =
-          String(
-            p.description || ''
-          ).toLowerCase();
-
-        const seller =
-          String(
-            p.seller_name || ''
-          ).toLowerCase();
-
-
-        return (
-          name.includes(keyword) ||
-          description.includes(keyword) ||
-          seller.includes(keyword)
+      if (
+        u.role &&
+        u.role !== "customer"
+      ) {
+        alert(
+          "Please login with a customer account."
         );
 
+        window.location.href = "login.html";
+
+        return false;
       }
-    );
 
+      document.getElementById(
+        "welcomeText"
+      ).textContent =
+        `Welcome, ${u.name || "Customer"}!`;
 
-  renderProducts(
-    filtered
-  );
-
-}
-
-
-/* =====================================
-   ADD TO CART
-===================================== */
-
-function addToCart(
-  id,
-  name,
-  price,
-  stock,
-  image
-) {
-
-  const existing =
-    cart.find(
-      x => x.product_id === id
-    );
-
-
-  if (existing) {
-
-    if (
-      existing.quantity >=
-      existing.stock
-    ) {
-
-      alert(
-        'Maximum available stock reached.'
-      );
-
-      return;
-
+      return true;
     }
 
-    existing.quantity++;
 
-  } else {
+    /* =========================
+       API
+    ========================= */
 
-    cart.push({
+    async function apiFetch(
+      path,
+      options = {}
+    ) {
 
-      product_id:
-        Number(id),
+      const token =
+        localStorage.getItem(
+          "shipnova_token"
+        );
 
-      name:
-        name,
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
 
-      price:
-        Number(price),
+      if (token) {
+        headers.Authorization =
+          `Bearer ${token}`;
+      }
 
-      stock:
-        Number(stock),
+      const response =
+        await fetch(
+          `${API}${path}`,
+          {
+            ...options,
+            headers
+          }
+        );
 
-      image:
-        image || '',
+      let data = {};
 
-      quantity:
-        1
+      try {
+        data = await response.json();
+      } catch {}
 
-    });
+      if (!response.ok) {
 
-  }
+        throw new Error(
+          data.error ||
+          "Request failed"
+        );
+      }
 
-
-  renderCart();
-
-}
-
-
-/* =====================================
-   CHANGE QUANTITY
-===================================== */
-
-function changeQty(
-  id,
-  amount
-) {
-
-  const item =
-    cart.find(
-      x => x.product_id === id
-    );
-
-
-  if (!item) return;
-
-
-  item.quantity +=
-    amount;
+      return data;
+    }
 
 
-  if (
-    item.quantity <= 0
-  ) {
+    /* =========================
+       LOAD PRODUCTS
+    ========================= */
 
-    cart =
-      cart.filter(
-        x =>
-          x.product_id !== id
-      );
+    async function loadProducts() {
 
-  }
+      const grid =
+        document.getElementById(
+          "productsGrid"
+        );
 
+      try {
 
-  if (
-    item.quantity >
-    item.stock
-  ) {
+        const data =
+          await apiFetch(
+            "/api/products"
+          );
 
-    item.quantity =
-      item.stock;
+        products =
+          Array.isArray(data.products)
+            ? data.products
+            : [];
 
-    alert(
-      'Maximum available stock reached.'
-    );
+        renderProducts(products);
 
-  }
+      } catch (error) {
 
+        console.error(error);
 
-  renderCart();
-
-}
-
-
-/* =====================================
-   REMOVE FROM CART
-===================================== */
-
-function removeFromCart(id) {
-
-  cart =
-    cart.filter(
-      x =>
-        x.product_id !== id
-    );
-
-  renderCart();
-
-}
+        grid.innerHTML = `
+          <div class="empty">
+            Unable to load products.
+            <br>
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+      }
+    }
 
 
-/* =====================================
-   RENDER CART
-===================================== */
+    /* =========================
+       RENDER PRODUCTS
+    ========================= */
 
-function renderCart() {
+    function renderProducts(list) {
 
-  const box =
-    document.getElementById(
-      'cart'
-    );
+      const grid =
+        document.getElementById(
+          "productsGrid"
+        );
 
-  const totalBox =
-    document.getElementById(
-      'cartTotal'
-    );
+      if (!list.length) {
 
-  const orderButton =
-    document.getElementById(
-      'orderButton'
-    );
+        grid.innerHTML = `
+          <div class="empty">
+            No products found.
+          </div>
+        `;
 
-
-  if (!cart.length) {
-
-    box.innerHTML =
-      '<div class="empty">🛒 Cart is empty.</div>';
-
-    totalBox.textContent =
-      '0.00';
-
-    orderButton.disabled =
-      true;
-
-    return;
-
-  }
+        return;
+      }
 
 
-  let total =
-    0;
+      grid.innerHTML =
+        list.map(p => {
+
+          const image =
+            p.image ||
+            "https://via.placeholder.com/500x400?text=ShipNovaShop";
+
+          const category =
+            p.category || "Other";
+
+          const seller =
+            p.seller_business_name ||
+            p.seller_name ||
+            "ShipNova Seller";
+
+          const stock =
+            Number(p.stock || 0);
 
 
-  box.innerHTML =
-    cart.map(
-      item => {
+          return `
+            <article class="product-card">
 
-        const subtotal =
-          item.price *
-          item.quantity;
-
-
-        total +=
-          subtotal;
-
-
-        const image =
-          item.image
-            ? `
               <img
-                class="cart-item-image"
-                src="${escapeHtml(item.image)}"
-                alt="${escapeHtml(item.name)}"
+                class="product-image"
+                src="${escapeHtml(image)}"
+                alt="${escapeHtml(p.name)}"
+                onerror="
+                  this.src='https://via.placeholder.com/500x400?text=No+Image'
+                "
               >
-            `
-            : `
-              <div class="cart-item-image"
-                   style="display:flex;align-items:center;justify-content:center">
-                🛍️
+
+              <span class="category-badge">
+                ${escapeHtml(category)}
+              </span>
+
+              <h3>
+                ${escapeHtml(p.name)}
+              </h3>
+
+              <p>
+                ${escapeHtml(
+                  p.description || "No description"
+                )}
+              </p>
+
+              <p>
+                <b>Category:</b>
+                ${escapeHtml(category)}
+              </p>
+
+              <p>
+                <b>Seller:</b>
+                ${escapeHtml(seller)}
+              </p>
+
+              <div class="price">
+                ₹${Number(p.price || 0).toFixed(2)}
               </div>
-            `;
+
+              <p class="stock">
+                <b>Stock:</b>
+                ${stock}
+              </p>
+
+              <button
+                class="btn btn-primary"
+                onclick="addToCart(${Number(p.id)})"
+                ${stock <= 0 ? "disabled" : ""}
+              >
+                ${
+                  stock <= 0
+                    ? "Out of Stock"
+                    : "Add to Cart"
+                }
+              </button>
+
+            </article>
+          `;
+
+        }).join("");
+    }
 
 
-        return `
+    /* =========================
+       SEARCH
+    ========================= */
 
-          <div class="cart-item">
+    function filterProducts() {
 
-            ${image}
+      const keyword =
+        document.getElementById(
+          "searchInput"
+        ).value
+        .trim()
+        .toLowerCase();
 
-            <div class="cart-info">
 
-              <b>
-                ${escapeHtml(item.name)}
-              </b>
+      if (!keyword) {
+
+        renderProducts(products);
+
+        return;
+      }
+
+
+      const filtered =
+        products.filter(p => {
+
+          const name =
+            String(
+              p.name || ""
+            ).toLowerCase();
+
+          const description =
+            String(
+              p.description || ""
+            ).toLowerCase();
+
+          const seller =
+            String(
+              p.seller_name || ""
+            ).toLowerCase();
+
+          const business =
+            String(
+              p.seller_business_name || ""
+            ).toLowerCase();
+
+          const category =
+            String(
+              p.category || ""
+            ).toLowerCase();
+
+
+          return (
+            name.includes(keyword) ||
+            description.includes(keyword) ||
+            seller.includes(keyword) ||
+            business.includes(keyword) ||
+            category.includes(keyword)
+          );
+        });
+
+
+      renderProducts(filtered);
+    }
+
+
+    /* =========================
+       CART
+    ========================= */
+
+    function saveCart() {
+
+      localStorage.setItem(
+        "shipnova_cart",
+        JSON.stringify(cart)
+      );
+    }
+
+
+    function loadCart() {
+
+      try {
+
+        cart =
+          JSON.parse(
+            localStorage.getItem(
+              "shipnova_cart"
+            ) || "[]"
+          );
+
+        if (!Array.isArray(cart)) {
+          cart = [];
+        }
+
+      } catch {
+
+        cart = [];
+      }
+
+      renderCart();
+    }
+
+
+    function addToCart(productId) {
+
+      const product =
+        products.find(
+          p => Number(p.id) === Number(productId)
+        );
+
+      if (!product) {
+        alert("Product not found.");
+        return;
+      }
+
+
+      const existing =
+        cart.find(
+          item =>
+            Number(item.product_id) ===
+            Number(productId)
+        );
+
+
+      if (existing) {
+
+        if (
+          existing.quantity >=
+          Number(product.stock)
+        ) {
+          alert("Maximum available stock reached.");
+          return;
+        }
+
+        existing.quantity++;
+
+      } else {
+
+        cart.push({
+          product_id: Number(product.id),
+          name: product.name,
+          price: Number(product.price),
+          image: product.image || "",
+          category: product.category || "Other",
+          quantity: 1,
+          stock: Number(product.stock)
+        });
+
+      }
+
+
+      saveCart();
+      renderCart();
+    }
+
+
+    function changeQty(
+      productId,
+      amount
+    ) {
+
+      const item =
+        cart.find(
+          x =>
+            Number(x.product_id) ===
+            Number(productId)
+        );
+
+      if (!item) return;
+
+
+      const product =
+        products.find(
+          p =>
+            Number(p.id) ===
+            Number(productId)
+        );
+
+
+      const stock =
+        product
+          ? Number(product.stock)
+          : Number(item.stock || 999999);
+
+
+      item.quantity += amount;
+
+
+      if (item.quantity <= 0) {
+
+        cart =
+          cart.filter(
+            x =>
+              Number(x.product_id) !==
+              Number(productId)
+          );
+
+      } else if (
+        item.quantity > stock
+      ) {
+
+        item.quantity = stock;
+
+        alert(
+          "You cannot order more than available stock."
+        );
+      }
+
+
+      saveCart();
+      renderCart();
+    }
+
+
+    function removeFromCart(productId) {
+
+      cart =
+        cart.filter(
+          x =>
+            Number(x.product_id) !==
+            Number(productId)
+        );
+
+      saveCart();
+      renderCart();
+    }
+
+
+    function renderCart() {
+
+      const box =
+        document.getElementById(
+          "cartItems"
+        );
+
+      const totalEl =
+        document.getElementById(
+          "cartTotal"
+        );
+
+
+      if (!cart.length) {
+
+        box.innerHTML = `
+          <div class="empty">
+            Your cart is empty.
+          </div>
+        `;
+
+        totalEl.textContent =
+          "0.00";
+
+        return;
+      }
+
+
+      let total = 0;
+
+
+      box.innerHTML =
+        cart.map(item => {
+
+          const price =
+            Number(item.price || 0);
+
+          const subtotal =
+            price *
+            Number(item.quantity || 0);
+
+          total += subtotal;
+
+
+          return `
+            <div class="cart-item">
 
               <div>
-                ₹${item.price.toFixed(2)}
+
+                <strong>
+                  ${escapeHtml(item.name)}
+                </strong>
+
+                <br>
+
+                <small>
+                  Category:
+                  ${escapeHtml(
+                    item.category || "Other"
+                  )}
+                </small>
+
+                <br>
+
+                ₹${price.toFixed(2)}
+                ×
+                ${item.quantity}
+
+                =
+                ₹${subtotal.toFixed(2)}
+
               </div>
 
-              <div class="qty-box">
+
+              <div class="cart-controls">
 
                 <button
-                  onclick="changeQty(
-                    ${item.product_id},
-                    -1
-                  )"
+                  class="qty-btn"
+                  onclick="
+                    changeQty(
+                      ${Number(item.product_id)},
+                      -1
+                    )
+                  "
                 >
                   −
                 </button>
 
-                <b>
+                <span>
                   ${item.quantity}
-                </b>
+                </span>
 
                 <button
-                  onclick="changeQty(
-                    ${item.product_id},
-                    1
-                  )"
+                  class="qty-btn"
+                  onclick="
+                    changeQty(
+                      ${Number(item.product_id)},
+                      1
+                    )
+                  "
                 >
                   +
                 </button>
 
                 <button
-                  class="danger"
-                  onclick="removeFromCart(
-                    ${item.product_id}
-                  )"
+                  class="btn btn-danger"
+                  onclick="
+                    removeFromCart(
+                      ${Number(item.product_id)}
+                    )
+                  "
                 >
                   Remove
                 </button>
@@ -1312,479 +1019,282 @@ function renderCart() {
               </div>
 
             </div>
+          `;
 
-            <div>
-              <b>
-                ₹${subtotal.toFixed(2)}
-              </b>
-            </div>
+        }).join("");
 
-          </div>
 
-        `;
-
-      }
-    ).join('');
-
-
-  totalBox.textContent =
-    total.toFixed(2);
-
-
-  orderButton.disabled =
-    false;
-
-}
-
-
-/* =====================================
-   PLACE ORDER
-===================================== */
-
-async function placeOrder() {
-
-  if (!cart.length) {
-
-    alert(
-      'Cart is empty.'
-    );
-
-    return;
-
-  }
-
-
-  const name =
-    document.getElementById(
-      'deliveryName'
-    ).value.trim();
-
-  const mobile =
-    document.getElementById(
-      'deliveryMobile'
-    ).value.trim();
-
-  const address =
-    document.getElementById(
-      'deliveryAddress'
-    ).value.trim();
-
-
-  if (!name) {
-
-    alert(
-      'Please enter delivery name.'
-    );
-
-    return;
-
-  }
-
-
-  if (!mobile) {
-
-    alert(
-      'Please enter mobile number.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !/^[6-9][0-9]{9}$/.test(
-      mobile
-    )
-  ) {
-
-    alert(
-      'Please enter a valid 10 digit mobile number.'
-    );
-
-    return;
-
-  }
-
-
-  if (!address) {
-
-    alert(
-      'Please enter delivery address.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !confirm(
-      'Place this order now?'
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  const msg =
-    document.getElementById(
-      'orderMsg'
-    );
-
-  const button =
-    document.getElementById(
-      'orderButton'
-    );
-
-
-  msg.className = '';
-
-  msg.textContent =
-    'Placing order...';
-
-  button.disabled =
-    true;
-
-
-  try {
-
-    const data =
-      await api(
-        '/api/orders',
-        {
-          method: 'POST',
-
-          body:
-            JSON.stringify({
-
-              items:
-                cart.map(
-                  x => ({
-
-                    product_id:
-                      x.product_id,
-
-                    quantity:
-                      x.quantity
-
-                  })
-                )
-
-            })
-
-        }
-      );
-
-
-    msg.className =
-      'success';
-
-    msg.textContent =
-      'Order #' +
-      data.order.id +
-      ' placed successfully!';
-
-
-    cart = [];
-
-    renderCart();
-
-
-    /* Refresh products so stock updates */
-
-    await loadProducts();
-
-
-    /* Refresh orders */
-
-    await loadOrders();
-
-
-    /* Scroll to orders */
-
-    setTimeout(
-      () => {
-
-        document.getElementById(
-          'orders'
-        ).scrollIntoView({
-          behavior: 'smooth'
-        });
-
-      },
-      300
-    );
-
-
-  } catch(e) {
-
-    msg.className =
-      'error';
-
-    msg.textContent =
-      e.message;
-
-    button.disabled =
-      false;
-
-  }
-
-}
-
-
-/* =====================================
-   LOAD MY ORDERS
-===================================== */
-
-async function loadOrders() {
-
-  const box =
-    document.getElementById(
-      'orders'
-    );
-
-
-  box.innerHTML =
-    '<p>Loading orders...</p>';
-
-
-  try {
-
-    const data =
-      await api(
-        '/api/orders'
-      );
-
-
-    if (
-      !data.orders ||
-      !data.orders.length
-    ) {
-
-      box.innerHTML =
-        '<div class="empty">📦 No orders yet.</div>';
-
-      return;
-
+      totalEl.textContent =
+        total.toFixed(2);
     }
 
 
-    box.innerHTML =
-      data.orders.map(
-        order => {
+    /* =========================
+       PLACE ORDER
+    ========================= */
 
-          const items =
-            Array.isArray(
-              order.items
-            )
-              ? order.items
-              : [];
+    async function placeOrder() {
 
-
-          const status =
-            String(
-              order.status ||
-              'pending'
-            ).toLowerCase();
+      if (!cart.length) {
+        alert("Your cart is empty.");
+        return;
+      }
 
 
-          return `
+      const name =
+        document.getElementById(
+          "deliveryName"
+        ).value.trim();
 
-            <div class="order-card">
+      const mobile =
+        document.getElementById(
+          "deliveryMobile"
+        ).value.trim();
 
-              <div class="order-header">
+      const address =
+        document.getElementById(
+          "deliveryAddress"
+        ).value.trim();
 
-                <h3 style="margin:0">
+
+      if (!name) {
+        alert("Please enter your full name.");
+        return;
+      }
+
+
+      if (!/^[6-9][0-9]{9}$/.test(mobile)) {
+
+        alert(
+          "Please enter a valid 10 digit mobile number."
+        );
+
+        return;
+      }
+
+
+      if (!address) {
+
+        alert(
+          "Please enter your delivery address."
+        );
+
+        return;
+      }
+
+
+      const orderItems =
+        cart.map(item => ({
+          product_id:
+            Number(item.product_id),
+
+          quantity:
+            Number(item.quantity)
+        }));
+
+
+      try {
+
+        const data =
+          await apiFetch(
+            "/api/orders",
+            {
+              method: "POST",
+
+              body: JSON.stringify({
+                items: orderItems,
+
+                delivery: {
+                  name,
+                  mobile,
+                  address
+                }
+              })
+            }
+          );
+
+
+        alert(
+          `Order placed successfully! Order #${
+            data.order?.id || ""
+          }`
+        );
+
+
+        cart = [];
+
+        saveCart();
+
+        renderCart();
+
+        document.getElementById(
+          "deliveryName"
+        ).value = "";
+
+        document.getElementById(
+          "deliveryMobile"
+        ).value = "";
+
+        document.getElementById(
+          "deliveryAddress"
+        ).value = "";
+
+
+        await loadProducts();
+        await loadOrders();
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          error.message ||
+          "Unable to place order."
+        );
+      }
+    }
+
+
+    /* =========================
+       LOAD ORDERS
+    ========================= */
+
+    async function loadOrders() {
+
+      const box =
+        document.getElementById(
+          "ordersList"
+        );
+
+
+      try {
+
+        const data =
+          await apiFetch(
+            "/api/orders"
+          );
+
+        const orders =
+          Array.isArray(data.orders)
+            ? data.orders
+            : [];
+
+
+        if (!orders.length) {
+
+          box.innerHTML = `
+            <div class="empty">
+              You have no orders yet.
+            </div>
+          `;
+
+          return;
+        }
+
+
+        box.innerHTML =
+          orders.map(order => {
+
+            const items =
+              Array.isArray(order.items)
+                ? order.items
+                : [];
+
+
+            return `
+              <div class="order-card">
+
+                <h3>
                   Order #${order.id}
                 </h3>
 
-                <span
-                  class="status ${escapeHtml(status)}"
-                >
-                  ${escapeHtml(
-                    order.status ||
-                    'pending'
-                  )}
-                </span>
+                <p>
+                  <b>Date:</b>
+                  ${formatDate(order.created_at)}
+                </p>
 
-              </div>
+                <p>
+                  <b>Status:</b>
+                  ${escapeHtml(order.status)}
+                </p>
 
-
-              <p>
-                <b>Date:</b>
-                ${formatDate(
-                  order.created_at
-                )}
-              </p>
-
-
-              <p>
-                <b>Total:</b>
-                ₹${Number(
-                  order.total || 0
-                ).toFixed(2)}
-              </p>
-
-
-              <div class="order-items">
-
-                <h4>
-                  Order Items
-                </h4>
+                <p>
+                  <b>Total:</b>
+                  ₹${Number(
+                    order.total || 0
+                  ).toFixed(2)}
+                </p>
 
                 ${
                   items.length
-                    ? items.map(
-                        item => `
+                    ? `
+                      <div>
+                        <b>Items:</b>
 
-                          <div class="order-item">
+                        <ul>
+                          ${
+                            items.map(item => `
+                              <li>
+                                ${escapeHtml(
+                                  item.product_name
+                                )}
+                                ×
+                                ${item.quantity}
+                                —
+                                ₹${Number(
+                                  item.subtotal || 0
+                                ).toFixed(2)}
+                              </li>
+                            `).join("")
+                          }
+                        </ul>
 
-                            <b>
-                              ${escapeHtml(
-                                item.product_name ||
-                                item.name ||
-                                'Product'
-                              )}
-                            </b>
-
-                            <br>
-
-                            Quantity:
-                            ${Number(
-                              item.quantity || 0
-                            )}
-
-                            <br>
-
-                            Price:
-                            ₹${Number(
-                              item.price || 0
-                            ).toFixed(2)}
-
-                            <br>
-
-                            Subtotal:
-                            <b>
-                              ₹${Number(
-                                item.subtotal || 0
-                              ).toFixed(2)}
-                            </b>
-
-                          </div>
-
-                        `
-                      ).join('')
-                    : '<p>No item details available.</p>'
+                      </div>
+                    `
+                    : ""
                 }
 
               </div>
+            `;
 
-            </div>
+          }).join("");
 
-          `;
 
+      } catch (error) {
+
+        console.error(error);
+
+        box.innerHTML = `
+          <div class="empty">
+            Unable to load orders.
+          </div>
+        `;
+      }
+    }
+
+
+    /* =========================
+       INIT
+    ========================= */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      async () => {
+
+        if (!checkCustomerLogin()) {
+          return;
         }
-      ).join('');
 
+        loadCart();
 
-  } catch(e) {
+        await loadProducts();
 
-    box.innerHTML =
-      `<p class="error">
-        ${escapeHtml(
-          e.message
-        )}
-      </p>`;
+        await loadOrders();
 
-  }
-
-}
-
-
-/* =====================================
-   HELPERS
-===================================== */
-
-function escapeHtml(value) {
-
-  return String(
-    value ?? ''
-  )
-  .replaceAll(
-    '&',
-    '&amp;'
-  )
-  .replaceAll(
-    '<',
-    '&lt;'
-  )
-  .replaceAll(
-    '>',
-    '&gt;'
-  )
-  .replaceAll(
-    '"',
-    '&quot;'
-  )
-  .replaceAll(
-    "'",
-    '&#039;'
-  );
-
-}
-
-
-function escapeJs(value) {
-
-  return String(
-    value ?? ''
-  )
-  .replaceAll(
-    '\\',
-    '\\\\'
-  )
-  .replaceAll(
-    "'",
-    "\\'"
-  )
-  .replaceAll(
-    '\n',
-    '\\n'
-  )
-  .replaceAll(
-    '\r',
-    '\\r'
-  );
-
-}
-
-
-function formatDate(value) {
-
-  if (!value) {
-    return '-';
-  }
-
-  try {
-
-    return new Date(
-      value
-    ).toLocaleString(
-      'en-IN'
+      }
     );
 
-  } catch {
-
-    return value;
-
-  }
-
-}
-
-</script>
+  </script>
 
 </body>
 </html>
