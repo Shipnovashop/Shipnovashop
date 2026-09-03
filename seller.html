@@ -49,6 +49,11 @@
       font-size: 14px;
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .btn-primary {
       background: #2563eb;
       color: white;
@@ -134,13 +139,18 @@
     }
 
     input,
-    textarea {
+    textarea,
+    select {
       width: 100%;
       padding: 11px;
       border: 1px solid #d1d5db;
       border-radius: 7px;
       font-size: 14px;
       background: white;
+    }
+
+    select {
+      cursor: pointer;
     }
 
     textarea {
@@ -249,6 +259,17 @@
       margin-bottom: 6px;
     }
 
+    .product-category {
+      display: inline-block;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
     .product-price {
       font-size: 18px;
       font-weight: bold;
@@ -259,6 +280,13 @@
       font-size: 13px;
       color: #6b7280;
       margin-bottom: 10px;
+    }
+
+    .product-description {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 12px;
+      line-height: 1.4;
     }
 
     .message {
@@ -465,6 +493,8 @@
 
       <form id="productForm">
 
+        <!-- PRODUCT NAME -->
+
         <div class="form-group">
 
           <label>
@@ -480,6 +510,98 @@
 
         </div>
 
+
+        <!-- CATEGORY -->
+
+        <div class="form-group">
+
+          <label>
+            Product Category *
+          </label>
+
+          <select
+            id="productCategory"
+            required
+          >
+
+            <option value="">
+              -- Select Category --
+            </option>
+
+            <option value="Electronics">
+              Electronics
+            </option>
+
+            <option value="Mobile & Accessories">
+              Mobile & Accessories
+            </option>
+
+            <option value="Fashion">
+              Fashion
+            </option>
+
+            <option value="Men">
+              Men
+            </option>
+
+            <option value="Women">
+              Women
+            </option>
+
+            <option value="Kids">
+              Kids
+            </option>
+
+            <option value="Home & Kitchen">
+              Home & Kitchen
+            </option>
+
+            <option value="Beauty & Personal Care">
+              Beauty & Personal Care
+            </option>
+
+            <option value="Grocery">
+              Grocery
+            </option>
+
+            <option value="Books">
+              Books
+            </option>
+
+            <option value="Sports & Fitness">
+              Sports & Fitness
+            </option>
+
+            <option value="Toys & Games">
+              Toys & Games
+            </option>
+
+            <option value="Automotive">
+              Automotive
+            </option>
+
+            <option value="Furniture">
+              Furniture
+            </option>
+
+            <option value="Jewellery">
+              Jewellery
+            </option>
+
+            <option value="Shoes">
+              Shoes
+            </option>
+
+            <option value="Other">
+              Other
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- PRICE -->
 
         <div class="form-group">
 
@@ -499,6 +621,8 @@
         </div>
 
 
+        <!-- STOCK -->
+
         <div class="form-group">
 
           <label>
@@ -509,6 +633,7 @@
             type="number"
             id="productStock"
             min="0"
+            step="1"
             placeholder="Enter stock quantity"
             required
           >
@@ -599,6 +724,8 @@
         </div>
 
 
+        <!-- ACTIONS -->
+
         <div class="form-actions">
 
           <button
@@ -679,9 +806,7 @@ const API =
 const TOKEN_KEY = "shipnova_token";
 const USER_KEY = "shipnova_user";
 
-
 let selectedImageData = "";
-
 
 
 /* =========================
@@ -711,6 +836,7 @@ function getToken() {
   return localStorage.getItem(
     TOKEN_KEY
   );
+
 }
 
 
@@ -727,6 +853,7 @@ function getUser() {
     return {};
 
   }
+
 }
 
 
@@ -780,7 +907,6 @@ async function api(
 }
 
 
-
 /* =========================
    SHOW MESSAGE
 ========================= */
@@ -804,7 +930,6 @@ function showMessage(
     "block";
 
 }
-
 
 
 /* =========================
@@ -853,7 +978,6 @@ function loadSellerInfo() {
 }
 
 
-
 /* =========================
    IMAGE FILE SELECT
 ========================= */
@@ -888,7 +1012,6 @@ document
   );
 
 
-
 /* =========================
    COMPRESS IMAGE
 ========================= */
@@ -916,7 +1039,6 @@ function compressImage(file) {
           let height =
             img.height;
 
-
           if (
             width > maxWidth ||
             height > maxHeight
@@ -940,7 +1062,6 @@ function compressImage(file) {
 
           }
 
-
           const canvas =
             document.createElement(
               "canvas"
@@ -951,7 +1072,6 @@ function compressImage(file) {
 
           canvas.height =
             height;
-
 
           const ctx =
             canvas.getContext(
@@ -966,24 +1086,15 @@ function compressImage(file) {
             height
           );
 
-
-          /*
-            JPEG quality 0.75
-            keeps image small enough
-            for Render API.
-          */
-
           selectedImageData =
             canvas.toDataURL(
               "image/jpeg",
               0.75
             );
 
-
           document.getElementById(
             "imageURL"
           ).value = "";
-
 
           showPreview(
             selectedImageData
@@ -996,11 +1107,9 @@ function compressImage(file) {
 
     };
 
-
   reader.readAsDataURL(file);
 
 }
-
 
 
 /* =========================
@@ -1018,8 +1127,17 @@ document
 
       if (!url) {
 
-        return;
+        selectedImageData = "";
 
+        document.getElementById(
+          "previewBox"
+        ).innerHTML = "";
+
+        document.getElementById(
+          "removeImageBtn"
+        ).style.display = "none";
+
+        return;
       }
 
       selectedImageData =
@@ -1029,7 +1147,6 @@ document
 
     }
   );
-
 
 
 function useImageURL() {
@@ -1047,7 +1164,6 @@ function useImageURL() {
   });
 
 }
-
 
 
 function showPreview(src) {
@@ -1073,7 +1189,6 @@ function showPreview(src) {
 }
 
 
-
 function imagePreviewError(img) {
 
   img.style.display =
@@ -1092,7 +1207,6 @@ function imagePreviewError(img) {
   );
 
 }
-
 
 
 /* =========================
@@ -1123,7 +1237,6 @@ function removeImage() {
 }
 
 
-
 function resetImage() {
 
   setTimeout(
@@ -1132,7 +1245,6 @@ function resetImage() {
   );
 
 }
-
 
 
 /* =========================
@@ -1147,11 +1259,19 @@ document
 
       e.preventDefault();
 
-
       const name =
         document
           .getElementById(
             "productName"
+          )
+          .value
+          .trim();
+
+
+      const category =
+        document
+          .getElementById(
+            "productCategory"
           )
           .value
           .trim();
@@ -1191,11 +1311,6 @@ document
           .trim();
 
 
-      /*
-        If URL exists, use URL.
-        Otherwise use uploaded/compressed image.
-      */
-
       const image =
         url ||
         selectedImageData ||
@@ -1206,6 +1321,16 @@ document
 
         alert(
           "Please enter product name."
+        );
+
+        return;
+      }
+
+
+      if (!category) {
+
+        alert(
+          "Please select product category."
         );
 
         return;
@@ -1261,6 +1386,8 @@ document
 
               name,
 
+              category,
+
               price,
 
               stock,
@@ -1315,7 +1442,6 @@ document
   );
 
 
-
 /* =========================
    LOAD PRODUCTS
 ========================= */
@@ -1334,12 +1460,6 @@ async function loadProducts() {
 
 
   try {
-
-    /*
-      Public endpoint is used here.
-      Seller's own active products
-      are filtered below.
-    */
 
     const data =
       await api(
@@ -1405,6 +1525,16 @@ async function loadProducts() {
             product.image || "";
 
 
+          const category =
+            product.category ||
+            "Other";
+
+
+          const description =
+            product.description ||
+            "";
+
+
           const imageHTML =
             image
               ? `
@@ -1443,6 +1573,10 @@ async function loadProducts() {
                   )}
                 </div>
 
+                <div class="product-category">
+                  ${escapeHTML(category)}
+                </div>
+
                 <div class="product-price">
                   ₹${Number(
                     product.price || 0
@@ -1457,6 +1591,16 @@ async function loadProducts() {
                     product.stock ?? 0
                   )}
                 </div>
+
+                ${
+                  description
+                    ? `
+                      <div class="product-description">
+                        ${escapeHTML(description)}
+                      </div>
+                    `
+                    : ""
+                }
 
                 <button
                   class="btn-danger"
@@ -1490,7 +1634,6 @@ async function loadProducts() {
   }
 
 }
-
 
 
 /* =========================
@@ -1542,7 +1685,6 @@ async function deleteProduct(id) {
 }
 
 
-
 /* =========================
    LOGOUT
 ========================= */
@@ -1561,7 +1703,6 @@ function logout() {
     "seller-login.html";
 
 }
-
 
 
 /* =========================
