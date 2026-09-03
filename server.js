@@ -1,8 +1,3 @@
-// ============================================================
-// SHIPNOVASHOP BACKEND API
-// Vercel Frontend + Render Backend + Render PostgreSQL
-// ============================================================
-
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -13,24 +8,22 @@ const { Pool } = pg;
 
 const app = express();
 
-
-// ============================================================
-// CONFIG
-// ============================================================
-
 const PORT = process.env.PORT || 10000;
 
+const DATABASE_URL = process.env.DATABASE_URL;
 const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  "change-this-secret-in-render";
+  process.env.JWT_SECRET || "change-this-secret-in-render";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL;
+const ADMIN_EMAIL =
+  process.env.ADMIN_EMAIL || "admin@shipnova.local";
+
+const ADMIN_PASSWORD =
+  process.env.ADMIN_PASSWORD || "";
 
 
-// ============================================================
-// MIDDLEWARE
-// ============================================================
+/* =========================================================
+   MIDDLEWARE
+========================================================= */
 
 app.use(
   cors({
@@ -39,48 +32,39 @@ app.use(
   })
 );
 
-// Product images can be sent as compressed base64 data URLs.
-// 5 MB gives enough room for compressed mobile images.
 app.use(
   express.json({
-    limit: "5mb"
+    limit: "10mb"
   })
 );
 
 app.use(
   express.urlencoded({
     extended: true,
-    limit: "5mb"
+    limit: "10mb"
   })
 );
 
 
-// ============================================================
-// DATABASE
-// ============================================================
+/* =========================================================
+   DATABASE
+========================================================= */
 
 if (!DATABASE_URL) {
-  console.warn(
-    "WARNING: DATABASE_URL is not set."
-  );
+  console.error("DATABASE_URL is not set.");
 }
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
 
-  ssl: DATABASE_URL &&
-    !DATABASE_URL.includes("localhost")
-    ? {
-        rejectUnauthorized: false
-      }
-    : false
-});
-
-pool.on("error", (err) => {
-  console.error(
-    "Unexpected PostgreSQL pool error:",
-    err
-  );
+  ssl:
+    DATABASE_URL &&
+    !DATABASE_URL.includes("localhost") &&
+    !DATABASE_URL.includes("127.0.0.1")
+      ? {
+          rejectUnauthorized: false
+        }
+      : false
 });
 
 
@@ -89,9 +73,9 @@ async function q(text, params = []) {
 }
 
 
-// ============================================================
-// JWT
-// ============================================================
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function tokenFor(user) {
   return jwt.sign(
@@ -108,9 +92,35 @@ function tokenFor(user) {
 }
 
 
-// ============================================================
-// AUTH MIDDLEWARE
-// ============================================================
+function formatUser(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    created_at: row.created_at,
+
+    businessName:
+      row.business_name || "",
+
+    gstNumber:
+      row.gst_number || "",
+
+    mobile:
+      row.mobile || "",
+
+    address:
+      row.address || "",
+
+    active:
+      row.active !== false
+  };
+}
+
 
 function auth(req, res, next) {
   try {
@@ -127,16 +137,13 @@ function auth(req, res, next) {
       header.substring(7);
 
     const decoded =
-      jwt.verify(
-        token,
-        JWT_SECRET
-      );
+      jwt.verify(token, JWT_SECRET);
 
     req.user = decoded;
 
     next();
 
-  } catch (err) {
+  } catch (error) {
     return res.status(401).json({
       error: "Invalid or expired token"
     });
@@ -144,17 +151,15 @@ function auth(req, res, next) {
 }
 
 
-// ============================================================
-// ROLE MIDDLEWARE
-// ============================================================
-
-function requireRole(...roles) {
+function role(...roles) {
   return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: "Authentication required"
+      });
+    }
 
-    if (
-      !req.user ||
-      !roles.includes(req.user.role)
-    ) {
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         error: "Access denied"
       });
@@ -165,129 +170,55 @@ function requireRole(...roles) {
 }
 
 
-// ============================================================
-// HELPERS
-// ============================================================
+function cleanText(value, fallback = "") {
+  return String(value ?? fallback).trim();
+}
 
-function formatUser(row) {
 
-  if (!row) {
+function numberValue(value, fallback = 0) {
+  const n = Number(value);
+
+  return Number.isFinite(n)
+    ? n
+    : fallback;
+}
+
+
+function positiveInteger(value) {
+  const n = Number(value);
+
+  if (!Number.isInteger(n) || n < 0) {
     return null;
   }
 
-  return {
-    id: row.id,
-    name: row.name,
-    email: row.email,
-    role: row.role,
-    created_at: row.created_at,
-
-    business_name:
-      row.business_name || null,
-
-    gst_number:
-      row.gst_number || null,
-
-    mobile:
-      row.mobile || null,
-
-    address:
-      row.address || null,
-
-    active:
-      row.active !== false
-  };
+  return n;
 }
 
 
-function cleanEmail(email) {
-  return String(email || "")
-    .trim()
-    .toLowerCase();
-}
-
-
-function normalizeCategory(category) {
-  const value =
-    String(category || "")
-      .trim();
-
-  return value || "Other";
-}
-
-
-// ============================================================
-// HEALTH
-// ============================================================
-
-app.get("/api/health", async (req, res) => {
-
-  try {
-
-    await q("SELECT 1");
-
-    res.json({
-      ok: true,
-      database: "connected"
-    });
-
-  } catch (err) {
-
-    console.error(
-      "Health check error:",
-      err
-    );
-
-    res.status(500).json({
-      ok: false,
-      database: "disconnected"
-    });
-  }
-});
-
-
-// ============================================================
-// DATABASE INITIALIZATION
-// ============================================================
+/* =========================================================
+   DATABASE INITIALIZATION
+========================================================= */
 
 async function init() {
 
-  console.log(
-    "Initializing database..."
-  );
+  console.log("Initializing database...");
 
 
-  // ----------------------------------------------------------
-  // USERS
-  // ----------------------------------------------------------
+  /* USERS */
 
   await q(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
-
       name TEXT NOT NULL,
-
-      email TEXT UNIQUE NOT NULL,
-
+      email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-
-      role TEXT NOT NULL
-        CHECK (
-          role IN (
-            'customer',
-            'seller',
-            'admin'
-          )
-        ),
-
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      role TEXT NOT NULL DEFAULT 'customer'
+        CHECK (role IN ('customer','seller','admin')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
       business_name TEXT,
-
       gst_number TEXT,
-
       mobile TEXT,
-
       address TEXT,
 
       active BOOLEAN NOT NULL DEFAULT TRUE
@@ -295,7 +226,8 @@ async function init() {
   `);
 
 
-  // Existing databases migration
+  /* Existing database migration */
+
   await q(`
     ALTER TABLE users
     ADD COLUMN IF NOT EXISTS business_name TEXT
@@ -322,7 +254,8 @@ async function init() {
   `);
 
 
-  // Unique GST where GST exists
+  /* GST unique index */
+
   await q(`
     CREATE UNIQUE INDEX IF NOT EXISTS
     users_gst_number_unique
@@ -332,42 +265,75 @@ async function init() {
   `);
 
 
-  // ----------------------------------------------------------
-  // PRODUCTS
-  // ----------------------------------------------------------
+  /* PRODUCTS */
 
   await q(`
     CREATE TABLE IF NOT EXISTS products (
       id SERIAL PRIMARY KEY,
 
-      seller_id INTEGER
-        NOT NULL
+      seller_id INTEGER NOT NULL
         REFERENCES users(id)
         ON DELETE CASCADE,
 
       name TEXT NOT NULL,
 
-      description TEXT DEFAULT '',
+      category TEXT NOT NULL DEFAULT 'Other',
+
+      description TEXT,
 
       price NUMERIC(12,2) NOT NULL DEFAULT 0,
 
       stock INTEGER NOT NULL DEFAULT 0,
 
-      image TEXT DEFAULT '',
+      image TEXT,
 
       active BOOLEAN NOT NULL DEFAULT TRUE,
 
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
 
 
-  // IMPORTANT:
-  // Adds category to old existing databases.
+  /* Product migrations */
+
   await q(`
     ALTER TABLE products
     ADD COLUMN IF NOT EXISTS category TEXT
     NOT NULL DEFAULT 'Other'
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS description TEXT
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS price NUMERIC(12,2)
+    NOT NULL DEFAULT 0
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS stock INTEGER
+    NOT NULL DEFAULT 0
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS image TEXT
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS active BOOLEAN
+    NOT NULL DEFAULT TRUE
+  `);
+
+  await q(`
+    ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ
+    NOT NULL DEFAULT NOW()
   `);
 
 
@@ -377,7 +343,6 @@ async function init() {
     ON products(seller_id)
   `);
 
-
   await q(`
     CREATE INDEX IF NOT EXISTS
     products_category_idx
@@ -385,20 +350,16 @@ async function init() {
   `);
 
 
-  // ----------------------------------------------------------
-  // ORDERS
-  // ----------------------------------------------------------
+  /* ORDERS */
 
   await q(`
     CREATE TABLE IF NOT EXISTS orders (
       id SERIAL PRIMARY KEY,
 
-      customer_id INTEGER
-        NOT NULL
+      customer_id INTEGER NOT NULL
         REFERENCES users(id),
 
-      total NUMERIC(12,2)
-        NOT NULL DEFAULT 0,
+      total NUMERIC(12,2) NOT NULL DEFAULT 0,
 
       status TEXT NOT NULL DEFAULT 'pending'
         CHECK (
@@ -411,22 +372,18 @@ async function init() {
           )
         ),
 
-      created_at TIMESTAMP
-        DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
 
 
-  // ----------------------------------------------------------
-  // ORDER ITEMS
-  // ----------------------------------------------------------
+  /* ORDER ITEMS */
 
   await q(`
     CREATE TABLE IF NOT EXISTS order_items (
       id SERIAL PRIMARY KEY,
 
-      order_id INTEGER
-        NOT NULL
+      order_id INTEGER NOT NULL
         REFERENCES orders(id)
         ON DELETE CASCADE,
 
@@ -440,75 +397,59 @@ async function init() {
 
       product_name TEXT NOT NULL,
 
-      price NUMERIC(12,2)
-        NOT NULL DEFAULT 0,
+      price NUMERIC(12,2) NOT NULL,
 
-      quantity INTEGER
-        NOT NULL DEFAULT 1,
+      quantity INTEGER NOT NULL,
 
-      subtotal NUMERIC(12,2)
-        NOT NULL DEFAULT 0
+      subtotal NUMERIC(12,2) NOT NULL
     )
   `);
 
 
-  // ----------------------------------------------------------
-  // ADMIN SEED
-  // ----------------------------------------------------------
+  /* ADMIN ACCOUNT */
 
-  const adminEmail =
-    cleanEmail(
-      process.env.ADMIN_EMAIL ||
-      "admin@shipnova.local"
-    );
-
-  const adminPassword =
-    process.env.ADMIN_PASSWORD;
-
-
-  if (adminPassword) {
-
-    const existingAdmin =
-      await q(
-        `
-        SELECT *
-        FROM users
-        WHERE email=$1
-        LIMIT 1
-        `,
-        [adminEmail]
-      );
-
+  if (ADMIN_PASSWORD) {
 
     const hashedPassword =
       await bcrypt.hash(
-        adminPassword,
-        12
+        ADMIN_PASSWORD,
+        10
+      );
+
+    const existing =
+      await q(
+        `
+        SELECT id
+        FROM users
+        WHERE LOWER(email) = LOWER($1)
+          AND role = 'admin'
+        LIMIT 1
+        `,
+        [ADMIN_EMAIL]
       );
 
 
-    if (existingAdmin.rows.length) {
+    if (existing.rows.length) {
 
       await q(
         `
         UPDATE users
         SET
-          name=$1,
-          password=$2,
-          role='admin',
-          active=TRUE
-        WHERE email=$3
+          name = $1,
+          password = $2,
+          active = TRUE
+        WHERE id = $3
         `,
         [
-          "ShipNova Admin",
+          "ShipNova Administrator",
           hashedPassword,
-          adminEmail
+          existing.rows[0].id
         ]
       );
 
       console.log(
         "Admin account updated:",
-        adminEmail
+        ADMIN_EMAIL
       );
 
     } else {
@@ -516,34 +457,33 @@ async function init() {
       await q(
         `
         INSERT INTO users
-          (
-            name,
-            email,
-            password,
-            role,
-            active
-          )
+        (
+          name,
+          email,
+          password,
+          role,
+          active
+        )
         VALUES
-          ($1,$2,$3,'admin',TRUE)
+        ($1,$2,$3,'admin',TRUE)
         `,
         [
-          "ShipNova Admin",
-          adminEmail,
+          "ShipNova Administrator",
+          ADMIN_EMAIL,
           hashedPassword
         ]
       );
 
       console.log(
         "Admin account created:",
-        adminEmail
+        ADMIN_EMAIL
       );
     }
 
   } else {
 
     console.warn(
-      "ADMIN_PASSWORD is not set. " +
-      "Admin account was not created/updated."
+      "ADMIN_PASSWORD is not set. Admin account was not created/updated."
     );
   }
 
@@ -554,9 +494,42 @@ async function init() {
 }
 
 
-// ============================================================
-// AUTH - REGISTER
-// ============================================================
+/* =========================================================
+   HEALTH
+========================================================= */
+
+app.get(
+  "/api/health",
+  async (req, res) => {
+
+    try {
+
+      await q("SELECT 1");
+
+      res.json({
+        ok: true,
+        database: "connected"
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Health check failed:",
+        error
+      );
+
+      res.status(500).json({
+        ok: false,
+        database: "disconnected"
+      });
+    }
+  }
+);
+
+
+/* =========================================================
+   AUTH - REGISTER
+========================================================= */
 
 app.post(
   "/api/auth/register",
@@ -568,114 +541,96 @@ app.post(
         req.body || {};
 
       const name =
-        String(body.name || "")
-          .trim();
+        cleanText(body.name);
 
       const email =
-        cleanEmail(body.email);
+        cleanText(body.email).toLowerCase();
 
       const password =
         String(body.password || "");
 
-      const role =
-        String(body.role || "customer")
-          .trim()
-          .toLowerCase();
+      const roleName =
+        cleanText(
+          body.role,
+          "customer"
+        ).toLowerCase();
 
 
       if (!name) {
-
         return res.status(400).json({
           error: "Name is required"
         });
-
       }
 
 
       if (!email) {
-
         return res.status(400).json({
           error: "Email is required"
         });
-
       }
 
 
-      if (
-        password.length < 6
-      ) {
-
+      if (!password || password.length < 6) {
         return res.status(400).json({
           error:
             "Password must be at least 6 characters"
         });
-
       }
 
 
       if (
-        !["customer", "seller"]
-          .includes(role)
+        !["customer", "seller"].includes(
+          roleName
+        )
       ) {
-
         return res.status(400).json({
           error: "Invalid registration role"
         });
-
       }
 
 
-      // Seller fields
-      const businessName =
-        String(
-          body.businessName ||
-          body.business_name ||
-          ""
-        ).trim();
+      /* Seller fields */
 
-      const gstNumber =
-        String(
-          body.gstNumber ||
-          body.gst_number ||
-          ""
-        )
-        .trim()
-        .toUpperCase();
-
-      const mobile =
-        String(
-          body.mobile || ""
-        ).trim();
-
-      const address =
-        String(
-          body.address || ""
-        ).trim();
+      let businessName = null;
+      let gstNumber = null;
+      let mobile = null;
+      let address = null;
 
 
-      // --------------------------------------------------------
-      // SELLER VALIDATION
-      // --------------------------------------------------------
+      if (roleName === "seller") {
 
-      if (role === "seller") {
+        businessName =
+          cleanText(
+            body.businessName ||
+            body.business_name
+          );
+
+        gstNumber =
+          cleanText(
+            body.gstNumber ||
+            body.gst_number
+          ).toUpperCase();
+
+        mobile =
+          cleanText(body.mobile);
+
+        address =
+          cleanText(body.address);
+
 
         if (!businessName) {
-
           return res.status(400).json({
             error:
               "Business name is required"
           });
-
         }
 
 
         if (!gstNumber) {
-
           return res.status(400).json({
             error:
               "GST number is required"
           });
-
         }
 
 
@@ -683,93 +638,86 @@ app.post(
           /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
 
-        if (
-          !gstRegex.test(gstNumber)
-        ) {
-
+        if (!gstRegex.test(gstNumber)) {
           return res.status(400).json({
             error:
               "Invalid GSTIN format"
           });
-
         }
 
 
-        if (mobile) {
+        if (!mobile) {
+          return res.status(400).json({
+            error:
+              "Mobile number is required"
+          });
+        }
 
-          const mobileRegex =
-            /^[6-9][0-9]{9}$/;
 
-          if (
-            !mobileRegex.test(mobile)
-          ) {
+        const mobileRegex =
+          /^[6-9][0-9]{9}$/;
 
-            return res.status(400).json({
-              error:
-                "Invalid mobile number"
-            });
 
-          }
+        if (!mobileRegex.test(mobile)) {
+          return res.status(400).json({
+            error:
+              "Invalid mobile number"
+          });
+        }
+
+
+        if (!address) {
+          return res.status(400).json({
+            error:
+              "Address is required"
+          });
         }
       }
 
 
-      // --------------------------------------------------------
-      // EXISTING EMAIL
-      // --------------------------------------------------------
+      /* Existing email */
 
-      const existing =
+      const existingEmail =
         await q(
           `
           SELECT id
           FROM users
-          WHERE email=$1
+          WHERE LOWER(email) = LOWER($1)
           LIMIT 1
           `,
           [email]
         );
 
 
-      if (existing.rows.length) {
-
+      if (existingEmail.rows.length) {
         return res.status(409).json({
           error:
             "Email already registered"
         });
-
       }
 
 
-      // --------------------------------------------------------
-      // EXISTING GST
-      // --------------------------------------------------------
+      /* Existing GST */
 
-      if (
-        role === "seller" &&
-        gstNumber
-      ) {
+      if (gstNumber) {
 
         const existingGST =
           await q(
             `
             SELECT id
             FROM users
-            WHERE gst_number=$1
+            WHERE gst_number = $1
             LIMIT 1
             `,
             [gstNumber]
           );
 
 
-        if (
-          existingGST.rows.length
-        ) {
-
+        if (existingGST.rows.length) {
           return res.status(409).json({
             error:
               "GST number already registered"
           });
-
         }
       }
 
@@ -777,7 +725,7 @@ app.post(
       const hashedPassword =
         await bcrypt.hash(
           password,
-          12
+          10
         );
 
 
@@ -785,38 +733,40 @@ app.post(
         await q(
           `
           INSERT INTO users
-            (
-              name,
-              email,
-              password,
-              role,
-              business_name,
-              gst_number,
-              mobile,
-              address,
-              active
-            )
+          (
+            name,
+            email,
+            password,
+            role,
+            business_name,
+            gst_number,
+            mobile,
+            address,
+            active
+          )
           VALUES
-            ($1,$2,$3,$4,$5,$6,$7,$8,TRUE)
-          RETURNING *
+          ($1,$2,$3,$4,$5,$6,$7,$8,TRUE)
+          RETURNING
+            id,
+            name,
+            email,
+            role,
+            created_at,
+            business_name,
+            gst_number,
+            mobile,
+            address,
+            active
           `,
           [
             name,
             email,
             hashedPassword,
-            role,
-            role === "seller"
-              ? businessName
-              : null,
-            role === "seller"
-              ? gstNumber
-              : null,
-            role === "seller"
-              ? mobile
-              : null,
-            role === "seller"
-              ? address
-              : null
+            roleName,
+            businessName,
+            gstNumber,
+            mobile,
+            address
           ]
         );
 
@@ -834,31 +784,19 @@ app.post(
 
 
       res.status(201).json({
-        ok: true,
+        message:
+          "Registration successful",
         token,
         user
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Register error:",
-        err
+        error
       );
-
-
-      if (
-        err.code === "23505"
-      ) {
-
-        return res.status(409).json({
-          error:
-            "Email or GST number already registered"
-        });
-
-      }
-
 
       res.status(500).json({
         error:
@@ -869,9 +807,9 @@ app.post(
 );
 
 
-// ============================================================
-// AUTH - LOGIN
-// ============================================================
+/* =========================================================
+   AUTH - LOGIN
+========================================================= */
 
 app.post(
   "/api/auth/login",
@@ -880,9 +818,9 @@ app.post(
     try {
 
       const email =
-        cleanEmail(
+        cleanText(
           req.body?.email
-        );
+        ).toLowerCase();
 
       const password =
         String(
@@ -891,12 +829,10 @@ app.post(
 
 
       if (!email || !password) {
-
         return res.status(400).json({
           error:
             "Email and password are required"
         });
-
       }
 
 
@@ -905,7 +841,7 @@ app.post(
           `
           SELECT *
           FROM users
-          WHERE email=$1
+          WHERE LOWER(email) = LOWER($1)
           LIMIT 1
           `,
           [email]
@@ -913,12 +849,10 @@ app.post(
 
 
       if (!result.rows.length) {
-
         return res.status(401).json({
           error:
             "Invalid email or password"
         });
-
       }
 
 
@@ -926,32 +860,26 @@ app.post(
         result.rows[0];
 
 
-      const valid =
+      const passwordOK =
         await bcrypt.compare(
           password,
           userRow.password
         );
 
 
-      if (!valid) {
-
+      if (!passwordOK) {
         return res.status(401).json({
           error:
             "Invalid email or password"
         });
-
       }
 
 
-      if (
-        userRow.active === false
-      ) {
-
+      if (userRow.active === false) {
         return res.status(403).json({
           error:
-            "Your account is inactive"
+            "Your account is inactive. Please contact admin."
         });
-
       }
 
 
@@ -962,18 +890,19 @@ app.post(
 
 
       res.json({
-        ok: true,
+        message:
+          "Login successful",
         token,
         user:
           formatUser(userRow)
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Login error:",
-        err
+        error
       );
 
       res.status(500).json({
@@ -985,9 +914,9 @@ app.post(
 );
 
 
-// ============================================================
-// AUTH - CURRENT USER
-// ============================================================
+/* =========================================================
+   AUTH - CURRENT USER
+========================================================= */
 
 app.get(
   "/api/auth/me",
@@ -999,9 +928,19 @@ app.get(
       const result =
         await q(
           `
-          SELECT *
+          SELECT
+            id,
+            name,
+            email,
+            role,
+            created_at,
+            business_name,
+            gst_number,
+            mobile,
+            address,
+            active
           FROM users
-          WHERE id=$1
+          WHERE id = $1
           LIMIT 1
           `,
           [req.user.id]
@@ -1009,17 +948,14 @@ app.get(
 
 
       if (!result.rows.length) {
-
         return res.status(404).json({
           error:
             "User not found"
         });
-
       }
 
 
       res.json({
-        ok: true,
         user:
           formatUser(
             result.rows[0]
@@ -1027,11 +963,11 @@ app.get(
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Me error:",
-        err
+        error
       );
 
       res.status(500).json({
@@ -1043,9 +979,9 @@ app.get(
 );
 
 
-// ============================================================
-// PRODUCTS - PUBLIC LIST
-// ============================================================
+/* =========================================================
+   PUBLIC PRODUCTS
+========================================================= */
 
 app.get(
   "/api/products",
@@ -1054,19 +990,17 @@ app.get(
     try {
 
       const seller =
-        req.query.seller
-          ? Number(req.query.seller)
-          : null;
+        req.query.seller;
 
       const search =
-        String(
-          req.query.q || ""
-        ).trim();
+        cleanText(
+          req.query.q
+        );
 
       const category =
-        String(
-          req.query.category || ""
-        ).trim();
+        cleanText(
+          req.query.category
+        );
 
 
       let sql = `
@@ -1081,25 +1015,27 @@ app.get(
         FROM products p
 
         JOIN users u
-          ON u.id=p.seller_id
+          ON u.id = p.seller_id
 
         WHERE
-          p.active=TRUE
-          AND u.active=TRUE
+          p.active = TRUE
+
+          AND u.active = TRUE
       `;
 
 
       const params = [];
 
 
-      if (
-        Number.isInteger(seller)
-      ) {
+      if (seller) {
 
-        params.push(seller);
+        params.push(
+          seller
+        );
 
-        sql +=
-          ` AND p.seller_id=$${params.length}`;
+        sql += `
+          AND p.seller_id = $${params.length}
+        `;
       }
 
 
@@ -1120,16 +1056,21 @@ app.get(
 
       if (category) {
 
-        params.push(category);
+        params.push(
+          category
+        );
 
-        sql +=
-          ` AND p.category=$${params.length}`;
+        sql += `
+          AND LOWER(p.category)
+            = LOWER($${params.length})
+        `;
       }
 
 
       sql += `
         ORDER BY
-          p.created_at DESC
+          p.created_at DESC,
+          p.id DESC
       `;
 
 
@@ -1145,49 +1086,31 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "GET /api/products error:",
-        err
+        "Products error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load products"
+          "Unable to load products"
       });
     }
   }
 );
 
 
-// ============================================================
-// PRODUCT - SINGLE
-// ============================================================
+/* =========================================================
+   SINGLE PRODUCT
+========================================================= */
 
 app.get(
   "/api/products/:id",
   async (req, res) => {
 
     try {
-
-      const productId =
-        Number(
-          req.params.id
-        );
-
-
-      if (
-        !Number.isInteger(productId)
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Invalid product ID"
-        });
-
-      }
-
 
       const result =
         await q(
@@ -1198,34 +1121,31 @@ app.get(
             u.name AS seller_name,
 
             u.business_name
-              AS seller_business_name,
-
-            u.mobile
-              AS seller_mobile
+              AS seller_business_name
 
           FROM products p
 
           JOIN users u
-            ON u.id=p.seller_id
+            ON u.id = p.seller_id
 
           WHERE
-            p.id=$1
-            AND p.active=TRUE
-            AND u.active=TRUE
+            p.id = $1
+
+            AND p.active = TRUE
+
+            AND u.active = TRUE
 
           LIMIT 1
           `,
-          [productId]
+          [req.params.id]
         );
 
 
       if (!result.rows.length) {
-
         return res.status(404).json({
           error:
             "Product not found"
         });
-
       }
 
 
@@ -1234,30 +1154,30 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "GET product error:",
-        err
+        "Product detail error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load product"
+          "Unable to load product"
       });
     }
   }
 );
 
 
-// ============================================================
-// PRODUCT - ADD
-// ============================================================
+/* =========================================================
+   ADD PRODUCT
+========================================================= */
 
 app.post(
   "/api/products",
   auth,
-  requireRole("seller", "admin"),
+  role("seller", "admin"),
   async (req, res) => {
 
     try {
@@ -1265,74 +1185,80 @@ app.post(
       const body =
         req.body || {};
 
-
       const name =
-        String(
-          body.name || ""
-        ).trim();
-
+        cleanText(
+          body.name
+        );
 
       const category =
-        normalizeCategory(
-          body.category
+        cleanText(
+          body.category,
+          "Other"
+        ) || "Other";
+
+      const description =
+        cleanText(
+          body.description
+        );
+
+      const price =
+        numberValue(
+          body.price,
+          NaN
+        );
+
+      const stock =
+        positiveInteger(
+          body.stock
+        );
+
+      const image =
+        cleanText(
+          body.image
         );
 
 
-      const description =
-        String(
-          body.description || ""
-        ).trim();
-
-
-      const image =
-        String(
-          body.image || ""
-        ).trim();
-
-
-      const price =
-        Number(body.price);
-
-
-      const stock =
-        Number(body.stock);
-
-
       if (!name) {
-
         return res.status(400).json({
           error:
             "Product name is required"
         });
-
       }
 
 
       if (!Number.isFinite(price) || price < 0) {
-
         return res.status(400).json({
           error:
-            "Invalid price"
+            "Invalid product price"
         });
-
       }
 
 
-      if (!Number.isInteger(stock) || stock < 0) {
-
+      if (stock === null) {
         return res.status(400).json({
           error:
-            "Invalid stock"
+            "Invalid stock quantity"
         });
-
       }
 
 
-      // --------------------------------------------------------
-      // SELLER ACTIVE CHECK
-      // --------------------------------------------------------
+      let sellerId =
+        req.user.id;
 
-      const sellerCheck =
+
+      /* Admin can optionally supply seller_id */
+
+      if (
+        req.user.role === "admin" &&
+        body.seller_id
+      ) {
+
+        sellerId =
+          Number(body.seller_id);
+      }
+
+
+      const sellerResult =
         await q(
           `
           SELECT
@@ -1340,33 +1266,41 @@ app.post(
             role,
             active
           FROM users
-          WHERE id=$1
+          WHERE id = $1
           LIMIT 1
           `,
-          [req.user.id]
+          [sellerId]
         );
 
 
-      if (!sellerCheck.rows.length) {
-
-        return res.status(403).json({
+      if (!sellerResult.rows.length) {
+        return res.status(400).json({
           error:
-            "Seller account not found"
+            "Seller not found"
         });
-
       }
 
 
-      if (
-        req.user.role === "seller" &&
-        sellerCheck.rows[0].active === false
-      ) {
+      const seller =
+        sellerResult.rows[0];
 
+
+      if (
+        seller.role !== "seller" &&
+        seller.role !== "admin"
+      ) {
+        return res.status(400).json({
+          error:
+            "Invalid seller"
+        });
+      }
+
+
+      if (seller.active === false) {
         return res.status(403).json({
           error:
             "Seller account is inactive"
         });
-
       }
 
 
@@ -1374,22 +1308,23 @@ app.post(
         await q(
           `
           INSERT INTO products
-            (
-              seller_id,
-              name,
-              category,
-              description,
-              price,
-              stock,
-              image,
-              active
-            )
+          (
+            seller_id,
+            name,
+            category,
+            description,
+            price,
+            stock,
+            image,
+            active
+          )
           VALUES
-            ($1,$2,$3,$4,$5,$6,$7,TRUE)
+          ($1,$2,$3,$4,$5,$6,$7,TRUE)
+
           RETURNING *
           `,
           [
-            req.user.id,
+            sellerId,
             name,
             category,
             description,
@@ -1401,36 +1336,37 @@ app.post(
 
 
       res.status(201).json({
-        ok: true,
+        message:
+          "Product added successfully",
         product:
           result.rows[0]
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "POST /api/products error:",
-        err
+        "Add product error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to create product"
+          "Unable to add product"
       });
     }
   }
 );
 
 
-// ============================================================
-// PRODUCT - UPDATE
-// ============================================================
+/* =========================================================
+   UPDATE PRODUCT
+========================================================= */
 
 app.put(
   "/api/products/:id",
   auth,
-  requireRole("seller", "admin"),
+  role("seller", "admin"),
   async (req, res) => {
 
     try {
@@ -1441,15 +1377,11 @@ app.put(
         );
 
 
-      if (
-        !Number.isInteger(productId)
-      ) {
-
+      if (!Number.isInteger(productId)) {
         return res.status(400).json({
           error:
             "Invalid product ID"
         });
-
       }
 
 
@@ -1458,7 +1390,7 @@ app.put(
           `
           SELECT *
           FROM products
-          WHERE id=$1
+          WHERE id = $1
           LIMIT 1
           `,
           [productId]
@@ -1466,12 +1398,10 @@ app.put(
 
 
       if (!existing.rows.length) {
-
         return res.status(404).json({
           error:
             "Product not found"
         });
-
       }
 
 
@@ -1481,15 +1411,13 @@ app.put(
 
       if (
         req.user.role === "seller" &&
-        Number(product.seller_id) !==
-          Number(req.user.id)
+        String(product.seller_id) !==
+          String(req.user.id)
       ) {
-
         return res.status(403).json({
           error:
-            "You can edit only your own products"
+            "You can only edit your own products"
         });
-
       }
 
 
@@ -1498,70 +1426,79 @@ app.put(
 
 
       const name =
-        String(
-          body.name || ""
-        ).trim();
-
-
-      const category =
-        normalizeCategory(
-          body.category
+        cleanText(
+          body.name,
+          product.name
         );
 
 
+      const category =
+        cleanText(
+          body.category,
+          product.category || "Other"
+        ) || "Other";
+
+
       const description =
-        String(
-          body.description || ""
-        ).trim();
-
-
-      const image =
-        String(
-          body.image || ""
-        ).trim();
+        body.description !== undefined
+          ? cleanText(body.description)
+          : product.description || "";
 
 
       const price =
-        Number(body.price);
+        body.price !== undefined
+          ? numberValue(body.price, NaN)
+          : Number(product.price);
 
 
       const stock =
-        Number(body.stock);
+        body.stock !== undefined
+          ? positiveInteger(body.stock)
+          : Number(product.stock);
 
 
-      const active =
-        body.active === undefined
-          ? product.active !== false
-          : Boolean(body.active);
+      const image =
+        body.image !== undefined
+          ? cleanText(body.image)
+          : product.image || "";
+
+
+      let active =
+        product.active;
+
+
+      if (
+        body.active !== undefined
+      ) {
+
+        active =
+          Boolean(
+            body.active
+          );
+      }
 
 
       if (!name) {
-
         return res.status(400).json({
           error:
             "Product name is required"
         });
-
       }
 
 
       if (!Number.isFinite(price) || price < 0) {
-
         return res.status(400).json({
           error:
-            "Invalid price"
+            "Invalid product price"
         });
-
       }
 
 
-      if (!Number.isInteger(stock) || stock < 0) {
-
+      if (stock === null) {
         return res.status(400).json({
           error:
-            "Invalid stock"
+            "Invalid stock quantity"
         });
-
       }
 
 
@@ -1571,15 +1508,15 @@ app.put(
           UPDATE products
 
           SET
-            name=$1,
-            category=$2,
-            description=$3,
-            price=$4,
-            stock=$5,
-            image=$6,
-            active=$7
+            name = $1,
+            category = $2,
+            description = $3,
+            price = $4,
+            stock = $5,
+            image = $6,
+            active = $7
 
-          WHERE id=$8
+          WHERE id = $8
 
           RETURNING *
           `,
@@ -1597,36 +1534,37 @@ app.put(
 
 
       res.json({
-        ok: true,
+        message:
+          "Product updated successfully",
         product:
           result.rows[0]
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "PUT /api/products/:id error:",
-        err
+        "Update product error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to update product"
+          "Unable to update product"
       });
     }
   }
 );
 
 
-// ============================================================
-// PRODUCT - DELETE
-// ============================================================
+/* =========================================================
+   DELETE PRODUCT
+========================================================= */
 
 app.delete(
   "/api/products/:id",
   auth,
-  requireRole("seller", "admin"),
+  role("seller", "admin"),
   async (req, res) => {
 
     try {
@@ -1637,24 +1575,12 @@ app.delete(
         );
 
 
-      if (
-        !Number.isInteger(productId)
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Invalid product ID"
-        });
-
-      }
-
-
       const existing =
         await q(
           `
           SELECT *
           FROM products
-          WHERE id=$1
+          WHERE id = $1
           LIMIT 1
           `,
           [productId]
@@ -1662,12 +1588,10 @@ app.delete(
 
 
       if (!existing.rows.length) {
-
         return res.status(404).json({
           error:
             "Product not found"
         });
-
       }
 
 
@@ -1677,25 +1601,27 @@ app.delete(
 
       if (
         req.user.role === "seller" &&
-        Number(product.seller_id) !==
-          Number(req.user.id)
+        String(product.seller_id) !==
+          String(req.user.id)
       ) {
-
         return res.status(403).json({
           error:
-            "You can delete only your own products"
+            "You can only delete your own products"
         });
-
       }
 
 
-      // Check if product was used in an order
+      /*
+        If product has order history,
+        deactivate instead of deleting.
+      */
+
       const orderCheck =
         await q(
           `
           SELECT id
           FROM order_items
-          WHERE product_id=$1
+          WHERE product_id = $1
           LIMIT 1
           `,
           [productId]
@@ -1704,66 +1630,62 @@ app.delete(
 
       if (orderCheck.rows.length) {
 
-        // Keep order history intact
         await q(
           `
           UPDATE products
-          SET active=FALSE
-          WHERE id=$1
+          SET active = FALSE
+          WHERE id = $1
           `,
           [productId]
         );
 
 
         return res.json({
-          ok: true,
           message:
-            "Product deactivated because it has order history"
+            "Product deactivated because it has order history."
         });
-
       }
 
 
       await q(
         `
         DELETE FROM products
-        WHERE id=$1
+        WHERE id = $1
         `,
         [productId]
       );
 
 
       res.json({
-        ok: true,
         message:
-          "Product deleted successfully"
+          "Product deleted successfully."
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "DELETE product error:",
-        err
+        "Delete product error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to delete product"
+          "Unable to delete product"
       });
     }
   }
 );
 
 
-// ============================================================
-// ORDERS - CREATE
-// ============================================================
+/* =========================================================
+   CREATE ORDER
+========================================================= */
 
 app.post(
   "/api/orders",
   auth,
-  requireRole("customer"),
+  role("customer"),
   async (req, res) => {
 
     const client =
@@ -1781,12 +1703,10 @@ app.post(
 
 
       if (!items.length) {
-
         return res.status(400).json({
           error:
-            "Order must contain at least one item"
+            "Order must contain at least one product"
         });
-
       }
 
 
@@ -1797,18 +1717,15 @@ app.post(
 
       let total = 0;
 
-      const lockedProducts = [];
+      const preparedItems = [];
 
-
-      // --------------------------------------------------------
-      // CHECK PRODUCTS + STOCK
-      // --------------------------------------------------------
 
       for (const item of items) {
 
         const productId =
           Number(
-            item.product_id
+            item.product_id ??
+            item.productId
           );
 
         const quantity =
@@ -1819,14 +1736,23 @@ app.post(
 
         if (
           !Number.isInteger(productId) ||
+          productId <= 0
+        ) {
+
+          throw new Error(
+            "Invalid product ID"
+          );
+        }
+
+
+        if (
           !Number.isInteger(quantity) ||
           quantity <= 0
         ) {
 
           throw new Error(
-            "Invalid order item"
+            "Invalid product quantity"
           );
-
         }
 
 
@@ -1836,18 +1762,16 @@ app.post(
             SELECT
               p.*,
 
-              u.active
-                AS seller_active
+              u.active AS seller_active
 
             FROM products p
 
             JOIN users u
-              ON u.id=p.seller_id
+              ON u.id = p.seller_id
 
-            WHERE
-              p.id=$1
+            WHERE p.id = $1
 
-            FOR UPDATE OF p
+            FOR UPDATE
             `,
             [productId]
           );
@@ -1856,9 +1780,8 @@ app.post(
         if (!result.rows.length) {
 
           throw new Error(
-            `Product ${productId} not found`
+            "Product not found"
           );
-
         }
 
 
@@ -1866,15 +1789,19 @@ app.post(
           result.rows[0];
 
 
-        if (
-          !product.active ||
-          !product.seller_active
-        ) {
+        if (!product.active) {
 
           throw new Error(
             `${product.name} is not available`
           );
+        }
 
+
+        if (!product.seller_active) {
+
+          throw new Error(
+            `${product.name} seller is inactive`
+          );
         }
 
 
@@ -1886,7 +1813,6 @@ app.post(
           throw new Error(
             `Insufficient stock for ${product.name}`
           );
-
         }
 
 
@@ -1900,10 +1826,11 @@ app.post(
           price * quantity;
 
 
-        total += subtotal;
+        total +=
+          subtotal;
 
 
-        lockedProducts.push({
+        preparedItems.push({
           product,
           quantity,
           price,
@@ -1912,21 +1839,17 @@ app.post(
       }
 
 
-      // --------------------------------------------------------
-      // CREATE ORDER
-      // --------------------------------------------------------
-
       const orderResult =
         await client.query(
           `
           INSERT INTO orders
-            (
-              customer_id,
-              total,
-              status
-            )
+          (
+            customer_id,
+            total,
+            status
+          )
           VALUES
-            ($1,$2,'pending')
+          ($1,$2,'pending')
 
           RETURNING *
           `,
@@ -1941,41 +1864,39 @@ app.post(
         orderResult.rows[0];
 
 
-      // --------------------------------------------------------
-      // ORDER ITEMS + STOCK
-      // --------------------------------------------------------
-
       for (
         const item
-        of lockedProducts
+        of preparedItems
       ) {
-
-        const product =
-          item.product;
-
 
         await client.query(
           `
           INSERT INTO order_items
-            (
-              order_id,
-              product_id,
-              seller_id,
-              product_name,
-              price,
-              quantity,
-              subtotal
-            )
+          (
+            order_id,
+            product_id,
+            seller_id,
+            product_name,
+            price,
+            quantity,
+            subtotal
+          )
           VALUES
-            ($1,$2,$3,$4,$5,$6,$7)
+          ($1,$2,$3,$4,$5,$6,$7)
           `,
           [
             order.id,
-            product.id,
-            product.seller_id,
-            product.name,
+
+            item.product.id,
+
+            item.product.seller_id,
+
+            item.product.name,
+
             item.price,
+
             item.quantity,
+
             item.subtotal
           ]
         );
@@ -1984,15 +1905,12 @@ app.post(
         await client.query(
           `
           UPDATE products
-
-          SET stock =
-            stock - $1
-
-          WHERE id=$2
+          SET stock = stock - $1
+          WHERE id = $2
           `,
           [
             item.quantity,
-            product.id
+            item.product.id
           ]
         );
       }
@@ -2004,50 +1922,49 @@ app.post(
 
 
       res.status(201).json({
-        ok: true,
+        message:
+          "Order placed successfully",
+
         order
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch (_) {}
+      await client.query(
+        "ROLLBACK"
+      );
 
 
       console.error(
         "Create order error:",
-        err
+        error
       );
 
 
       res.status(400).json({
         error:
-          err.message ||
-          "Unable to create order"
+          error.message ||
+          "Unable to place order"
       });
 
 
     } finally {
 
       client.release();
-
     }
   }
 );
 
 
-// ============================================================
-// CUSTOMER - MY ORDERS
-// ============================================================
+/* =========================================================
+   CUSTOMER ORDERS
+========================================================= */
 
 app.get(
   "/api/orders",
   auth,
-  requireRole("customer"),
+  role("customer"),
   async (req, res) => {
 
     try {
@@ -2056,11 +1973,14 @@ app.get(
         await q(
           `
           SELECT
-            o.*,
+            o.id,
+            o.total,
+            o.status,
+            o.created_at,
 
             COALESCE(
-              json_agg(
-                json_build_object(
+              JSON_AGG(
+                JSON_BUILD_OBJECT(
                   'id', oi.id,
                   'product_id', oi.product_id,
                   'seller_id', oi.seller_id,
@@ -2069,7 +1989,6 @@ app.get(
                   'quantity', oi.quantity,
                   'subtotal', oi.subtotal
                 )
-                ORDER BY oi.id
               )
               FILTER (
                 WHERE oi.id IS NOT NULL
@@ -2080,12 +1999,13 @@ app.get(
           FROM orders o
 
           LEFT JOIN order_items oi
-            ON oi.order_id=o.id
+            ON oi.order_id = o.id
 
           WHERE
-            o.customer_id=$1
+            o.customer_id = $1
 
-          GROUP BY o.id
+          GROUP BY
+            o.id
 
           ORDER BY
             o.created_at DESC
@@ -2099,148 +2019,30 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Customer orders error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load orders"
+          "Unable to load orders"
       });
     }
   }
 );
 
 
-// ============================================================
-// SELLER - ORDERS
-// ============================================================
+/* =========================================================
+   SELLER ORDERS
+========================================================= */
 
 app.get(
   "/api/seller/orders",
   auth,
-  requireRole("seller", "admin"),
-  async (req, res) => {
-
-    try {
-
-      const sellerId =
-        req.user.role === "seller"
-          ? req.user.id
-          : (
-              req.query.seller
-                ? Number(req.query.seller)
-                : null
-            );
-
-
-      let sql = `
-        SELECT
-
-          o.id AS order_id,
-
-          o.total AS order_total,
-
-          o.status,
-
-          o.created_at,
-
-          u.id AS customer_id,
-
-          u.name AS customer_name,
-
-          u.email AS customer_email,
-
-          u.mobile AS customer_mobile,
-
-          oi.id AS item_id,
-
-          oi.product_id,
-
-          oi.product_name,
-
-          oi.price,
-
-          oi.quantity,
-
-          oi.subtotal
-
-        FROM orders o
-
-        JOIN users u
-          ON u.id=o.customer_id
-
-        JOIN order_items oi
-          ON oi.order_id=o.id
-
-        WHERE 1=1
-      `;
-
-
-      const params = [];
-
-
-      if (
-        Number.isInteger(
-          Number(sellerId)
-        )
-      ) {
-
-        params.push(
-          Number(sellerId)
-        );
-
-        sql +=
-          ` AND oi.seller_id=$${params.length}`;
-      }
-
-
-      sql += `
-        ORDER BY
-          o.created_at DESC,
-          oi.id DESC
-      `;
-
-
-      const result =
-        await q(
-          sql,
-          params
-        );
-
-
-      res.json(
-        result.rows
-      );
-
-
-    } catch (err) {
-
-      console.error(
-        "Seller orders error:",
-        err
-      );
-
-      res.status(500).json({
-        error:
-          "Failed to load seller orders"
-      });
-    }
-  }
-);
-
-
-// ============================================================
-// ADMIN - ALL ORDERS
-// ============================================================
-
-app.get(
-  "/api/admin/orders",
-  auth,
-  requireRole("admin"),
+  role("seller"),
   async (req, res) => {
 
     try {
@@ -2249,8 +2051,15 @@ app.get(
         await q(
           `
           SELECT
+            o.id AS order_id,
 
-            o.*,
+            o.customer_id,
+
+            o.total,
+
+            o.status,
+
+            o.created_at,
 
             u.name
               AS customer_name,
@@ -2261,19 +2070,101 @@ app.get(
             u.mobile
               AS customer_mobile,
 
-            (
-              SELECT COUNT(*)
-              FROM order_items oi
-              WHERE oi.order_id=o.id
-            ) AS item_count
+            u.address
+              AS customer_address,
+
+            oi.id
+              AS item_id,
+
+            oi.product_id,
+
+            oi.product_name,
+
+            oi.price,
+
+            oi.quantity,
+
+            oi.subtotal
+
+          FROM orders o
+
+          JOIN order_items oi
+            ON oi.order_id = o.id
+
+          JOIN users u
+            ON u.id = o.customer_id
+
+          WHERE
+            oi.seller_id = $1
+
+          ORDER BY
+            o.created_at DESC,
+            o.id DESC
+          `,
+          [req.user.id]
+        );
+
+
+      res.json(
+        result.rows
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Seller orders error:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Unable to load seller orders"
+      });
+    }
+  }
+);
+
+
+/* =========================================================
+   ADMIN - ALL ORDERS
+========================================================= */
+
+app.get(
+  "/api/admin/orders",
+  auth,
+  role("admin"),
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await q(
+          `
+          SELECT
+            o.id,
+            o.customer_id,
+            o.total,
+            o.status,
+            o.created_at,
+
+            u.name
+              AS customer_name,
+
+            u.email
+              AS customer_email,
+
+            u.mobile
+              AS customer_mobile
 
           FROM orders o
 
           JOIN users u
-            ON u.id=o.customer_id
+            ON u.id = o.customer_id
 
           ORDER BY
-            o.created_at DESC
+            o.created_at DESC,
+            o.id DESC
           `
         );
 
@@ -2283,30 +2174,30 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Admin orders error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load orders"
+          "Unable to load admin orders"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - ORDER DETAILS
-// ============================================================
+/* =========================================================
+   ADMIN - ORDER DETAILS
+========================================================= */
 
 app.get(
   "/api/admin/orders/:id",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2317,23 +2208,10 @@ app.get(
         );
 
 
-      if (
-        !Number.isInteger(orderId)
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Invalid order ID"
-        });
-
-      }
-
-
       const orderResult =
         await q(
           `
           SELECT
-
             o.*,
 
             u.name
@@ -2351,9 +2229,9 @@ app.get(
           FROM orders o
 
           JOIN users u
-            ON u.id=o.customer_id
+            ON u.id = o.customer_id
 
-          WHERE o.id=$1
+          WHERE o.id = $1
 
           LIMIT 1
           `,
@@ -2362,12 +2240,10 @@ app.get(
 
 
       if (!orderResult.rows.length) {
-
         return res.status(404).json({
           error:
             "Order not found"
         });
-
       }
 
 
@@ -2375,33 +2251,30 @@ app.get(
         await q(
           `
           SELECT
-
             oi.*,
 
-            u.name
+            s.name
               AS seller_name,
 
-            u.business_name
+            s.business_name
               AS seller_business_name
 
           FROM order_items oi
 
-          LEFT JOIN users u
-            ON u.id=oi.seller_id
+          LEFT JOIN users s
+            ON s.id = oi.seller_id
 
           WHERE
-            oi.order_id=$1
+            oi.order_id = $1
 
           ORDER BY
-            oi.id
+            oi.id ASC
           `,
           [orderId]
         );
 
 
       res.json({
-        ok: true,
-
         order:
           orderResult.rows[0],
 
@@ -2410,30 +2283,30 @@ app.get(
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "Admin order details error:",
-        err
+        "Admin order detail error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load order details"
+          "Unable to load order details"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - UPDATE ORDER STATUS
-// ============================================================
+/* =========================================================
+   ADMIN - UPDATE ORDER STATUS
+========================================================= */
 
 app.put(
   "/api/admin/orders/:id/status",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2443,13 +2316,10 @@ app.put(
           req.params.id
         );
 
-
       const status =
-        String(
-          req.body?.status || ""
-        )
-        .trim()
-        .toLowerCase();
+        cleanText(
+          req.body?.status
+        ).toLowerCase();
 
 
       const validStatuses = [
@@ -2462,14 +2332,14 @@ app.put(
 
 
       if (
-        !validStatuses.includes(status)
+        !validStatuses.includes(
+          status
+        )
       ) {
-
         return res.status(400).json({
           error:
             "Invalid order status"
         });
-
       }
 
 
@@ -2478,9 +2348,9 @@ app.put(
           `
           UPDATE orders
 
-          SET status=$1
+          SET status = $1
 
-          WHERE id=$2
+          WHERE id = $2
 
           RETURNING *
           `,
@@ -2492,46 +2362,45 @@ app.put(
 
 
       if (!result.rows.length) {
-
         return res.status(404).json({
           error:
             "Order not found"
         });
-
       }
 
 
       res.json({
-        ok: true,
+        message:
+          "Order status updated",
         order:
           result.rows[0]
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "Update order status error:",
-        err
+        "Order status error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to update order status"
+          "Unable to update order status"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - USERS
-// ============================================================
+/* =========================================================
+   ADMIN - USERS
+========================================================= */
 
 app.get(
   "/api/users",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2554,7 +2423,8 @@ app.get(
           FROM users
 
           ORDER BY
-            created_at DESC
+            created_at DESC,
+            id DESC
           `
         );
 
@@ -2566,159 +2436,135 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
-        "Admin users error:",
-        err
+        "Users error:",
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load users"
+          "Unable to load users"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - DASHBOARD STATS
-// ============================================================
+/* =========================================================
+   ADMIN - STATS
+========================================================= */
 
 app.get(
   "/api/stats",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
 
-      const usersResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM users
-          `
-        );
-
-
-      const customersResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM users
-          WHERE role='customer'
-          `
-        );
-
-
-      const sellersResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM users
-          WHERE role='seller'
-          `
-        );
-
-
-      const activeSellersResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM users
-          WHERE
-            role='seller'
-            AND active=TRUE
-          `
-        );
-
-
-      const productsResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM products
-          `
-        );
-
-
-      const ordersResult =
-        await q(
-          `
-          SELECT COUNT(*)::int AS count
-          FROM orders
-          `
-        );
-
-
-      const revenueResult =
-        await q(
-          `
+      const result =
+        await q(`
           SELECT
-            COALESCE(
-              SUM(total),
-              0
+
+            (
+              SELECT COUNT(*)
+              FROM users
+            ) AS users,
+
+            (
+              SELECT COUNT(*)
+              FROM users
+              WHERE role = 'customer'
+            ) AS customers,
+
+            (
+              SELECT COUNT(*)
+              FROM users
+              WHERE role = 'seller'
+            ) AS sellers,
+
+            (
+              SELECT COUNT(*)
+              FROM users
+              WHERE role = 'seller'
+                AND active = TRUE
+            ) AS active_sellers,
+
+            (
+              SELECT COUNT(*)
+              FROM products
+            ) AS products,
+
+            (
+              SELECT COUNT(*)
+              FROM orders
+            ) AS orders,
+
+            (
+              SELECT COALESCE(
+                SUM(total),
+                0
+              )
+              FROM orders
+              WHERE status <> 'cancelled'
             ) AS revenue
+        `);
 
-          FROM orders
 
-          WHERE status <> 'cancelled'
-          `
-        );
+      const row =
+        result.rows[0];
 
 
       res.json({
         users:
-          usersResult.rows[0].count,
+          Number(row.users || 0),
 
         customers:
-          customersResult.rows[0].count,
+          Number(row.customers || 0),
 
         sellers:
-          sellersResult.rows[0].count,
+          Number(row.sellers || 0),
 
         active_sellers:
-          activeSellersResult.rows[0].count,
+          Number(row.active_sellers || 0),
 
         products:
-          productsResult.rows[0].count,
+          Number(row.products || 0),
 
         orders:
-          ordersResult.rows[0].count,
+          Number(row.orders || 0),
 
         revenue:
-          Number(
-            revenueResult.rows[0].revenue || 0
-          )
+          Number(row.revenue || 0)
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Stats error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load dashboard stats"
+          "Unable to load statistics"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - ALL PRODUCTS
-// ============================================================
+/* =========================================================
+   ADMIN - ALL PRODUCTS
+========================================================= */
 
 app.get(
   "/api/admin/products",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2727,7 +2573,6 @@ app.get(
         await q(
           `
           SELECT
-
             p.*,
 
             u.name
@@ -2737,18 +2582,16 @@ app.get(
               AS seller_email,
 
             u.business_name
-              AS seller_business_name,
-
-            u.gst_number
-              AS seller_gst
+              AS seller_business_name
 
           FROM products p
 
-          JOIN users u
-            ON u.id=p.seller_id
+          LEFT JOIN users u
+            ON u.id = p.seller_id
 
           ORDER BY
-            p.created_at DESC
+            p.created_at DESC,
+            p.id DESC
           `
         );
 
@@ -2758,30 +2601,30 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Admin products error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load products"
+          "Unable to load products"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - SELLERS
-// ============================================================
+/* =========================================================
+   ADMIN - SELLERS
+========================================================= */
 
 app.get(
   "/api/admin/sellers",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2790,7 +2633,6 @@ app.get(
         await q(
           `
           SELECT
-
             u.id,
             u.name,
             u.email,
@@ -2801,22 +2643,19 @@ app.get(
             u.active,
             u.created_at,
 
-            (
-              SELECT COUNT(*)
-              FROM products p
-              WHERE p.seller_id=u.id
-            ) AS product_count,
-
-            (
-              SELECT COUNT(*)
-              FROM order_items oi
-              WHERE oi.seller_id=u.id
-            ) AS order_item_count
+            COUNT(p.id)
+              AS product_count
 
           FROM users u
 
+          LEFT JOIN products p
+            ON p.seller_id = u.id
+
           WHERE
-            u.role='seller'
+            u.role = 'seller'
+
+          GROUP BY
+            u.id
 
           ORDER BY
             u.created_at DESC
@@ -2829,30 +2668,30 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Admin sellers error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load sellers"
+          "Unable to load sellers"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - EDIT SELLER
-// ============================================================
+/* =========================================================
+   ADMIN - EDIT SELLER
+========================================================= */
 
 app.put(
   "/api/admin/sellers/:id",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -2863,166 +2702,77 @@ app.put(
         );
 
 
-      if (
-        !Number.isInteger(sellerId)
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Invalid seller ID"
-        });
-
-      }
-
-
-      const existing =
-        await q(
-          `
-          SELECT *
-          FROM users
-
-          WHERE
-            id=$1
-            AND role='seller'
-
-          LIMIT 1
-          `,
-          [sellerId]
-        );
-
-
-      if (!existing.rows.length) {
-
-        return res.status(404).json({
-          error:
-            "Seller not found"
-        });
-
-      }
-
-
       const body =
         req.body || {};
 
 
       const name =
-        String(
-          body.name ||
-          existing.rows[0].name ||
-          ""
-        ).trim();
-
+        cleanText(
+          body.name
+        );
 
       const email =
-        cleanEmail(
-          body.email ||
-          existing.rows[0].email
+        cleanText(
+          body.email
+        ).toLowerCase();
+
+      const businessName =
+        cleanText(
+          body.businessName ||
+          body.business_name
+        );
+
+      const gstNumber =
+        cleanText(
+          body.gstNumber ||
+          body.gst_number
+        ).toUpperCase();
+
+      const mobile =
+        cleanText(
+          body.mobile
+        );
+
+      const address =
+        cleanText(
+          body.address
         );
 
 
-      const businessName =
-        String(
-          body.businessName ||
-          body.business_name ||
-          existing.rows[0].business_name ||
-          ""
-        ).trim();
-
-
-      const gstNumber =
-        String(
-          body.gstNumber ||
-          body.gst_number ||
-          existing.rows[0].gst_number ||
-          ""
-        )
-        .trim()
-        .toUpperCase();
-
-
-      const mobile =
-        String(
-          body.mobile ??
-          existing.rows[0].mobile ??
-          ""
-        ).trim();
-
-
-      const address =
-        String(
-          body.address ??
-          existing.rows[0].address ??
-          ""
-        ).trim();
-
-
       if (!name || !email) {
-
         return res.status(400).json({
           error:
             "Name and email are required"
         });
-
-      }
-
-
-      const emailCheck =
-        await q(
-          `
-          SELECT id
-          FROM users
-          WHERE
-            email=$1
-            AND id<>$2
-          LIMIT 1
-          `,
-          [
-            email,
-            sellerId
-          ]
-        );
-
-
-      if (emailCheck.rows.length) {
-
-        return res.status(409).json({
-          error:
-            "Email already in use"
-        });
-
       }
 
 
       if (gstNumber) {
 
-        const gstCheck =
-          await q(
-            `
-            SELECT id
-            FROM users
-
-            WHERE
-              gst_number=$1
-              AND id<>$2
-
-            LIMIT 1
-            `,
-            [
-              gstNumber,
-              sellerId
-            ]
-          );
+        const gstRegex =
+          /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
 
-        if (
-          gstCheck.rows.length
-        ) {
-
-          return res.status(409).json({
+        if (!gstRegex.test(gstNumber)) {
+          return res.status(400).json({
             error:
-              "GST number already in use"
+              "Invalid GSTIN format"
           });
+        }
+      }
 
+
+      if (mobile) {
+
+        const mobileRegex =
+          /^[6-9][0-9]{9}$/;
+
+
+        if (!mobileRegex.test(mobile)) {
+          return res.status(400).json({
+            error:
+              "Invalid mobile number"
+          });
         }
       }
 
@@ -3033,18 +2783,29 @@ app.put(
           UPDATE users
 
           SET
-            name=$1,
-            email=$2,
-            business_name=$3,
-            gst_number=$4,
-            mobile=$5,
-            address=$6
+            name = $1,
+            email = $2,
+            business_name = $3,
+            gst_number = $4,
+            mobile = $5,
+            address = $6
 
           WHERE
-            id=$7
-            AND role='seller'
+            id = $7
 
-          RETURNING *
+            AND role = 'seller'
+
+          RETURNING
+            id,
+            name,
+            email,
+            role,
+            created_at,
+            business_name,
+            gst_number,
+            mobile,
+            address,
+            active
           `,
           [
             name,
@@ -3058,8 +2819,18 @@ app.put(
         );
 
 
+      if (!result.rows.length) {
+        return res.status(404).json({
+          error:
+            "Seller not found"
+        });
+      }
+
+
       res.json({
-        ok: true,
+        message:
+          "Seller updated successfully",
+
         seller:
           formatUser(
             result.rows[0]
@@ -3067,43 +2838,41 @@ app.put(
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Edit seller error:",
-        err
+        error
       );
 
 
       if (
-        err.code === "23505"
+        error.code === "23505"
       ) {
-
         return res.status(409).json({
           error:
-            "Email or GST number already in use"
+            "Email or GST number already exists"
         });
-
       }
 
 
       res.status(500).json({
         error:
-          "Failed to update seller"
+          "Unable to update seller"
       });
     }
   }
 );
 
 
-// ============================================================
-// ADMIN - ACTIVATE / DEACTIVATE SELLER
-// ============================================================
+/* =========================================================
+   ADMIN - SELLER ACTIVE / INACTIVE
+========================================================= */
 
 app.put(
   "/api/admin/sellers/:id/status",
   auth,
-  requireRole("admin"),
+  role("admin"),
   async (req, res) => {
 
     try {
@@ -3120,30 +2889,24 @@ app.put(
         );
 
 
-      if (
-        !Number.isInteger(sellerId)
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Invalid seller ID"
-        });
-
-      }
-
-
       const result =
         await q(
           `
           UPDATE users
 
-          SET active=$1
+          SET active = $1
 
           WHERE
-            id=$2
-            AND role='seller'
+            id = $2
 
-          RETURNING *
+            AND role = 'seller'
+
+          RETURNING
+            id,
+            name,
+            email,
+            role,
+            active
           `,
           [
             active,
@@ -3153,43 +2916,51 @@ app.put(
 
 
       if (!result.rows.length) {
-
         return res.status(404).json({
           error:
             "Seller not found"
         });
-
       }
 
 
+      /*
+        When seller is deactivated,
+        their products are hidden from
+        public marketplace.
+
+        We don't permanently delete them.
+      */
+
       res.json({
-        ok: true,
+        message:
+          active
+            ? "Seller activated successfully"
+            : "Seller deactivated successfully",
+
         seller:
-          formatUser(
-            result.rows[0]
-          )
+          result.rows[0]
       });
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Seller status error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to update seller status"
+          "Unable to update seller status"
       });
     }
   }
 );
 
 
-// ============================================================
-// PUBLIC - SELLERS
-// ============================================================
+/* =========================================================
+   PUBLIC SELLERS
+========================================================= */
 
 app.get(
   "/api/sellers",
@@ -3201,7 +2972,6 @@ app.get(
         await q(
           `
           SELECT
-
             id,
             name,
             business_name,
@@ -3212,12 +2982,12 @@ app.get(
           FROM users
 
           WHERE
-            role='seller'
-            AND active=TRUE
+            role = 'seller'
+
+            AND active = TRUE
 
           ORDER BY
-            business_name ASC,
-            name ASC
+            created_at DESC
           `
         );
 
@@ -3227,25 +2997,25 @@ app.get(
       );
 
 
-    } catch (err) {
+    } catch (error) {
 
       console.error(
         "Public sellers error:",
-        err
+        error
       );
 
       res.status(500).json({
         error:
-          "Failed to load sellers"
+          "Unable to load sellers"
       });
     }
   }
 );
 
 
-// ============================================================
-// 404
-// ============================================================
+/* =========================================================
+   404
+========================================================= */
 
 app.use(
   (req, res) => {
@@ -3256,14 +3026,13 @@ app.use(
       path:
         req.originalUrl
     });
-
   }
 );
 
 
-// ============================================================
-// ERROR HANDLER
-// ============================================================
+/* =========================================================
+   ERROR HANDLER
+========================================================= */
 
 app.use(
   (err, req, res, next) => {
@@ -3274,31 +3043,17 @@ app.use(
     );
 
 
-    if (
-      err.type ===
-      "entity.too.large"
-    ) {
-
-      return res.status(413).json({
-        error:
-          "Request too large. Please use a smaller image."
-      });
-
-    }
-
-
     res.status(500).json({
       error:
         "Internal server error"
     });
-
   }
 );
 
 
-// ============================================================
-// START SERVER
-// ============================================================
+/* =========================================================
+   START SERVER
+========================================================= */
 
 async function start() {
 
@@ -3316,19 +3071,21 @@ async function start() {
           `ShipNova API listening on port ${PORT}`
         );
 
+        console.log(
+          `Health: /api/health`
+        );
       }
     );
 
 
-  } catch (err) {
+  } catch (error) {
 
     console.error(
       "Server startup failed:",
-      err
+      error
     );
 
     process.exit(1);
-
   }
 }
 
